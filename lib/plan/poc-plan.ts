@@ -122,7 +122,7 @@ export const pocPlan = {
     windowOpening({ id: "east-wall-window-north", label: "East wall window — north", wallId: "east-exterior-wall", offset: 70, width: 47, note: "Measured frame width and offset from the northeast jog.", ...existing }),
     windowOpening({ id: "east-wall-window-south", label: "East wall window — south", wallId: "east-exterior-wall", offset: 279, width: 47, note: "Measured frame width and offset from the northeast jog.", ...existing }),
     windowOpening({ id: "north-wall-window-east", label: "North wall window — east", wallId: "north-exterior-wall", offset: 378, width: 48, note: "Width and offset scaled from the sketch.", ...existing }),
-    windowOpening({ id: "north-wall-office-window", label: "North wall office window", wallId: "north-exterior-wall", offset: 58, width: 47, note: "Measured from the west end of the office wall sequence.", ...existing }),
+    windowOpening({ id: "north-wall-office-window", label: "North wall office window", wallId: "north-exterior-wall", offset: 112, width: 47, note: "Placed approximately 112 inches east of the office-west-wall junction.", ...existing }),
   ],
   lights: [
     // Lighting will be added as a separate system layer after the base plan is verified.

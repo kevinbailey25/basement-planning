@@ -100,9 +100,15 @@ button { cursor: pointer; }
 .framing-summary p { margin: 12px 0 0; color: #899792; font-size: 9px; line-height: 1.55; }
 .framing-summary p strong { color: #b9c4bf; }
 
-.inspector { min-height: 165px; }
+.inspector { min-height: 165px; flex-shrink: 0; }
 .inspector-empty p { margin: 10px 0 0; color: #82908c; font-size: 11px; line-height: 1.6; }
 .inspector-title { margin: 6px 0 13px; color: #f5f7f6; font-size: 15px; }
+.opening-side-control { margin: -2px 0 15px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid #465550; }
+.opening-side-control button { min-width: 0; min-height: 32px; padding: 6px 8px; border: 0; border-right: 1px solid #465550; color: #9ca9a4; background: rgb(255 255 255 / 3%); font-size: 10px; line-height: 1.25; }
+.opening-side-control button:last-child { border-right: 0; }
+.opening-side-control button:hover { background: rgb(255 255 255 / 7%); }
+.opening-side-control button.active { color: #241b0d; background: var(--amber-bright); font-weight: 750; }
+.opening-side-control button:focus-visible { position: relative; outline: 2px solid #fff0cf; outline-offset: -3px; }
 .inspector-grid { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .inspector-grid div { min-width: 0; }
 .inspector-grid dt { color: #71817c; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
@@ -141,6 +147,7 @@ button { cursor: pointer; }
 .framing-line.unknown { stroke: #8d9692; stroke-width: 2; stroke-dasharray: 2 3; }
 .window-symbol { stroke: #497c89; stroke-width: 1.15; fill: none; cursor: pointer; }
 .door-symbol { stroke: #2f3a37; fill: none; cursor: pointer; }
+.door-hit { stroke: transparent; stroke-width: 14; }
 .door-leaf { stroke-width: 1.3; }
 .door-swing { stroke-width: .7; stroke-dasharray: 2 1.5; }
 .wire-run { fill: none; stroke: #d48b23; stroke-width: 1.25; stroke-dasharray: 4 2.5; stroke-linecap: round; stroke-linejoin: round; cursor: pointer; }
@@ -158,6 +165,10 @@ button { cursor: pointer; }
 .dimension-mark text { fill: #4d5955; stroke: var(--paper); stroke-width: 3; paint-order: stroke; font: 8px/1 ui-monospace, monospace; text-anchor: middle; dominant-baseline: central; }
 .framing-dimension { stroke: #b97416; stroke-width: .6; fill: none; cursor: pointer; }
 .framing-dimension text { fill: #8c5813; stroke: var(--paper); stroke-width: 3.5; paint-order: stroke; font: 700 7px/1 ui-monospace, monospace; text-anchor: middle; dominant-baseline: central; }
+.selected-opening-dimensions { pointer-events: none; }
+.opening-dimension { fill: none; stroke: #a75b0a; stroke-width: .75; }
+.opening-dimension text { fill: #844708; stroke: var(--paper); stroke-width: 3.5; paint-order: stroke; font: 700 7px/1 ui-monospace, monospace; text-anchor: middle; dominant-baseline: central; }
+.opening-width-dimension { stroke-width: 1.15; }
 .floor-plan .selected .wall-line, .floor-plan .selected.window-symbol, .floor-plan .selected.door-symbol { stroke: #c66e12; }
 .floor-plan .selected .space-fill { stroke: #c66e12; stroke-width: 1; }
 .floor-plan .selected .wire-run { stroke: #8c3f09; stroke-width: 2.2; }
@@ -213,6 +224,8 @@ button { cursor: pointer; }
   .framing-line.needs-framing { stroke: #000; }
   .framing-dimension, .framing-dimension text { stroke: #111; }
   .framing-dimension text { fill: #111; stroke: #fff; }
+  .opening-dimension, .opening-dimension text { stroke: #111; }
+  .opening-dimension text { fill: #111; stroke: #fff; }
   .print-framing-summary { display: block; grid-column: 1 / -1; }
   .print-framing-summary .framing-summary { display: grid; grid-template-columns: 1fr 2fr; gap: 4px 18px; color: #222; }
   .print-framing-summary .framing-total { margin: 0; padding: 0 0 0 8px; background: transparent; border-color: #555; }

@@ -92,6 +92,12 @@ door({
 
 Switches use the same wall-relative convention. `heightAboveFloor` is metadata; the primary viewer remains top-down.
 
+Selecting a window or door derives a temporary dimension chain from this wall-relative data. The viewer shows the clear wall to the nearest opening, intersecting wall, or wall endpoint on each side plus the selected opening width. Contiguous door leaves are treated as one combined opening. These selection measurements are not stored as separate `Dimension` objects and remain visible in the current-view printout.
+
+The selected opening defaults to the wall's `interiorSide`. An inspector control can switch to the opposite face; only wall junctions that approach or cross the active face stop its measurements. The viewer derives the control labels from adjacent space polygons, falling back to `Exterior` or a compass-side label when no named space applies. Only the active face is drawn and printed.
+
+When the opening's wall ends at a connected collinear wall segment, measurement derivation follows the continuous wall run. A junction on the opposite face does not prematurely stop the active face; the measurement continues until an opening, junction on that face, or the end of the connected run.
+
 ## Lighting and circuits
 
 Ceiling fixtures use absolute plan coordinates. Circuits reference stable fixture/device IDs and represent connectivity rather than an exact cable route.
