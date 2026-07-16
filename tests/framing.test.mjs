@@ -6,17 +6,17 @@ import { pocPlan } from "../lib/plan/poc-plan.ts";
 
 test("framing estimate uses only walls marked needs-framing", () => {
   const estimate = estimateFraming(pocPlan);
-  assert.equal(wallsNeedingFraming(pocPlan).length, 11);
-  assert.equal(estimate.wallCount, 11);
-  assert.equal(estimate.wallLengthInches, 2109);
-  assert.equal(estimate.baseStudCount, 147);
-  assert.equal(estimate.purchaseStudCount, 162);
-  assert.equal(estimate.baseTopPlateBoards, 22);
-  assert.equal(estimate.purchaseTopPlateBoards, 25);
-  assert.equal(estimate.baseBottomPlateBoards, 22);
-  assert.equal(estimate.purchaseBottomPlateBoards, 25);
-  assert.equal(estimate.openingCount, 5);
-  assert.equal(estimate.junctionCount, 13);
+  assert.equal(wallsNeedingFraming(pocPlan).length, 12);
+  assert.equal(estimate.wallCount, 12);
+  assert.equal(estimate.wallLengthInches, 2233);
+  assert.equal(estimate.baseStudCount, 156);
+  assert.equal(estimate.purchaseStudCount, 172);
+  assert.equal(estimate.baseTopPlateBoards, 24);
+  assert.equal(estimate.purchaseTopPlateBoards, 26);
+  assert.equal(estimate.baseBottomPlateBoards, 24);
+  assert.equal(estimate.purchaseBottomPlateBoards, 26);
+  assert.equal(estimate.openingCount, 6);
+  assert.equal(estimate.junctionCount, 14);
 });
 
 test("finished landing portion is excluded from the Office wall estimate", () => {
@@ -27,6 +27,17 @@ test("finished landing portion is excluded from the Office wall estimate", () =>
   assert.deepEqual(
     pocPlan.walls.find((wall) => wall.id === "office-south-wall")?.from,
     [196, 327],
+  );
+});
+
+test("closet wall framing dimensions use the east face", () => {
+  assert.equal(
+    pocPlan.walls.find((wall) => wall.id === "office-closet-divider-wall")?.dimensionSide,
+    "right",
+  );
+  assert.equal(
+    pocPlan.walls.find((wall) => wall.id === "office-west-jog-wall")?.dimensionSide,
+    "right",
   );
 });
 

@@ -36,11 +36,14 @@ wall({
   to: [144, 0],
   thickness: 6,
   interiorSide: "right",
+  dimensionSide: "left",
   framingStatus: "needs-framing",
   status: "proposed",
   confidence: "approximate",
 })
 ```
+
+Framing dimensions default to the side opposite `interiorSide`. Set optional `dimensionSide` when a particular wall's annotation is clearer on the other face.
 
 `status` describes the physical construction object; `framingStatus` separately describes whether wall framing is already present:
 
@@ -88,11 +91,24 @@ door({
   status: "proposed",
   confidence: "approximate",
 })
+
+slidingDoor({
+  id: "closet-bypass-door",
+  wallId: "closet-wall",
+  offset: 26,
+  width: 72,
+  panels: 2,
+  operation: "bypass",
+  status: "proposed",
+  confidence: "approximate",
+})
 ```
+
+Use `slidingDoor` for a two-panel bypass opening. It renders two overlapping parallel leaves and does not imply an accordion or bifold assembly.
 
 Switches use the same wall-relative convention. `heightAboveFloor` is metadata; the primary viewer remains top-down.
 
-Selecting a window or door derives a temporary dimension chain from this wall-relative data. The viewer shows the clear wall to the nearest opening, intersecting wall, or wall endpoint on each side plus the selected opening width. Contiguous door leaves are treated as one combined opening. These selection measurements are not stored as separate `Dimension` objects and remain visible in the current-view printout.
+Selecting a window, swing door, or sliding door derives a temporary dimension chain from this wall-relative data. The viewer shows the clear wall to the nearest opening, intersecting wall, or wall endpoint on each side plus the selected opening width. Contiguous swing-door leaves are treated as one combined opening. These selection measurements are not stored as separate `Dimension` objects and remain visible in the current-view printout.
 
 The selected opening defaults to the wall's `interiorSide`. An inspector control can switch to the opposite face; only wall junctions that approach or cross the active face stop its measurements. The viewer derives the control labels from adjacent space polygons, falling back to `Exterior` or a compass-side label when no named space applies. Only the active face is drawn and printed.
 
@@ -152,7 +168,7 @@ Keep the run and riser count approximate when they were inferred from a sketch. 
 
 ## Dimensions
 
-General dimensions are explicit annotations. The current plan uses these only for the overall footprint. The Framing status layer derives gross wall-run dimensions directly from every wall marked `needs-framing`; doors and windows do not shorten those framing dimensions.
+General dimensions are explicit annotations. The current plan uses these only for the overall footprint. The Framing status layer derives gross wall-run dimensions directly from every wall marked `needs-framing`; doors, sliding doors, and windows do not shorten those framing dimensions.
 
 ```ts
 dimension({

@@ -19,6 +19,7 @@ export interface Wall extends PlanItemBase {
   to: Point;
   thickness: number;
   interiorSide: WallSide;
+  dimensionSide?: WallSide;
   framingStatus: FramingStatus;
 }
 
@@ -49,6 +50,12 @@ export interface Door extends WallOpeningBase {
   kind: "door";
   hinge: "start" | "end";
   swing: "inward" | "outward";
+}
+
+export interface SlidingDoor extends WallOpeningBase {
+  kind: "sliding-door";
+  panels: 2;
+  operation: "bypass";
 }
 
 export interface WindowOpening extends WallOpeningBase {
@@ -105,6 +112,7 @@ export type SelectablePlanItem =
   | Wall
   | Space
   | Door
+  | SlidingDoor
   | WindowOpening
   | Light
   | Switch
@@ -124,6 +132,7 @@ export interface FloorPlan {
   walls: readonly Wall[];
   spaces: readonly Space[];
   doors: readonly Door[];
+  slidingDoors: readonly SlidingDoor[];
   windows: readonly WindowOpening[];
   lights: readonly Light[];
   switches: readonly Switch[];

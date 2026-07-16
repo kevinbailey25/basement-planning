@@ -4,12 +4,13 @@ import type {
   FloorPlan,
   MeasurementConfidence,
   Point,
+  SlidingDoor,
   Wall,
   WallSide,
   WindowOpening,
 } from "./types.ts";
 
-type Opening = Door | WindowOpening;
+type Opening = Door | SlidingDoor | WindowOpening;
 export type CompassDirection = "north" | "east" | "south" | "west";
 
 export interface OpeningMeasurementSideOption {
@@ -183,7 +184,7 @@ function adjoiningDoorGroup(openings: readonly Opening[], selected: Opening): Op
 }
 
 export function measureOpening(plan: FloorPlan, selectedId: string, requestedSide?: WallSide): OpeningMeasurement | undefined {
-  const selected = [...plan.windows, ...plan.doors].find((opening) => opening.id === selectedId);
+  const selected = [...plan.windows, ...plan.doors, ...plan.slidingDoors].find((opening) => opening.id === selectedId);
   if (!selected) return undefined;
   const wall = plan.walls.find((candidate) => candidate.id === selected.wallId);
   if (!wall) return undefined;
@@ -193,7 +194,7 @@ export function measureOpening(plan: FloorPlan, selectedId: string, requestedSid
   const chain = connectedCollinearWalls(plan, wall);
   const chainWallIds = new Set(chain.members.map((member) => member.wall.id));
   const chainWallById = new Map(chain.members.map((member) => [member.wall.id, member.wall]));
-  const chainOpenings = [...plan.windows, ...plan.doors]
+  const chainOpenings = [...plan.windows, ...plan.doors, ...plan.slidingDoors]
     .filter((opening) => chainWallIds.has(opening.wallId))
     .map((opening) => {
       const openingWall = chainWallById.get(opening.wallId)!;

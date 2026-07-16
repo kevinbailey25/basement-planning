@@ -4,6 +4,7 @@ import type {
   Door,
   Light,
   Point,
+  SlidingDoor,
   Space,
   Stairs,
   Switch,
@@ -14,6 +15,9 @@ import type {
 export const wall = (value: Omit<Wall, "kind">): Wall => ({ kind: "wall", ...value });
 export const space = (value: Omit<Space, "kind">): Space => ({ kind: "space", ...value });
 export const door = (value: Omit<Door, "kind">): Door => ({ kind: "door", ...value });
+export const slidingDoor = (
+  value: Omit<SlidingDoor, "kind">,
+): SlidingDoor => ({ kind: "sliding-door", ...value });
 export const windowOpening = (
   value: Omit<WindowOpening, "kind">,
 ): WindowOpening => ({ kind: "window", ...value });

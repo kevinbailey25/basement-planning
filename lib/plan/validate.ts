@@ -12,6 +12,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.walls,
     ...plan.spaces,
     ...plan.doors,
+    ...plan.slidingDoors,
     ...plan.windows,
     ...plan.lights,
     ...plan.switches,
@@ -47,7 +48,7 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
       issues.push({ code: "invalid-stairs", itemId: item.id, message: `Stairs “${item.id}” require a run, positive width, and at least two risers.` });
     }
   }
-  for (const item of [...plan.doors, ...plan.windows]) {
+  for (const item of [...plan.doors, ...plan.slidingDoors, ...plan.windows]) {
     const parent = walls.get(item.wallId);
     if (!parent) {
       issues.push({ code: "missing-wall", itemId: item.id, message: `Opening “${item.id}” references missing wall “${item.wallId}”.` });

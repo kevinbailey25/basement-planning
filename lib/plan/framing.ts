@@ -47,7 +47,7 @@ export function estimateFraming(plan: FloorPlan): FramingEstimate {
     (wallLengthInches * (1 + plan.framing.wasteFactor)) / plan.framing.stockLength,
   );
   const wallIds = new Set(walls.map((wall) => wall.id));
-  const openingCount = [...plan.doors, ...plan.windows]
+  const openingCount = [...plan.doors, ...plan.slidingDoors, ...plan.windows]
     .filter((opening) => wallIds.has(opening.wallId)).length;
   const junctions = new Set<string>();
   for (const wall of walls) {

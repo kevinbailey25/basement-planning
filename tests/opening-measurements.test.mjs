@@ -90,9 +90,28 @@ test("continues Storage-side measurements across connected collinear wall segmen
   assert.equal(storage.afterDirection, "west");
 });
 
-test("places the office window 112 inches east of office-west-wall", () => {
+test("keeps the office window 112 inches east of office-west-wall", () => {
+  const window = pocPlan.windows.find((opening) => opening.id === "north-wall-office-window");
   const measurement = measureOpening(pocPlan, "north-wall-office-window");
+  assert.ok(window);
   assert.ok(measurement);
+  assert.equal(window.offset, 112);
   assert.equal(measurement.sideLabel, "Office");
-  assert.equal(measurement.beforeDistance, 112);
+  assert.equal(measurement.beforeDistance, 70);
+});
+
+test("measures the bypass closet doors from the Office or Closet face", () => {
+  const office = measureOpening(pocPlan, "office-closet-sliding-door");
+  const closet = measureOpening(pocPlan, "office-closet-sliding-door", "left");
+  assert.ok(office);
+  assert.ok(closet);
+  assert.deepEqual(office.sideOptions, [
+    { side: "right", label: "Office" },
+    { side: "left", label: "Closet" },
+  ]);
+  assert.equal(office.openingWidth, 72);
+  assert.equal(office.beforeDistance, 98);
+  assert.equal(office.afterDistance, 26);
+  assert.equal(closet.beforeDistance, 26);
+  assert.equal(closet.afterDistance, 26);
 });
