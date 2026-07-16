@@ -86,6 +86,7 @@ button { cursor: pointer; }
 .legend-sliding-door { position: relative; }
 .legend-sliding-door::before { transform: translate(-2px, -2px); }
 .legend-sliding-door::after { transform: translate(2px, 2px); }
+.legend-water-valve { color: #8bc4d3; border: 1px dashed #5d98a8; font: 800 12px/1 ui-monospace, monospace; }
 .legend-existing::before { content: ""; width: 20px; border-top: 4px solid #b9c1bd; }
 .legend-framed::before { content: ""; width: 20px; border-top: 4px solid #75948a; }
 .legend-needs-framing::before { content: ""; width: 20px; border-top: 3px dashed var(--amber-bright); }
@@ -154,6 +155,13 @@ button { cursor: pointer; }
 .sliding-door-hit { stroke: transparent; stroke-width: 14; }
 .sliding-door-panel { stroke-width: 1.4; }
 .sliding-door-center { stroke-width: .65; stroke-dasharray: 1.5 1; }
+.water-valve-symbol { cursor: pointer; }
+.valve-hit { stroke: transparent; stroke-width: 16; }
+.valve-enclosure { fill: rgb(73 124 137 / 7%); stroke: #497c89; stroke-width: .8; }
+.valve-enclosure.proposed { stroke-dasharray: 2 1.5; }
+.valve-body { fill: var(--paper); stroke: #39798a; stroke-width: 1.3; }
+.valve-handle, .valve-leader { fill: none; stroke: #39798a; stroke-width: .8; }
+.valve-label { fill: #2f6e7f; stroke: var(--paper); stroke-width: 2.5; paint-order: stroke; font: 700 5.2px/1 ui-monospace, monospace; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
 .door-hit { stroke: transparent; stroke-width: 14; }
 .door-leaf { stroke-width: 1.3; }
 .door-swing { stroke-width: .7; stroke-dasharray: 2 1.5; }
@@ -176,7 +184,11 @@ button { cursor: pointer; }
 .opening-dimension { fill: none; stroke: #a75b0a; stroke-width: .75; }
 .opening-dimension text { fill: #844708; stroke: var(--paper); stroke-width: 3.5; paint-order: stroke; font: 700 7px/1 ui-monospace, monospace; text-anchor: middle; dominant-baseline: central; }
 .opening-width-dimension { stroke-width: 1.15; }
+.water-valve-dimension { fill: none; stroke: #a75b0a; stroke-width: .75; pointer-events: none; }
+.water-valve-dimension text { fill: #844708; stroke: var(--paper); stroke-width: 3.5; paint-order: stroke; font: 700 7px/1 ui-monospace, monospace; text-anchor: middle; dominant-baseline: central; }
 .floor-plan .selected .wall-line, .floor-plan .selected.window-symbol, .floor-plan .selected.door-symbol, .floor-plan .selected.sliding-door-symbol { stroke: #c66e12; }
+.floor-plan .selected.water-valve-symbol .valve-enclosure, .floor-plan .selected.water-valve-symbol .valve-body, .floor-plan .selected.water-valve-symbol .valve-handle, .floor-plan .selected.water-valve-symbol .valve-leader { stroke: #c66e12; stroke-width: 1.5; }
+.floor-plan .selected.water-valve-symbol .valve-label { fill: #a75b0a; }
 .floor-plan .selected .space-fill { stroke: #c66e12; stroke-width: 1; }
 .floor-plan .selected .wire-run { stroke: #8c3f09; stroke-width: 2.2; }
 .floor-plan .selected.light-symbol, .floor-plan .selected.switch-symbol circle { stroke: #8c3f09; stroke-width: 2; }
@@ -219,7 +231,8 @@ button { cursor: pointer; }
   .plan-frame { height: 6.4in; min-height: 0; border: 1px solid #333; box-shadow: none; }
   .floor-plan { height: 100%; min-height: 0; }
   .wall-line { stroke: #000; }
-  .window-symbol, .door-symbol, .sliding-door-symbol, .wire-run, .light-symbol, .switch-symbol circle, .dimension-mark { stroke: #111; }
+  .window-symbol, .door-symbol, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .wire-run, .light-symbol, .switch-symbol circle, .dimension-mark { stroke: #111; }
+  .water-valve-symbol .valve-label { fill: #111; stroke: #fff; }
   .north-arrow { stroke: #111; }
   .north-arrow text { fill: #111; }
   .switch-symbol text, .dimension-mark text, .space-label, .space-area { fill: #111; }
@@ -232,6 +245,8 @@ button { cursor: pointer; }
   .framing-dimension text { fill: #111; stroke: #fff; }
   .opening-dimension, .opening-dimension text { stroke: #111; }
   .opening-dimension text { fill: #111; stroke: #fff; }
+  .water-valve-dimension, .water-valve-dimension text { stroke: #111; }
+  .water-valve-dimension text { fill: #111; stroke: #fff; }
   .print-framing-summary { display: block; grid-column: 1 / -1; }
   .print-framing-summary .framing-summary { display: grid; grid-template-columns: 1fr 2fr; gap: 4px 18px; color: #222; }
   .print-framing-summary .framing-total { margin: 0; padding: 0 0 0 8px; background: transparent; border-color: #555; }

@@ -5,6 +5,7 @@ import {
   space,
   stairs,
   wall,
+  waterValve,
   windowOpening,
 } from "./helpers.ts";
 import type { FloorPlan } from "./types.ts";
@@ -120,7 +121,7 @@ export const pocPlan = {
       id: "office-closet",
       label: "Closet",
       polygon: [[0, 529], [124, 529], [124, 571], [0, 571]],
-      labelAt: [62, 552],
+      labelAt: [62, 541],
       note: "Approximately 10 feet 4 inches wide by 3 feet 6 inches deep; verify dimensions on site.",
       status: "proposed",
       confidence: "approximate",
@@ -167,6 +168,42 @@ export const pocPlan = {
   ],
   switches: [
     // Wall devices will be added when the electrical layout is mapped.
+  ],
+  waterValves: [
+    waterValve({
+      id: "main-water-valve",
+      label: "Main Water Valve",
+      wallId: "office-west-jog-wall",
+      offset: 54,
+      referenceWallId: "office-south-wall",
+      valveType: "main-water",
+      enclosureWidth: 14,
+      enclosureBottomAboveFloor: 20,
+      enclosureHeight: 14,
+      enclosureStatus: "proposed",
+      labelDistance: 34,
+      dimensionSide: "right",
+      dimensionDistance: 48,
+      note: "Existing valve; approximate proposed recessed enclosure centered between studs. Verify all dimensions and enclosure requirements on site.",
+      ...existing,
+    }),
+    waterValve({
+      id: "sprinkler-water-valve",
+      label: "Sprinkler Water Valve",
+      wallId: "office-west-wall",
+      offset: 48,
+      referenceWallId: "office-bump-south-wall",
+      valveType: "sprinkler-water",
+      enclosureWidth: 14,
+      enclosureBottomAboveFloor: 20,
+      enclosureHeight: 24,
+      enclosureStatus: "proposed",
+      labelDistance: 18,
+      dimensionSide: "left",
+      dimensionDistance: 27,
+      note: "Existing sprinkler shutoff; approximate proposed recessed enclosure centered between studs. Verify all dimensions and enclosure requirements on site.",
+      ...existing,
+    }),
   ],
   stairs: [
     stairs({

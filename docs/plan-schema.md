@@ -114,6 +114,32 @@ The selected opening defaults to the wall's `interiorSide`. An inspector control
 
 When the opening's wall ends at a connected collinear wall segment, measurement derivation follows the continuous wall run. A junction on the opposite face does not prematurely stop the active face; the measurement continues until an opening, junction on that face, or the end of the connected run.
 
+## Water shutoffs
+
+Water valves are wall-mounted devices with an offset to the valve center. `referenceWallId` identifies the wall at the parent wall's `from` point used for the field measurement. The valve and its enclosure retain separate construction statuses.
+
+```ts
+waterValve({
+  id: "main-water-valve",
+  label: "Main Water Valve",
+  wallId: "office-west-jog-wall",
+  offset: 54,
+  referenceWallId: "office-south-wall",
+  valveType: "main-water",
+  enclosureWidth: 14,
+  enclosureBottomAboveFloor: 20,
+  enclosureHeight: 14,
+  enclosureStatus: "proposed",
+  labelDistance: 34,
+  dimensionSide: "right",
+  dimensionDistance: 48,
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+The Water shutoffs layer draws the existing valve as a solid symbol and its proposed recessed enclosure as a dashed outline. The top-down box width is centered on the valve offset; it does not imply a measured enclosure depth. Selecting the valve temporarily dimensions its center from the reference-wall junction. The inspector reports the enclosure's bottom, height, and calculated top above the floor.
+
 ## Lighting and circuits
 
 Ceiling fixtures use absolute plan coordinates. Circuits reference stable fixture/device IDs and represent connectivity rather than an exact cable route.
@@ -206,4 +232,4 @@ Openings and wall junctions are counted but their extra king studs, trimmers, he
 
 ## Validation
 
-`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, missing circuit endpoints, zero-length walls, invalid stairs, and invalid framing assumptions. Run `npm test` before handing off a change.
+`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, water-valve enclosure bounds and reference junctions, missing circuit endpoints, zero-length walls, invalid stairs, and invalid framing assumptions. Run `npm test` before handing off a change.

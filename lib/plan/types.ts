@@ -78,6 +78,21 @@ export interface Switch extends PlanItemBase {
   heightAboveFloor?: number;
 }
 
+export interface WaterValve extends PlanItemBase {
+  kind: "water-valve";
+  wallId: string;
+  offset: number;
+  referenceWallId: string;
+  valveType: "main-water" | "sprinkler-water";
+  enclosureWidth: number;
+  enclosureBottomAboveFloor: number;
+  enclosureHeight: number;
+  enclosureStatus: ConstructionStatus;
+  labelDistance: number;
+  dimensionSide: WallSide;
+  dimensionDistance: number;
+}
+
 export interface Stairs extends PlanItemBase {
   kind: "stairs";
   from: Point;
@@ -116,6 +131,7 @@ export type SelectablePlanItem =
   | WindowOpening
   | Light
   | Switch
+  | WaterValve
   | Stairs
   | Circuit
   | Dimension;
@@ -136,6 +152,7 @@ export interface FloorPlan {
   windows: readonly WindowOpening[];
   lights: readonly Light[];
   switches: readonly Switch[];
+  waterValves: readonly WaterValve[];
   stairs: readonly Stairs[];
   circuits: readonly Circuit[];
   dimensions: readonly Dimension[];

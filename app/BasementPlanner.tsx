@@ -7,11 +7,11 @@ import { estimateFraming, wallsNeedingFraming } from "../lib/plan/framing";
 import { measureOpening } from "../lib/plan/opening-measurements";
 import { pocPlan } from "../lib/plan/poc-plan";
 import type { OpeningMeasurement } from "../lib/plan/opening-measurements";
-import type { Dimension, Point, SelectablePlanItem, Stairs, Wall, WallSide } from "../lib/plan/types";
+import type { Dimension, Point, SelectablePlanItem, Stairs, Wall, WallSide, WaterValve } from "../lib/plan/types";
 import { allPlanItems, validatePlan } from "../lib/plan/validate";
 
 const DEFAULT_VIEW = { x: -42, y: -42, width: 655, height: 665 };
-type ToggleKey = "lighting" | "framing" | "dimensions" | "grid";
+type ToggleKey = "lighting" | "water" | "framing" | "dimensions" | "grid";
 
 function getWall(wallId: string) {
   return pocPlan.walls.find((item) => item.id === wallId);
@@ -184,6 +184,53 @@ function StairMark({ item, selected, onSelect }: { item: Stairs; selected: boole
     );
 }
 
+function WaterValveMark({ item, selected, onSelect }: { item: WaterValve; selected: boolean; onSelect: () => void }) {
+  const wall = getWall(item.wallId)!;
+  const normal = unitNormal(wall.from, wall.to, wall.interiorSide);
+  const center = pointAlong(wall.from, wall.to, item.offset);
+  const boxStart = pointAlong(wall.from, wall.to, item.offset - item.enclosureWidth / 2);
+  const boxEnd = pointAlong(wall.from, wall.to, item.offset + item.enclosureWidth / 2);
+  const boxCorners = [
+    add(boxStart, normal, 1),
+    add(boxEnd, normal, 1),
+    add(boxEnd, normal, 9),
+    add(boxStart, normal, 9),
+  ];
+  const leaderEnd = add(center, normal, item.labelDistance - 5);
+  const labelAt = add(center, normal, item.labelDistance);
+  const shortLabel = item.valveType === "main-water" ? "Main Water" : "Sprinkler";
+  return (
+    <g data-selectable aria-label={item.label} className={`water-valve-symbol ${selected ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); onSelect(); }}>
+      <polygon className={`valve-enclosure ${item.enclosureStatus}`} points={boxCorners.map((point) => point.join(",")).join(" ")} />
+      <line className="valve-hit" x1={boxStart[0]} y1={boxStart[1]} x2={boxEnd[0]} y2={boxEnd[1]} />
+      <circle className="valve-body" cx={center[0]} cy={center[1]} r="4" />
+      <path className="valve-handle" d={`M ${center[0] - 3} ${center[1] - 3} L ${center[0] + 3} ${center[1] + 3} M ${center[0] + 3} ${center[1] - 3} L ${center[0] - 3} ${center[1] + 3}`} />
+      <line className="valve-leader" x1={center[0]} y1={center[1]} x2={leaderEnd[0]} y2={leaderEnd[1]} />
+      <text className="valve-label" x={labelAt[0]} y={labelAt[1]}>{shortLabel}</text>
+    </g>
+  );
+}
+
+function WaterValveDimensionMark({ item }: { item: WaterValve }) {
+  const wall = getWall(item.wallId)!;
+  const normal = unitNormal(wall.from, wall.to, item.dimensionSide);
+  const center = pointAlong(wall.from, wall.to, item.offset);
+  const start = add(wall.from, normal, item.dimensionDistance);
+  const end = add(center, normal, item.dimensionDistance);
+  const midpoint: Point = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
+  const labelAt = add(midpoint, normal, 3.2);
+  return (
+    <g className="water-valve-dimension" aria-label={`${item.label} center placement`}>
+      <line x1={wall.from[0]} y1={wall.from[1]} x2={start[0]} y2={start[1]} />
+      <line x1={center[0]} y1={center[1]} x2={end[0]} y2={end[1]} />
+      <line x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />
+      <line x1={start[0] - normal[0] * 2} y1={start[1] - normal[1] * 2} x2={start[0] + normal[0] * 2} y2={start[1] + normal[1] * 2} />
+      <line x1={end[0] - normal[0] * 2} y1={end[1] - normal[1] * 2} x2={end[0] + normal[0] * 2} y2={end[1] + normal[1] * 2} />
+      <text x={labelAt[0]} y={labelAt[1]}>≈ {formatInches(item.offset)} to center</text>
+    </g>
+  );
+}
+
 function Inspector({ item, openingMeasurement, onMeasurementSideChange }: {
   item?: SelectablePlanItem;
   openingMeasurement?: OpeningMeasurement;
@@ -205,6 +252,18 @@ function Inspector({ item, openingMeasurement, onMeasurementSideChange }: {
   if (item.kind === "wall") rows.push(["Length", formatInches(distance(item.from, item.to))], ["Thickness", `${item.thickness}″`], ["Framing", item.framingStatus]);
   if (item.kind === "light") rows.push(["Position", `x ${item.at[0]}″ · y ${item.at[1]}″`]);
   if (item.kind === "switch") rows.push(["Wall offset", formatInches(item.offset)]);
+  if (item.kind === "water-valve") {
+    const referenceWall = getWall(item.referenceWallId);
+    rows.push(
+      ["Valve", item.valveType === "main-water" ? "Main water" : "Sprinkler water"],
+      [`Center from ${referenceWall?.label ?? item.referenceWallId}`, `≈ ${formatInches(item.offset)}`],
+      ["Enclosure width", `≈ ${formatInches(item.enclosureWidth)}`],
+      ["Box bottom", `≈ ${formatInches(item.enclosureBottomAboveFloor)} above floor`],
+      ["Box height", `≈ ${formatInches(item.enclosureHeight)}`],
+      ["Box top", `≈ ${formatInches(item.enclosureBottomAboveFloor + item.enclosureHeight)} above floor`],
+      ["Enclosure", item.enclosureStatus],
+    );
+  }
   if (item.kind === "sliding-door") rows.push(["Operation", "Two-panel bypass"], ["Panels", String(item.panels)]);
   if (item.kind === "stairs") rows.push(["Run", formatInches(distance(item.from, item.to))], ["Risers", String(item.risers)], ["Direction", item.direction]);
   if (item.kind === "circuit") rows.push(["Connections", String(item.connections.length)]);
@@ -239,7 +298,7 @@ function LayerToggle({ label, detail, checked, onChange, color }: { label: strin
 }
 
 export function BasementPlanner() {
-  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ lighting: pocPlan.lights.length + pocPlan.switches.length > 0, framing: true, dimensions: true, grid: false });
+  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ lighting: pocPlan.lights.length + pocPlan.switches.length > 0, water: pocPlan.waterValves.length > 0, framing: true, dimensions: true, grid: false });
   const [selectedId, setSelectedId] = useState<string>();
   const [measurementSide, setMeasurementSide] = useState<WallSide>();
   const [view, setView] = useState(DEFAULT_VIEW);
@@ -301,8 +360,9 @@ export function BasementPlanner() {
         <div className="brand-block"><div className="brand-mark">BP</div><div><span className="eyebrow">Working plan</span><h1>{pocPlan.title}</h1></div></div>
         <p className="subtitle">{pocPlan.subtitle}</p>
         <section className="panel-section" aria-labelledby="layers-title">
-          <div className="section-heading"><h2 id="layers-title">Layers</h2><span>4 controls</span></div>
+          <div className="section-heading"><h2 id="layers-title">Layers</h2><span>5 controls</span></div>
           <LayerToggle label="Lighting + wiring" detail={pocPlan.lights.length + pocPlan.switches.length > 0 ? `${pocPlan.lights.length} lights · ${pocPlan.switches.length} switches` : "Not mapped yet"} checked={toggles.lighting} onChange={() => toggle("lighting")} color="amber" />
+          <LayerToggle label="Water shutoffs" detail={`${pocPlan.waterValves.length} valve locations`} checked={toggles.water} onChange={() => toggle("water")} color="blue" />
           <LayerToggle label="Framing status" detail={`${framingWalls.length} runs need framing`} checked={toggles.framing} onChange={() => toggle("framing")} color="amber" />
           <LayerToggle label="Dimensions" detail="Overall footprint" checked={toggles.dimensions} onChange={() => toggle("dimensions")} color="slate" />
           <LayerToggle label="12-inch grid" detail="Scale reference" checked={toggles.grid} onChange={() => toggle("grid")} color="blue" />
@@ -310,7 +370,7 @@ export function BasementPlanner() {
         {toggles.framing && <section className="panel-section"><FramingSummary /></section>}
         <section className="panel-section legend" aria-labelledby="legend-title">
           <div className="section-heading"><h2 id="legend-title">Legend</h2><span>Planning symbols</span></div>
-          <div><i className="legend-north">←</i> North</div><div><i className="legend-stairs">↑</i> Stairs up</div><div><i className="legend-window" /> Window</div><div><i className="legend-door" /> Door swing</div><div><i className="legend-sliding-door" /> Bypass doors</div><div><i className="legend-existing" /> Existing wall</div>{toggles.framing && <><div><i className="legend-framed" /> Already framed</div><div><i className="legend-needs-framing" /> Needs framing</div></>}
+          <div><i className="legend-north">←</i> North</div><div><i className="legend-stairs">↑</i> Stairs up</div><div><i className="legend-window" /> Window</div><div><i className="legend-door" /> Door swing</div><div><i className="legend-sliding-door" /> Bypass doors</div>{toggles.water && <div><i className="legend-water-valve">×</i> Water shutoff</div>}<div><i className="legend-existing" /> Existing wall</div>{toggles.framing && <><div><i className="legend-framed" /> Already framed</div><div><i className="legend-needs-framing" /> Needs framing</div></>}
         </section>
         <section className="panel-section inspector" aria-live="polite"><Inspector item={selected} openingMeasurement={selectedOpeningMeasurement} onMeasurementSideChange={setMeasurementSide} /></section>
         <div className="panel-footer"><button type="button" onClick={() => window.print()} className="print-button">Print current view</button><p>{pocPlan.warning}</p></div>
@@ -337,6 +397,7 @@ export function BasementPlanner() {
             {pocPlan.windows.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const normal = unitNormal(wall.from, wall.to, wall.interiorSide); return <g key={item.id} data-selectable className={`window-symbol ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line x1={add(start, normal, -2)[0]} y1={add(start, normal, -2)[1]} x2={add(end, normal, -2)[0]} y2={add(end, normal, -2)[1]} /><line x1={add(start, normal, 2)[0]} y1={add(start, normal, 2)[1]} x2={add(end, normal, 2)[0]} y2={add(end, normal, 2)[1]} /><line x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /></g>; })}
             {pocPlan.doors.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const hinge = item.hinge === "start" ? start : end; const closed = item.hinge === "start" ? end : start; let normal = unitNormal(wall.from, wall.to, wall.interiorSide); if (item.swing === "outward") normal = [-normal[0], -normal[1]]; const open = add(hinge, normal, item.width); const cross = (closed[0] - hinge[0]) * (open[1] - hinge[1]) - (closed[1] - hinge[1]) * (open[0] - hinge[0]); return <g key={item.id} data-selectable className={`door-symbol ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="door-hit" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /><line className="door-leaf" x1={hinge[0]} y1={hinge[1]} x2={open[0]} y2={open[1]} /><path className="door-swing" d={`M ${closed[0]} ${closed[1]} A ${item.width} ${item.width} 0 0 ${cross > 0 ? 1 : 0} ${open[0]} ${open[1]}`} /></g>; })}
             {pocPlan.slidingDoors.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const midpoint = pointAlong(wall.from, wall.to, item.offset + item.width / 2); const normal = unitNormal(wall.from, wall.to, wall.interiorSide); const overlap = 4; const firstEnd = pointAlong(wall.from, wall.to, item.offset + item.width / 2 + overlap); const secondStart = pointAlong(wall.from, wall.to, item.offset + item.width / 2 - overlap); return <g key={item.id} data-selectable aria-label={item.label} className={`sliding-door-symbol ${item.status} ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="sliding-door-hit" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /><line className="sliding-door-panel" x1={add(start, normal, 2)[0]} y1={add(start, normal, 2)[1]} x2={add(firstEnd, normal, 2)[0]} y2={add(firstEnd, normal, 2)[1]} /><line className="sliding-door-panel" x1={add(secondStart, normal, -2)[0]} y1={add(secondStart, normal, -2)[1]} x2={add(end, normal, -2)[0]} y2={add(end, normal, -2)[1]} /><line className="sliding-door-center" x1={add(midpoint, normal, -4)[0]} y1={add(midpoint, normal, -4)[1]} x2={add(midpoint, normal, 4)[0]} y2={add(midpoint, normal, 4)[1]} /></g>; })}
+            {toggles.water && <g className="water-layer">{pocPlan.waterValves.map((item) => <WaterValveMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}</g>}
             {pocPlan.stairs.map((item) => <StairMark key={item.id} item={item} selected={item.id === selectedId} onSelect={() => selectItem(item.id)} />)}
             {toggles.lighting && <g className="lighting-layer">
               {pocPlan.circuits.map((item) => <g key={item.id} data-selectable className={selectedId === item.id ? "selected" : ""} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}>{item.connections.map((connection) => { const points = [getEndpoint(connection.fromId)!, ...(connection.waypoints ?? []), getEndpoint(connection.toId)!]; return <polyline key={`${connection.fromId}-${connection.toId}`} className="wire-run" points={points.map((point) => point.join(",")).join(" ")} />; })}</g>)}
@@ -346,10 +407,11 @@ export function BasementPlanner() {
             {toggles.framing && framingWalls.map((wall) => <FramingDimensionMark key={`framing-${wall.id}`} wall={wall} onSelect={() => selectItem(wall.id)} />)}
             {toggles.dimensions && pocPlan.dimensions.map((item) => <DimensionMark key={item.id} item={item} onSelect={() => selectItem(item.id)} />)}
             {selectedOpeningMeasurement && <OpeningMeasurementMarks measurement={selectedOpeningMeasurement} />}
+            {toggles.water && selected?.kind === "water-valve" && <WaterValveDimensionMark item={selected} />}
           </svg>
           <div className="plan-hint print-hide">Drag to pan · Scroll to zoom · Select any symbol</div>
         </div>
-        <footer className="drawing-footer"><div><strong>{pocPlan.title}</strong><span>{pocPlan.subtitle}</span></div><div className="print-legend"><span>← North</span><span>↑ Stairs up</span><span>═ Window</span><span>◜ Door swing</span><span>⇆ Bypass doors</span>{toggles.framing && <><span>━ Framed</span><span>┅ Needs framing</span></>}</div>{toggles.framing && <div className="print-framing-summary"><FramingSummary compact /></div>}<p>{pocPlan.warning}</p></footer>
+        <footer className="drawing-footer"><div><strong>{pocPlan.title}</strong><span>{pocPlan.subtitle}</span></div><div className="print-legend"><span>← North</span><span>↑ Stairs up</span><span>═ Window</span><span>◜ Door swing</span><span>⇆ Bypass doors</span>{toggles.water && <span>⊗ Water shutoff</span>}{toggles.framing && <><span>━ Framed</span><span>┅ Needs framing</span></>}</div>{toggles.framing && <div className="print-framing-summary"><FramingSummary compact /></div>}<p>{pocPlan.warning}</p></footer>
         {issues.length > 0 && <div className="validation-error" role="alert">Plan data has {issues.length} validation issue{issues.length === 1 ? "" : "s"}.</div>}
       </section>
     </main>

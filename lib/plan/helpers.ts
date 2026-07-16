@@ -9,6 +9,7 @@ import type {
   Stairs,
   Switch,
   Wall,
+  WaterValve,
   WindowOpening,
 } from "./types.ts";
 
@@ -26,6 +27,9 @@ export const wallSwitch = (value: Omit<Switch, "kind">): Switch => ({
   kind: "switch",
   ...value,
 });
+export const waterValve = (
+  value: Omit<WaterValve, "kind">,
+): WaterValve => ({ kind: "water-valve", ...value });
 export const stairs = (value: Omit<Stairs, "kind">): Stairs => ({
   kind: "stairs",
   ...value,

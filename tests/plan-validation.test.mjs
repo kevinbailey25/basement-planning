@@ -41,3 +41,26 @@ test("reports invalid framing assumptions", () => {
   const malformed = { ...pocPlan, framing: { ...pocPlan.framing, studSpacing: 0 } };
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-framing-plan"));
 });
+
+test("stores both Office water shutoffs with their measured enclosure data", () => {
+  const main = pocPlan.waterValves.find((valve) => valve.id === "main-water-valve");
+  const sprinkler = pocPlan.waterValves.find((valve) => valve.id === "sprinkler-water-valve");
+  assert.ok(main);
+  assert.ok(sprinkler);
+  assert.deepEqual(
+    [main.wallId, main.offset, main.referenceWallId, main.enclosureWidth, main.enclosureBottomAboveFloor, main.enclosureHeight],
+    ["office-west-jog-wall", 54, "office-south-wall", 14, 20, 14],
+  );
+  assert.deepEqual(
+    [sprinkler.wallId, sprinkler.offset, sprinkler.referenceWallId, sprinkler.enclosureWidth, sprinkler.enclosureBottomAboveFloor, sprinkler.enclosureHeight],
+    ["office-west-wall", 48, "office-bump-south-wall", 14, 20, 24],
+  );
+});
+
+test("reports water-valve enclosures outside their parent wall", () => {
+  const malformed = {
+    ...pocPlan,
+    waterValves: [{ ...pocPlan.waterValves[0], enclosureWidth: 200 }],
+  };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-water-valve"));
+});
