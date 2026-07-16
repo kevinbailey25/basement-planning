@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Basement Planning POC",
-  description: "An interactive, layered SVG floor-plan viewer for basement planning.",
+  title: "Existing Basement Layout",
+  description: "An approximate, interactive SVG trace of the existing basement floor plan.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
 };
 

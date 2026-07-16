@@ -18,6 +18,7 @@ The current artifact is a proof of concept. Implement only requested plan object
 
 - Canonical unit: inches. Decimals are allowed.
 - Origin: upper-left. Positive `x` points right; positive `y` points down, matching SVG.
+- Compass orientation is plan metadata, not inferred from SVG axes. In the current basement plan, north points left, so screen-right is south, screen-up is east, and screen-down is west.
 - Geometry is nominal planning data. Set confidence to `exact`, `approximate`, or `unknown`; never imply unmeasured precision.
 - Every object has a stable, descriptive, unique ID. Preserve IDs when moving or resizing an existing object.
 - Walls are arbitrary independent segments. Do not introduce rectangle-room helpers.
@@ -25,6 +26,7 @@ The current artifact is a proof of concept. Implement only requested plan object
 - Doors and windows reference a wall by `wallId`, `offset`, and `width`; do not position them independently.
 - Wall-mounted devices reference a wall and offset. Store vertical placement in `heightAboveFloor` when useful.
 - Circuits model semantic connections. Add explicit waypoints only when cable routing is intentional.
+- Stairs use a centerline run (`from` to `to`), total width, riser count, and up/down direction. Do not draw individual treads directly in JSX.
 - Construction status (`existing`, `proposed`, `remove`) is independent from system layer visibility.
 
 ## Change workflow

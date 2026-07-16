@@ -58,6 +58,15 @@ export interface Switch extends PlanItemBase {
   heightAboveFloor?: number;
 }
 
+export interface Stairs extends PlanItemBase {
+  kind: "stairs";
+  from: Point;
+  to: Point;
+  width: number;
+  risers: number;
+  direction: "up" | "down";
+}
+
 export interface CircuitConnection {
   fromId: string;
   toId: string;
@@ -86,6 +95,7 @@ export type SelectablePlanItem =
   | WindowOpening
   | Light
   | Switch
+  | Stairs
   | Circuit
   | Dimension;
 
@@ -95,6 +105,7 @@ export interface FloorPlan {
   subtitle: string;
   units: "inches";
   origin: "upper-left";
+  orientation: { north: "left" | "right" | "up" | "down" };
   warning: string;
   walls: readonly Wall[];
   spaces: readonly Space[];
@@ -102,6 +113,7 @@ export interface FloorPlan {
   windows: readonly WindowOpening[];
   lights: readonly Light[];
   switches: readonly Switch[];
+  stairs: readonly Stairs[];
   circuits: readonly Circuit[];
   dimensions: readonly Dimension[];
 }

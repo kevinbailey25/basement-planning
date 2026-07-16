@@ -11,8 +11,16 @@ test("POC plan has valid references and unique IDs", () => {
 test("reports duplicate IDs and missing circuit endpoints", () => {
   const malformed = {
     ...pocPlan,
-    lights: [...pocPlan.lights, { ...pocPlan.lights[0] }],
-    circuits: [{ ...pocPlan.circuits[0], connections: [{ fromId: "entry-switch", toId: "missing-light" }] }],
+    walls: [...pocPlan.walls, { ...pocPlan.walls[0] }],
+    circuits: [{
+      id: "bad-circuit",
+      kind: "circuit",
+      label: "Bad circuit",
+      layer: "lighting",
+      connections: [{ fromId: "missing-switch", toId: "missing-light" }],
+      status: "proposed",
+      confidence: "approximate",
+    }],
   };
   const codes = validatePlan(malformed).map((issue) => issue.code);
   assert.ok(codes.includes("duplicate-id"));
@@ -20,6 +28,11 @@ test("reports duplicate IDs and missing circuit endpoints", () => {
 });
 
 test("reports openings that extend beyond their wall", () => {
-  const malformed = { ...pocPlan, windows: [{ ...pocPlan.windows[0], offset: 130 }] };
+  const malformed = { ...pocPlan, windows: [{ ...pocPlan.windows[0], offset: 430 }] };
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "opening-out-of-bounds"));
+});
+
+test("reports stair geometry without a usable run", () => {
+  const malformed = { ...pocPlan, stairs: [{ ...pocPlan.stairs[0], to: pocPlan.stairs[0].from }] };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-stairs"));
 });

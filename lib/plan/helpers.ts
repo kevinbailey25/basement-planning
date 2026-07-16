@@ -5,6 +5,7 @@ import type {
   Light,
   Point,
   Space,
+  Stairs,
   Switch,
   Wall,
   WindowOpening,
@@ -19,6 +20,10 @@ export const windowOpening = (
 export const light = (value: Omit<Light, "kind">): Light => ({ kind: "light", ...value });
 export const wallSwitch = (value: Omit<Switch, "kind">): Switch => ({
   kind: "switch",
+  ...value,
+});
+export const stairs = (value: Omit<Stairs, "kind">): Stairs => ({
+  kind: "stairs",
   ...value,
 });
 export const circuit = (value: Omit<Circuit, "kind">): Circuit => ({

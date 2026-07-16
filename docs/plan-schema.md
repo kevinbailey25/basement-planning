@@ -4,7 +4,16 @@ Plan files are typed TypeScript. Import small constructors from `lib/plan/helper
 
 ## Coordinates and metadata
 
-Coordinates are `[x, y]` inches from the plan’s upper-left origin. Every item requires:
+Coordinates are `[x, y]` inches from the plan’s upper-left origin. Screen direction and compass direction are independent. Store the relationship on the plan:
+
+```ts
+{
+  origin: "upper-left",
+  orientation: { north: "left" },
+}
+```
+
+For the current basement, positive `x` points south and positive `y` points west. Every item requires:
 
 ```ts
 {
@@ -106,6 +115,26 @@ circuit({
 
 Omit `waypoints` for a direct conceptual run. Add them only when the route itself is meaningful.
 
+## Stairs
+
+Stairs use a centerline from the bottom of the run toward the top when `direction` is `up`. The renderer derives the outline, riser lines, and direction arrow.
+
+```ts
+stairs({
+  id: "main-stair-run",
+  label: "Main stair run",
+  from: [207, 282],
+  to: [348, 282],
+  width: 38,
+  risers: 14,
+  direction: "up",
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+Keep the run and riser count approximate when they were inferred from a sketch. Verify them on site before using the plan for construction decisions.
+
 ## Dimensions
 
 Dimensions are explicit annotations. Overall dimensions are displayed by default; detail dimensions require the fixture-spacing control.
@@ -125,4 +154,4 @@ dimension({
 
 ## Validation
 
-`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, missing circuit endpoints, and zero-length walls. Run `npm test` before handing off a change.
+`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, missing circuit endpoints, zero-length walls, and invalid stairs. Run `npm test` before handing off a change.

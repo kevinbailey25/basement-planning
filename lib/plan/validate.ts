@@ -2,7 +2,7 @@ import { distance } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs";
   itemId: string;
   message: string;
 }
@@ -15,6 +15,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.windows,
     ...plan.lights,
     ...plan.switches,
+    ...plan.stairs,
     ...plan.circuits,
     ...plan.dimensions,
   ];
@@ -32,6 +33,11 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
   const walls = new Map(plan.walls.map((item) => [item.id, item]));
   for (const item of plan.walls) {
     if (distance(item.from, item.to) === 0) issues.push({ code: "zero-length-wall", itemId: item.id, message: `Wall “${item.id}” has no length.` });
+  }
+  for (const item of plan.stairs) {
+    if (distance(item.from, item.to) === 0 || item.width <= 0 || item.risers < 2) {
+      issues.push({ code: "invalid-stairs", itemId: item.id, message: `Stairs “${item.id}” require a run, positive width, and at least two risers.` });
+    }
   }
   for (const item of [...plan.doors, ...plan.windows]) {
     const parent = walls.get(item.wallId);
