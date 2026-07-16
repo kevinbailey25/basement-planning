@@ -36,10 +36,19 @@ wall({
   to: [144, 0],
   thickness: 6,
   interiorSide: "right",
+  framingStatus: "needs-framing",
   status: "proposed",
   confidence: "approximate",
 })
 ```
+
+`status` describes the physical construction object; `framingStatus` separately describes whether wall framing is already present:
+
+```ts
+framingStatus: "framed" | "needs-framing" | "unknown"
+```
+
+Split a wall when one portion is framed and another portion still needs framing. Preserve the existing ID on the segment that still represents the original named run, then give the new segment a stable descriptive ID. Move wall-relative openings to the appropriate segment and update their offsets from that segment's `from` point.
 
 Spaces are optional polygons for labels, fills, and area estimates. They do not own or generate walls.
 
@@ -137,7 +146,7 @@ Keep the run and riser count approximate when they were inferred from a sketch. 
 
 ## Dimensions
 
-Dimensions are explicit annotations. Overall dimensions are displayed by default; detail dimensions require the fixture-spacing control.
+General dimensions are explicit annotations. The current plan uses these only for the overall footprint. The Framing status layer derives gross wall-run dimensions directly from every wall marked `needs-framing`; doors and windows do not shorten those framing dimensions.
 
 ```ts
 dimension({
@@ -152,6 +161,27 @@ dimension({
 })
 ```
 
+## Framing estimate
+
+The plan stores visible planning assumptions independently from wall geometry:
+
+```ts
+framing: {
+  defaultWallHeight: 96,
+  studSpacing: 16,
+  studSize: "2x4",
+  topPlateCount: 1,
+  bottomPlateCount: 1,
+  bottomPlateTreated: true,
+  wasteFactor: 0.1,
+  stockLength: 96,
+}
+```
+
+`estimateFraming` in `lib/plan/framing.ts` totals only walls marked `needs-framing`. It reports gross linear footage, base studs at the configured on-center spacing, one standard top plate, one treated bottom plate, and 8-foot stock equivalents. Purchase quantities add the configured planning waste allowance and round up.
+
+Openings and wall junctions are counted but their extra king studs, trimmers, headers, and backing are not automatically added. The viewer explicitly flags those framing details for on-site verification instead of inventing an assembly.
+
 ## Validation
 
-`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, missing circuit endpoints, zero-length walls, and invalid stairs. Run `npm test` before handing off a change.
+`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, missing circuit endpoints, zero-length walls, invalid stairs, and invalid framing assumptions. Run `npm test` before handing off a change.

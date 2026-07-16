@@ -2,7 +2,7 @@ import { distance } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-framing-plan";
   itemId: string;
   message: string;
 }
@@ -23,6 +23,14 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
 
 export function validatePlan(plan: FloorPlan): PlanIssue[] {
   const issues: PlanIssue[] = [];
+  if (
+    plan.framing.defaultWallHeight <= 0
+    || plan.framing.studSpacing <= 0
+    || plan.framing.stockLength <= 0
+    || plan.framing.wasteFactor < 0
+  ) {
+    issues.push({ code: "invalid-framing-plan", itemId: plan.id, message: "Framing assumptions require positive dimensions and a non-negative waste factor." });
+  }
   const allItems = allPlanItems(plan);
   const counts = new Map<string, number>();
   for (const item of allItems) counts.set(item.id, (counts.get(item.id) ?? 0) + 1);

@@ -15,6 +15,8 @@ const existing = {
 
 const exteriorWall = 8;
 const interiorWall = 5;
+const framed = { framingStatus: "framed" as const };
+const needsFraming = { framingStatus: "needs-framing" as const };
 
 export const pocPlan = {
   id: "existing-basement",
@@ -24,26 +26,39 @@ export const pocPlan = {
   origin: "upper-left",
   orientation: { north: "left" },
   warning: "Planning diagram — verify all measurements and code requirements on site.",
+  framing: {
+    defaultWallHeight: 96,
+    studSpacing: 16,
+    studSize: "2x4",
+    topPlateCount: 1,
+    bottomPlateCount: 1,
+    bottomPlateTreated: true,
+    wasteFactor: 0.1,
+    stockLength: 96,
+  },
   walls: [
-    wall({ id: "north-exterior-wall", label: "North exterior wall", from: [0, 571], to: [0, 0], thickness: exteriorWall, interiorSide: "right", ...existing }),
-    wall({ id: "east-wall-north-cap", label: "East wall north cap", from: [0, 0], to: [125, 0], thickness: exteriorWall, interiorSide: "right", ...existing }),
-    wall({ id: "northeast-jog-wall", label: "Northeast jog wall", from: [125, 0], to: [125, 26], thickness: exteriorWall, interiorSide: "right", ...existing }),
-    wall({ id: "east-exterior-wall", label: "East exterior wall", from: [125, 26], to: [556, 26], thickness: exteriorWall, interiorSide: "right", ...existing }),
-    wall({ id: "south-exterior-wall", label: "South exterior wall", from: [556, 26], to: [556, 267], thickness: exteriorWall, interiorSide: "right", ...existing }),
-    wall({ id: "storage-west-wall", label: "Storage west wall", from: [556, 267], to: [375, 267], thickness: exteriorWall, interiorSide: "right", ...existing }),
-    wall({ id: "stair-jog-wall", label: "Stair jog wall", from: [375, 267], to: [375, 303], thickness: exteriorWall, interiorSide: "right", ...existing }),
-    wall({ id: "stair-west-wall", label: "Stair west wall", from: [375, 303], to: [196, 303], thickness: exteriorWall, interiorSide: "right", ...existing }),
-    wall({ id: "office-south-wall", label: "Office south wall", from: [196, 303], to: [196, 529], thickness: exteriorWall, interiorSide: "right", ...existing }),
-    wall({ id: "office-west-jog-wall", label: "Office west jog wall", from: [196, 529], to: [124, 529], thickness: exteriorWall, interiorSide: "right", ...existing }),
-    wall({ id: "office-bump-south-wall", label: "Office bump south wall", from: [124, 529], to: [124, 571], thickness: exteriorWall, interiorSide: "right", ...existing }),
-    wall({ id: "office-west-wall", label: "Office west wall", from: [124, 571], to: [0, 571], thickness: exteriorWall, interiorSide: "right", ...existing }),
+    wall({ id: "north-exterior-wall", label: "North exterior wall", from: [0, 571], to: [0, 0], thickness: exteriorWall, interiorSide: "right", ...existing, ...needsFraming }),
+    wall({ id: "east-wall-north-cap", label: "East wall north cap", from: [0, 0], to: [125, 0], thickness: exteriorWall, interiorSide: "right", ...existing, ...needsFraming }),
+    wall({ id: "northeast-jog-wall", label: "Northeast jog wall", from: [125, 0], to: [125, 26], thickness: exteriorWall, interiorSide: "right", ...existing, ...needsFraming }),
+    wall({ id: "east-exterior-wall", label: "East exterior wall", from: [125, 26], to: [556, 26], thickness: exteriorWall, interiorSide: "right", ...existing, ...needsFraming }),
+    wall({ id: "south-exterior-wall", label: "South exterior wall", from: [556, 26], to: [556, 267], thickness: exteriorWall, interiorSide: "right", ...existing, ...needsFraming }),
+    wall({ id: "storage-west-wall", label: "Storage west wall", from: [556, 267], to: [477, 267], thickness: exteriorWall, interiorSide: "right", ...existing, ...needsFraming }),
+    wall({ id: "furnace-room-south-wall", label: "Furnace room south wall", from: [477, 267], to: [375, 267], thickness: interiorWall, interiorSide: "right", ...existing, ...framed }),
+    wall({ id: "stair-jog-wall", label: "Finished stair jog wall", from: [375, 267], to: [375, 303], thickness: exteriorWall, interiorSide: "right", ...existing, ...framed }),
+    wall({ id: "stair-west-wall", label: "Finished stair wall", from: [375, 303], to: [196, 303], thickness: exteriorWall, interiorSide: "right", ...existing, ...framed }),
+    wall({ id: "finished-landing-office-jog-wall", label: "Finished landing wall beside Office", from: [196, 303], to: [196, 327], thickness: exteriorWall, interiorSide: "right", ...existing, ...framed }),
+    wall({ id: "office-south-wall", label: "Office south wall", from: [196, 327], to: [196, 529], thickness: exteriorWall, interiorSide: "right", ...existing, ...needsFraming }),
+    wall({ id: "office-west-jog-wall", label: "Office west jog wall", from: [196, 529], to: [124, 529], thickness: exteriorWall, interiorSide: "right", ...existing, ...needsFraming }),
+    wall({ id: "office-bump-south-wall", label: "Office bump south wall", from: [124, 529], to: [124, 571], thickness: exteriorWall, interiorSide: "right", ...existing, ...needsFraming }),
+    wall({ id: "office-west-wall", label: "Office west wall", from: [124, 571], to: [0, 571], thickness: exteriorWall, interiorSide: "right", ...existing, ...needsFraming }),
 
-    wall({ id: "main-west-divider", label: "Main area west divider", from: [0, 267], to: [375, 267], thickness: interiorWall, interiorSide: "right", ...existing }),
-    wall({ id: "office-east-divider", label: "Office east divider", from: [0, 327], to: [196, 327], thickness: interiorWall, interiorSide: "right", ...existing }),
-    wall({ id: "bathroom-south-wall", label: "Bathroom south wall", from: [129, 267], to: [129, 327], thickness: interiorWall, interiorSide: "right", ...existing }),
-    wall({ id: "furnace-room-north-wall", label: "Furnace room north wall", from: [375, 267], to: [375, 222], thickness: interiorWall, interiorSide: "right", ...existing }),
-    wall({ id: "furnace-room-east-wall", label: "Furnace room east wall", from: [375, 222], to: [477, 222], thickness: interiorWall, interiorSide: "left", ...existing }),
-    wall({ id: "storage-north-wall", label: "Storage north wall", from: [477, 26], to: [477, 267], thickness: interiorWall, interiorSide: "right", ...existing }),
+    wall({ id: "main-west-divider", label: "Main area west divider", from: [0, 267], to: [375, 267], thickness: interiorWall, interiorSide: "right", ...existing, ...framed }),
+    wall({ id: "office-east-divider", label: "Finished bathroom and landing wall", from: [0, 327], to: [196, 327], thickness: interiorWall, interiorSide: "right", ...existing, ...framed }),
+    wall({ id: "bathroom-south-wall", label: "Finished bathroom and landing wall", from: [129, 267], to: [129, 327], thickness: interiorWall, interiorSide: "right", ...existing, ...framed }),
+    wall({ id: "furnace-room-north-wall", label: "Furnace room north wall", from: [375, 267], to: [375, 222], thickness: interiorWall, interiorSide: "right", ...existing, ...framed }),
+    wall({ id: "furnace-room-east-wall", label: "Furnace room east wall", from: [375, 222], to: [477, 222], thickness: interiorWall, interiorSide: "left", ...existing, ...framed }),
+    wall({ id: "storage-north-wall", label: "Storage north wall needing framing", from: [477, 26], to: [477, 222], thickness: interiorWall, interiorSide: "right", ...existing, ...needsFraming }),
+    wall({ id: "furnace-room-storage-wall", label: "Finished Furnace Room storage wall", from: [477, 222], to: [477, 267], thickness: interiorWall, interiorSide: "right", ...existing, ...framed }),
   ],
   spaces: [
     space({
@@ -134,11 +149,5 @@ export const pocPlan = {
   dimensions: [
     dimension({ id: "overall-north-south-span", label: "Overall north-south span", from: [0, 0], to: [556, 0], offset: 22, detail: "overall", text: "≈ 46′-4″", ...existing }),
     dimension({ id: "overall-east-west-span", label: "Overall east-west span", from: [556, 0], to: [556, 571], offset: 22, detail: "overall", text: "≈ 47′-7″", ...existing }),
-    dimension({ id: "main-area-depth", label: "Main area east-west depth", from: [0, 0], to: [0, 267], offset: -18, detail: "detail", text: "≈ 22′-3″", ...existing }),
-    dimension({ id: "bathroom-depth", label: "Bathroom east-west depth", from: [0, 267], to: [0, 327], offset: -18, detail: "detail", text: "≈ 5′-0″", ...existing }),
-    dimension({ id: "office-depth", label: "Office east-west depth", from: [0, 327], to: [0, 529], offset: -18, detail: "detail", text: "≈ 16′-10″", ...existing }),
-    dimension({ id: "stair-run-length", label: "Stair run length", from: [187, 303], to: [349, 303], offset: -13, detail: "detail", text: "≈ 13′-6″", ...existing }),
-    dimension({ id: "storage-width", label: "Storage north-south width", from: [477, 26], to: [556, 26], offset: 13, detail: "detail", text: "≈ 6′-7″", ...existing }),
-    dimension({ id: "furnace-room-width", label: "Furnace room north-south width", from: [375, 222], to: [477, 222], offset: 12, detail: "detail", text: "≈ 8′-6″", ...existing }),
   ],
 } satisfies FloorPlan;

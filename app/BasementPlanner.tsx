@@ -3,12 +3,13 @@
 import { useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
 import { add, distance, formatInches, pointAlong, unitNormal } from "../lib/plan/helpers";
+import { estimateFraming, wallsNeedingFraming } from "../lib/plan/framing";
 import { pocPlan } from "../lib/plan/poc-plan";
 import type { Dimension, Point, SelectablePlanItem, Stairs, Wall } from "../lib/plan/types";
 import { allPlanItems, validatePlan } from "../lib/plan/validate";
 
 const DEFAULT_VIEW = { x: -42, y: -42, width: 655, height: 665 };
-type ToggleKey = "lighting" | "dimensions" | "grid";
+type ToggleKey = "lighting" | "framing" | "dimensions" | "grid";
 
 function getWall(wallId: string) {
   return pocPlan.walls.find((item) => item.id === wallId);
@@ -47,7 +48,9 @@ function DimensionMark({ item, onSelect }: { item: Dimension; onSelect: () => vo
   const end = add(item.to, normal, item.offset);
   const midpoint: Point = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
   const labelAt = add(midpoint, normal, 3.2);
-  const angle = (Math.atan2(end[1] - start[1], end[0] - start[0]) * 180) / Math.PI;
+  let angle = (Math.atan2(end[1] - start[1], end[0] - start[0]) * 180) / Math.PI;
+  if (angle > 90) angle -= 180;
+  if (angle < -90) angle += 180;
   return (
     <g className="dimension-mark" data-selectable onClick={(event) => { event.stopPropagation(); onSelect(); }}>
       <line x1={item.from[0]} y1={item.from[1]} x2={start[0]} y2={start[1]} />
@@ -57,6 +60,48 @@ function DimensionMark({ item, onSelect }: { item: Dimension; onSelect: () => vo
       <line x1={end[0] - normal[0] * 2} y1={end[1] - normal[1] * 2} x2={end[0] + normal[0] * 2} y2={end[1] + normal[1] * 2} />
       <text x={labelAt[0]} y={labelAt[1]} transform={`rotate(${angle} ${labelAt[0]} ${labelAt[1]})`}>{item.text}</text>
     </g>
+  );
+}
+
+function FramingDimensionMark({ wall, onSelect }: { wall: Wall; onSelect: () => void }) {
+  const side = wall.interiorSide === "left" ? "right" : "left";
+  const normal = unitNormal(wall.from, wall.to, side);
+  const offset = 11;
+  const start = add(wall.from, normal, offset);
+  const end = add(wall.to, normal, offset);
+  const midpoint: Point = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
+  const labelAt = add(midpoint, normal, 2.8);
+  let angle = (Math.atan2(end[1] - start[1], end[0] - start[0]) * 180) / Math.PI;
+  if (angle > 90) angle -= 180;
+  if (angle < -90) angle += 180;
+  return (
+    <g className="framing-dimension" data-selectable onClick={(event) => { event.stopPropagation(); onSelect(); }}>
+      <line x1={wall.from[0]} y1={wall.from[1]} x2={start[0]} y2={start[1]} />
+      <line x1={wall.to[0]} y1={wall.to[1]} x2={end[0]} y2={end[1]} />
+      <line x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />
+      <line x1={start[0] - normal[0] * 2} y1={start[1] - normal[1] * 2} x2={start[0] + normal[0] * 2} y2={start[1] + normal[1] * 2} />
+      <line x1={end[0] - normal[0] * 2} y1={end[1] - normal[1] * 2} x2={end[0] + normal[0] * 2} y2={end[1] + normal[1] * 2} />
+      <text x={labelAt[0]} y={labelAt[1]} transform={`rotate(${angle} ${labelAt[0]} ${labelAt[1]})`}>≈ {formatInches(distance(wall.from, wall.to))}</text>
+    </g>
+  );
+}
+
+function FramingSummary({ compact = false }: { compact?: boolean }) {
+  const estimate = estimateFraming(pocPlan);
+  const wastePercent = Math.round(pocPlan.framing.wasteFactor * 100);
+  const linearFeet = estimate.wallLengthInches / 12;
+  return (
+    <div className={`framing-summary ${compact ? "compact" : ""}`}>
+      {!compact && <div className="section-heading"><h2>Framing estimate</h2><span>Rough purchase guide</span></div>}
+      <div className="framing-total"><strong>≈ {linearFeet.toFixed(1)} linear ft</strong><span>{estimate.wallCount} straight runs need framing</span></div>
+      <dl>
+        <div><dt>8-ft 2×4 studs</dt><dd>{estimate.baseStudCount} base · <strong>{estimate.purchaseStudCount} purchase</strong></dd></div>
+        <div><dt>8-ft top plate equivalents</dt><dd>{estimate.baseTopPlateBoards} base · <strong>{estimate.purchaseTopPlateBoards} purchase</strong></dd></div>
+        <div><dt>8-ft treated bottom plate equivalents</dt><dd>{estimate.baseBottomPlateBoards} base · <strong>{estimate.purchaseBottomPlateBoards} purchase</strong></dd></div>
+      </dl>
+      <p><strong>Purchase quantities include a {wastePercent}% planning waste allowance.</strong> Base studs assume {pocPlan.framing.studSpacing}″ on center and an ≈ {formatInches(pocPlan.framing.defaultWallHeight)} wall height.</p>
+      <p>{estimate.openingCount} openings and {estimate.junctionCount} wall junctions/end conditions need additional framing details that are not included above.</p>
+    </div>
   );
 }
 
@@ -99,7 +144,7 @@ function Inspector({ item }: { item?: SelectablePlanItem }) {
   const rows: Array<[string, string]> = [["ID", item.id], ["Type", item.kind], ["Status", item.status], ["Confidence", item.confidence]];
   if ("width" in item) rows.push(["Width", formatInches(item.width)]);
   if ("heightAboveFloor" in item && item.heightAboveFloor != null) rows.push(["Height above floor", formatInches(item.heightAboveFloor)]);
-  if (item.kind === "wall") rows.push(["Length", formatInches(distance(item.from, item.to))], ["Thickness", `${item.thickness}″`]);
+  if (item.kind === "wall") rows.push(["Length", formatInches(distance(item.from, item.to))], ["Thickness", `${item.thickness}″`], ["Framing", item.framingStatus]);
   if (item.kind === "light") rows.push(["Position", `x ${item.at[0]}″ · y ${item.at[1]}″`]);
   if (item.kind === "switch") rows.push(["Wall offset", formatInches(item.offset)]);
   if (item.kind === "stairs") rows.push(["Run", formatInches(distance(item.from, item.to))], ["Risers", String(item.risers)], ["Direction", item.direction]);
@@ -126,13 +171,13 @@ function LayerToggle({ label, detail, checked, onChange, color }: { label: strin
 }
 
 export function BasementPlanner() {
-  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ lighting: pocPlan.lights.length + pocPlan.switches.length > 0, dimensions: true, grid: false });
-  const [showDetails, setShowDetails] = useState(false);
+  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ lighting: pocPlan.lights.length + pocPlan.switches.length > 0, framing: true, dimensions: true, grid: false });
   const [selectedId, setSelectedId] = useState<string>();
   const [view, setView] = useState(DEFAULT_VIEW);
   const drag = useRef<{ x: number; y: number; viewX: number; viewY: number }>();
   const issues = useMemo(() => validatePlan(pocPlan), []);
   const items = useMemo(() => allPlanItems(pocPlan), []);
+  const framingWalls = useMemo(() => wallsNeedingFraming(pocPlan), []);
   const selected = items.find((item) => item.id === selectedId);
   const toggle = (key: ToggleKey) => setToggles((current) => ({ ...current, [key]: !current[key] }));
   const zoom = (factor: number) => setView((current) => {
@@ -170,15 +215,16 @@ export function BasementPlanner() {
         <div className="brand-block"><div className="brand-mark">BP</div><div><span className="eyebrow">Working plan</span><h1>{pocPlan.title}</h1></div></div>
         <p className="subtitle">{pocPlan.subtitle}</p>
         <section className="panel-section" aria-labelledby="layers-title">
-          <div className="section-heading"><h2 id="layers-title">Layers</h2><span>3 controls</span></div>
+          <div className="section-heading"><h2 id="layers-title">Layers</h2><span>4 controls</span></div>
           <LayerToggle label="Lighting + wiring" detail={pocPlan.lights.length + pocPlan.switches.length > 0 ? `${pocPlan.lights.length} lights · ${pocPlan.switches.length} switches` : "Not mapped yet"} checked={toggles.lighting} onChange={() => toggle("lighting")} color="amber" />
-          <LayerToggle label="Dimensions" detail={showDetails ? "Overall + detail" : "Overall only"} checked={toggles.dimensions} onChange={() => toggle("dimensions")} color="slate" />
-          {toggles.dimensions && <label className="sub-toggle"><input type="checkbox" checked={showDetails} onChange={(event) => setShowDetails(event.target.checked)} /> Show detail dimensions</label>}
+          <LayerToggle label="Framing status" detail={`${framingWalls.length} runs need framing`} checked={toggles.framing} onChange={() => toggle("framing")} color="amber" />
+          <LayerToggle label="Dimensions" detail="Overall footprint" checked={toggles.dimensions} onChange={() => toggle("dimensions")} color="slate" />
           <LayerToggle label="12-inch grid" detail="Scale reference" checked={toggles.grid} onChange={() => toggle("grid")} color="blue" />
         </section>
+        {toggles.framing && <section className="panel-section"><FramingSummary /></section>}
         <section className="panel-section legend" aria-labelledby="legend-title">
           <div className="section-heading"><h2 id="legend-title">Legend</h2><span>Planning symbols</span></div>
-          <div><i className="legend-north">←</i> North</div><div><i className="legend-stairs">↑</i> Stairs up</div><div><i className="legend-window" /> Window</div><div><i className="legend-door" /> Door swing</div><div><i className="legend-existing" /> Existing wall</div>
+          <div><i className="legend-north">←</i> North</div><div><i className="legend-stairs">↑</i> Stairs up</div><div><i className="legend-window" /> Window</div><div><i className="legend-door" /> Door swing</div><div><i className="legend-existing" /> Existing wall</div>{toggles.framing && <><div><i className="legend-framed" /> Already framed</div><div><i className="legend-needs-framing" /> Needs framing</div></>}
         </section>
         <section className="panel-section inspector" aria-live="polite"><Inspector item={selected} /></section>
         <div className="panel-footer"><button type="button" onClick={() => window.print()} className="print-button">Print current view</button><p>{pocPlan.warning}</p></div>
@@ -199,6 +245,9 @@ export function BasementPlanner() {
             </g>
             {pocPlan.spaces.map((item) => <g key={item.id} data-selectable onClick={(event) => { event.stopPropagation(); setSelectedId(item.id); }} className={selectedId === item.id ? "selected" : ""}><polygon className="space-fill" points={item.polygon.map((point) => point.join(",")).join(" ")} /><text className="space-label" x={item.labelAt[0]} y={item.labelAt[1] - 3}>{item.label}</text><text className="space-area" x={item.labelAt[0]} y={item.labelAt[1] + 7}>{item.confidence}</text></g>)}
             {pocPlan.walls.map((item) => <g key={item.id} data-selectable className={selectedId === item.id ? "selected" : ""} onClick={(event) => { event.stopPropagation(); setSelectedId(item.id); }}><line className="wall-hit" x1={item.from[0]} y1={item.from[1]} x2={item.to[0]} y2={item.to[1]} />{wallSegments(item).map(([from, to]) => { const start = pointAlong(item.from, item.to, from); const end = pointAlong(item.from, item.to, to); return <g key={`${from}-${to}`}><line className="wall-line" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />{item.status === "proposed" && <line className="proposed-line" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />}</g>; })}</g>)}
+            {toggles.framing && <g className="framing-layer">
+              {pocPlan.walls.map((item) => <g key={item.id} className={selectedId === item.id ? "selected" : ""}>{wallSegments(item).map(([from, to]) => { const start = pointAlong(item.from, item.to, from); const end = pointAlong(item.from, item.to, to); return <line key={`${from}-${to}`} className={`framing-line ${item.framingStatus}`} x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />; })}</g>)}
+            </g>}
             {pocPlan.windows.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const normal = unitNormal(wall.from, wall.to, wall.interiorSide); return <g key={item.id} data-selectable className={`window-symbol ${selectedId === item.id ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); setSelectedId(item.id); }}><line x1={add(start, normal, -2)[0]} y1={add(start, normal, -2)[1]} x2={add(end, normal, -2)[0]} y2={add(end, normal, -2)[1]} /><line x1={add(start, normal, 2)[0]} y1={add(start, normal, 2)[1]} x2={add(end, normal, 2)[0]} y2={add(end, normal, 2)[1]} /><line x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /></g>; })}
             {pocPlan.doors.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const hinge = item.hinge === "start" ? start : end; const closed = item.hinge === "start" ? end : start; let normal = unitNormal(wall.from, wall.to, wall.interiorSide); if (item.swing === "outward") normal = [-normal[0], -normal[1]]; const open = add(hinge, normal, item.width); const cross = (closed[0] - hinge[0]) * (open[1] - hinge[1]) - (closed[1] - hinge[1]) * (open[0] - hinge[0]); return <g key={item.id} data-selectable className={`door-symbol ${selectedId === item.id ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); setSelectedId(item.id); }}><line className="door-leaf" x1={hinge[0]} y1={hinge[1]} x2={open[0]} y2={open[1]} /><path className="door-swing" d={`M ${closed[0]} ${closed[1]} A ${item.width} ${item.width} 0 0 ${cross > 0 ? 1 : 0} ${open[0]} ${open[1]}`} /></g>; })}
             {pocPlan.stairs.map((item) => <StairMark key={item.id} item={item} selected={item.id === selectedId} onSelect={() => setSelectedId(item.id)} />)}
@@ -207,11 +256,12 @@ export function BasementPlanner() {
               {pocPlan.lights.map((item) => <g key={item.id} data-selectable className={`light-symbol ${selectedId === item.id ? "selected" : ""}`} transform={`translate(${item.at[0]} ${item.at[1]})`} onClick={(event) => { event.stopPropagation(); setSelectedId(item.id); }}><circle r="5.2" /><circle r="2.8" /><path d="M -3.7 -3.7 L 3.7 3.7 M 3.7 -3.7 L -3.7 3.7" /></g>)}
               {pocPlan.switches.map((item) => { const point = getWallPoint(item.wallId, item.offset); return <g key={item.id} data-selectable className={`switch-symbol ${selectedId === item.id ? "selected" : ""}`} transform={`translate(${point[0]} ${point[1]})`} onClick={(event) => { event.stopPropagation(); setSelectedId(item.id); }}><circle r="4.6" /><text y="1.7">S</text></g>; })}
             </g>}
-            {toggles.dimensions && pocPlan.dimensions.filter((item) => item.detail === "overall" || showDetails).map((item) => <DimensionMark key={item.id} item={item} onSelect={() => setSelectedId(item.id)} />)}
+            {toggles.framing && framingWalls.map((wall) => <FramingDimensionMark key={`framing-${wall.id}`} wall={wall} onSelect={() => setSelectedId(wall.id)} />)}
+            {toggles.dimensions && pocPlan.dimensions.map((item) => <DimensionMark key={item.id} item={item} onSelect={() => setSelectedId(item.id)} />)}
           </svg>
           <div className="plan-hint print-hide">Drag to pan · Scroll to zoom · Select any symbol</div>
         </div>
-        <footer className="drawing-footer"><div><strong>{pocPlan.title}</strong><span>{pocPlan.subtitle}</span></div><div className="print-legend"><span>← North</span><span>↑ Stairs up</span><span>═ Window</span><span>◜ Door swing</span></div><p>{pocPlan.warning}</p></footer>
+        <footer className="drawing-footer"><div><strong>{pocPlan.title}</strong><span>{pocPlan.subtitle}</span></div><div className="print-legend"><span>← North</span><span>↑ Stairs up</span><span>═ Window</span><span>◜ Door swing</span>{toggles.framing && <><span>━ Framed</span><span>┅ Needs framing</span></>}</div>{toggles.framing && <div className="print-framing-summary"><FramingSummary compact /></div>}<p>{pocPlan.warning}</p></footer>
         {issues.length > 0 && <div className="validation-error" role="alert">Plan data has {issues.length} validation issue{issues.length === 1 ? "" : "s"}.</div>}
       </section>
     </main>

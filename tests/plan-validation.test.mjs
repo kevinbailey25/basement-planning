@@ -36,3 +36,8 @@ test("reports stair geometry without a usable run", () => {
   const malformed = { ...pocPlan, stairs: [{ ...pocPlan.stairs[0], to: pocPlan.stairs[0].from }] };
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-stairs"));
 });
+
+test("reports invalid framing assumptions", () => {
+  const malformed = { ...pocPlan, framing: { ...pocPlan.framing, studSpacing: 0 } };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-framing-plan"));
+});

@@ -2,6 +2,7 @@ export type Point = readonly [x: number, y: number];
 
 export type MeasurementConfidence = "exact" | "approximate" | "unknown";
 export type ConstructionStatus = "existing" | "proposed" | "remove";
+export type FramingStatus = "framed" | "needs-framing" | "unknown";
 export type WallSide = "left" | "right";
 
 export interface PlanItemBase {
@@ -18,6 +19,18 @@ export interface Wall extends PlanItemBase {
   to: Point;
   thickness: number;
   interiorSide: WallSide;
+  framingStatus: FramingStatus;
+}
+
+export interface FramingPlan {
+  defaultWallHeight: number;
+  studSpacing: number;
+  studSize: "2x4";
+  topPlateCount: 1;
+  bottomPlateCount: 1;
+  bottomPlateTreated: true;
+  wasteFactor: number;
+  stockLength: number;
 }
 
 export interface Space extends PlanItemBase {
@@ -107,6 +120,7 @@ export interface FloorPlan {
   origin: "upper-left";
   orientation: { north: "left" | "right" | "up" | "down" };
   warning: string;
+  framing: FramingPlan;
   walls: readonly Wall[];
   spaces: readonly Space[];
   doors: readonly Door[];
