@@ -30,3 +30,9 @@ All dimensions and coordinates are inches. This is a planning aid—not a permit
 npm test
 npm run lint
 ```
+
+## GitHub Pages
+
+Pushes to `main` automatically build and deploy the static viewer through the
+`Deploy GitHub Pages` workflow. In the repository's **Settings → Pages** screen,
+set **Source** to **GitHub Actions** before the first deployment.
