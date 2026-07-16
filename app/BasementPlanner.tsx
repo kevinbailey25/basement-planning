@@ -204,9 +204,10 @@ export function BasementPlanner() {
     setSelectedId(undefined);
   };
   const onPointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (!drag.current) return;
+    const activeDrag = drag.current;
+    if (!activeDrag) return;
     const rect = event.currentTarget.getBoundingClientRect();
-    setView((current) => ({ ...current, x: drag.current!.viewX - ((event.clientX - drag.current!.x) / rect.width) * current.width, y: drag.current!.viewY - ((event.clientY - drag.current!.y) / rect.height) * current.height }));
+    setView((current) => ({ ...current, x: activeDrag.viewX - ((event.clientX - activeDrag.x) / rect.width) * current.width, y: activeDrag.viewY - ((event.clientY - activeDrag.y) / rect.height) * current.height }));
   };
 
   return (
