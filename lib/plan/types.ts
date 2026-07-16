@@ -100,6 +100,7 @@ export interface Stairs extends PlanItemBase {
   width: number;
   risers: number;
   direction: "up" | "down";
+  planBreakOffset?: number;
 }
 
 export interface CircuitConnection {

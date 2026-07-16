@@ -45,8 +45,9 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     if (distance(item.from, item.to) === 0) issues.push({ code: "zero-length-wall", itemId: item.id, message: `Wall “${item.id}” has no length.` });
   }
   for (const item of plan.stairs) {
-    if (distance(item.from, item.to) === 0 || item.width <= 0 || item.risers < 2) {
-      issues.push({ code: "invalid-stairs", itemId: item.id, message: `Stairs “${item.id}” require a run, positive width, and at least two risers.` });
+    const runLength = distance(item.from, item.to);
+    if (runLength === 0 || item.width <= 0 || item.risers < 2 || (item.planBreakOffset != null && (item.planBreakOffset <= 0 || item.planBreakOffset >= runLength))) {
+      issues.push({ code: "invalid-stairs", itemId: item.id, message: `Stairs “${item.id}” require a run, positive width, at least two risers, and any plan break strictly inside the run.` });
     }
   }
   for (const item of [...plan.doors, ...plan.slidingDoors, ...plan.windows]) {

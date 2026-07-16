@@ -8,6 +8,13 @@ test("POC plan has valid references and unique IDs", () => {
   assert.deepEqual(validatePlan(pocPlan), []);
 });
 
+test("office door hinges on its south end and swings inward", () => {
+  const officeDoor = pocPlan.doors.find((door) => door.id === "office-door");
+  assert.ok(officeDoor);
+  assert.equal(officeDoor.hinge, "end");
+  assert.equal(officeDoor.swing, "inward");
+});
+
 test("reports duplicate IDs and missing circuit endpoints", () => {
   const malformed = {
     ...pocPlan,
@@ -34,6 +41,11 @@ test("reports openings that extend beyond their wall", () => {
 
 test("reports stair geometry without a usable run", () => {
   const malformed = { ...pocPlan, stairs: [{ ...pocPlan.stairs[0], to: pocPlan.stairs[0].from }] };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-stairs"));
+});
+
+test("reports a stair plan break outside the run", () => {
+  const malformed = { ...pocPlan, stairs: [{ ...pocPlan.stairs[0], planBreakOffset: 999 }] };
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-stairs"));
 });
 

@@ -174,7 +174,7 @@ Omit `waypoints` for a direct conceptual run. Add them only when the route itsel
 
 ## Stairs
 
-Stairs use a centerline from the bottom of the run toward the top when `direction` is `up`. The renderer derives the outline, riser lines, and direction arrow.
+Stairs use a centerline from the bottom of the run toward the top when `direction` is `up`. The renderer derives the outline, riser lines, and direction arrow. Set `planBreakOffset` to an optional distance from `from` when the floor plan should stop the visible lower stair run at a conventional zigzag break; this can clarify that the remaining footprint is accessible beneath the upper stairs.
 
 ```ts
 stairs({
@@ -185,6 +185,7 @@ stairs({
   width: 38,
   risers: 14,
   direction: "up",
+  planBreakOffset: 70,
   status: "existing",
   confidence: "approximate",
 })

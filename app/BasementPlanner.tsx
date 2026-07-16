@@ -151,37 +151,51 @@ function FramingSummary({ compact = false }: { compact?: boolean }) {
 }
 
 function StairMark({ item, selected, onSelect }: { item: Stairs; selected: boolean; onSelect: () => void }) {
-    const normal = unitNormal(item.from, item.to, "right");
-    const halfWidth = item.width / 2;
-    const corners = [
-      add(item.from, normal, halfWidth),
-      add(item.to, normal, halfWidth),
-      add(item.to, normal, -halfWidth),
-      add(item.from, normal, -halfWidth),
-    ];
-    const arrowFrom = pointAlong(item.from, item.to, distance(item.from, item.to) * (item.direction === "up" ? 0.2 : 0.8));
-    const arrowTo = pointAlong(item.from, item.to, distance(item.from, item.to) * (item.direction === "up" ? 0.8 : 0.2));
-    const arrowDirection: Point = [
-      (arrowTo[0] - arrowFrom[0]) / distance(arrowFrom, arrowTo),
-      (arrowTo[1] - arrowFrom[1]) / distance(arrowFrom, arrowTo),
-    ];
-    const arrowNormal: Point = [-arrowDirection[1], arrowDirection[0]];
-    const arrowLeft = add(add(arrowTo, arrowDirection, -8), arrowNormal, 4);
-    const arrowRight = add(add(arrowTo, arrowDirection, -8), arrowNormal, -4);
-    return (
-      <g data-selectable className={`stair-symbol ${selected ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); onSelect(); }}>
-        <polygon points={corners.map((point) => point.join(",")).join(" ")} />
-        {Array.from({ length: item.risers + 1 }, (_, index) => {
-          const point = pointAlong(item.from, item.to, (distance(item.from, item.to) * index) / item.risers);
-          const a = add(point, normal, halfWidth);
-          const b = add(point, normal, -halfWidth);
-          return <line key={index} className="stair-riser" x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} />;
-        })}
-        <line className="stair-arrow" x1={arrowFrom[0]} y1={arrowFrom[1]} x2={arrowTo[0]} y2={arrowTo[1]} />
-        <path className="stair-arrow" d={`M ${arrowLeft[0]} ${arrowLeft[1]} L ${arrowTo[0]} ${arrowTo[1]} L ${arrowRight[0]} ${arrowRight[1]}`} />
-        <text x={(item.from[0] + item.to[0]) / 2} y={item.from[1] - halfWidth - 5}>{item.direction.toUpperCase()}</text>
-      </g>
-    );
+  const runLength = distance(item.from, item.to);
+  const visibleRunLength = item.planBreakOffset ?? runLength;
+  const renderedTo = pointAlong(item.from, item.to, visibleRunLength);
+  const runDirection: Point = [(item.to[0] - item.from[0]) / runLength, (item.to[1] - item.from[1]) / runLength];
+  const normal = unitNormal(item.from, item.to, "right");
+  const halfWidth = item.width / 2;
+  const sideAStart = add(item.from, normal, halfWidth);
+  const sideAEnd = add(renderedTo, normal, halfWidth);
+  const sideBEnd = add(renderedTo, normal, -halfWidth);
+  const sideBStart = add(item.from, normal, -halfWidth);
+  const corners = [sideAStart, sideAEnd, sideBEnd, sideBStart];
+  const arrowFrom = pointAlong(item.from, item.to, visibleRunLength * (item.direction === "up" ? 0.18 : 0.75));
+  const arrowTo = pointAlong(item.from, item.to, visibleRunLength * (item.direction === "up" ? 0.75 : 0.18));
+  const arrowDirection: Point = [
+    (arrowTo[0] - arrowFrom[0]) / distance(arrowFrom, arrowTo),
+    (arrowTo[1] - arrowFrom[1]) / distance(arrowFrom, arrowTo),
+  ];
+  const arrowNormal: Point = [-arrowDirection[1], arrowDirection[0]];
+  const arrowLeft = add(add(arrowTo, arrowDirection, -8), arrowNormal, 4);
+  const arrowRight = add(add(arrowTo, arrowDirection, -8), arrowNormal, -4);
+  const labelAt = add(pointAlong(item.from, item.to, visibleRunLength / 2), normal, -halfWidth - 5);
+  const breakPoints = item.planBreakOffset == null ? [] : [
+    sideAEnd,
+    add(add(renderedTo, normal, halfWidth / 3), runDirection, -4),
+    add(add(renderedTo, normal, -halfWidth / 3), runDirection, 4),
+    sideBEnd,
+  ];
+  return (
+    <g data-selectable aria-label={item.label} className={`stair-symbol ${selected ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); onSelect(); }}>
+      <polygon className={item.planBreakOffset == null ? "stair-footprint" : "stair-footprint stair-footprint-broken"} points={corners.map((point) => point.join(",")).join(" ")} />
+      {item.planBreakOffset != null && <path className="stair-outline" d={`M ${sideAEnd[0]} ${sideAEnd[1]} L ${sideAStart[0]} ${sideAStart[1]} L ${sideBStart[0]} ${sideBStart[1]} L ${sideBEnd[0]} ${sideBEnd[1]}`} />}
+      {Array.from({ length: item.risers + 1 }, (_, index) => {
+        const offset = (runLength * index) / item.risers;
+        if (offset > visibleRunLength + 0.001) return null;
+        const point = pointAlong(item.from, item.to, offset);
+        const a = add(point, normal, halfWidth);
+        const b = add(point, normal, -halfWidth);
+        return <line key={index} className="stair-riser" x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} />;
+      })}
+      <line className="stair-arrow" x1={arrowFrom[0]} y1={arrowFrom[1]} x2={arrowTo[0]} y2={arrowTo[1]} />
+      <path className="stair-arrow" d={`M ${arrowLeft[0]} ${arrowLeft[1]} L ${arrowTo[0]} ${arrowTo[1]} L ${arrowRight[0]} ${arrowRight[1]}`} />
+      {breakPoints.length > 0 && <><polyline className="stair-break-mask" points={breakPoints.map((point) => point.join(",")).join(" ")} /><polyline className="stair-break" points={breakPoints.map((point) => point.join(",")).join(" ")} /></>}
+      <text x={labelAt[0]} y={labelAt[1]}>{item.direction.toUpperCase()}</text>
+    </g>
+  );
 }
 
 function WaterValveMark({ item, selected, onSelect }: { item: WaterValve; selected: boolean; onSelect: () => void }) {
@@ -265,7 +279,10 @@ function Inspector({ item, openingMeasurement, onMeasurementSideChange }: {
     );
   }
   if (item.kind === "sliding-door") rows.push(["Operation", "Two-panel bypass"], ["Panels", String(item.panels)]);
-  if (item.kind === "stairs") rows.push(["Run", formatInches(distance(item.from, item.to))], ["Risers", String(item.risers)], ["Direction", item.direction]);
+  if (item.kind === "stairs") {
+    rows.push(["Run", formatInches(distance(item.from, item.to))], ["Risers", String(item.risers)], ["Direction", item.direction]);
+    if (item.planBreakOffset != null) rows.push(["Plan break", formatInches(item.planBreakOffset)]);
+  }
   if (item.kind === "circuit") rows.push(["Connections", String(item.connections.length)]);
   return (
     <div>
@@ -370,7 +387,7 @@ export function BasementPlanner() {
         {toggles.framing && <section className="panel-section"><FramingSummary /></section>}
         <section className="panel-section legend" aria-labelledby="legend-title">
           <div className="section-heading"><h2 id="legend-title">Legend</h2><span>Planning symbols</span></div>
-          <div><i className="legend-north">←</i> North</div><div><i className="legend-stairs">↑</i> Stairs up</div><div><i className="legend-window" /> Window</div><div><i className="legend-door" /> Door swing</div><div><i className="legend-sliding-door" /> Bypass doors</div>{toggles.water && <div><i className="legend-water-valve">×</i> Water shutoff</div>}<div><i className="legend-existing" /> Existing wall</div>{toggles.framing && <><div><i className="legend-framed" /> Already framed</div><div><i className="legend-needs-framing" /> Needs framing</div></>}
+          <div><i className="legend-north">←</i> North</div><div><i className="legend-stairs">↑</i> Stairs up</div><div><i className="legend-window" /> Window</div><div><i className="legend-door" /> Door swing</div><div><i className="legend-sliding-door" /> Bypass doors</div>{toggles.water && <div><i className="legend-water-valve">×</i> Water shutoff</div>}<div><i className="legend-existing" /> Existing wall</div><div><i className="legend-proposed" /> Proposed work</div>{toggles.framing && <><div><i className="legend-framed" /> Already framed</div><div><i className="legend-needs-framing" /> Needs framing</div></>}
         </section>
         <section className="panel-section inspector" aria-live="polite"><Inspector item={selected} openingMeasurement={selectedOpeningMeasurement} onMeasurementSideChange={setMeasurementSide} /></section>
         <div className="panel-footer"><button type="button" onClick={() => window.print()} className="print-button">Print current view</button><p>{pocPlan.warning}</p></div>
@@ -395,7 +412,7 @@ export function BasementPlanner() {
               {pocPlan.walls.map((item) => <g key={item.id} className={selectedId === item.id ? "selected" : ""}>{wallSegments(item).map(([from, to]) => { const start = pointAlong(item.from, item.to, from); const end = pointAlong(item.from, item.to, to); return <line key={`${from}-${to}`} className={`framing-line ${item.framingStatus}`} x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />; })}</g>)}
             </g>}
             {pocPlan.windows.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const normal = unitNormal(wall.from, wall.to, wall.interiorSide); return <g key={item.id} data-selectable className={`window-symbol ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line x1={add(start, normal, -2)[0]} y1={add(start, normal, -2)[1]} x2={add(end, normal, -2)[0]} y2={add(end, normal, -2)[1]} /><line x1={add(start, normal, 2)[0]} y1={add(start, normal, 2)[1]} x2={add(end, normal, 2)[0]} y2={add(end, normal, 2)[1]} /><line x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /></g>; })}
-            {pocPlan.doors.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const hinge = item.hinge === "start" ? start : end; const closed = item.hinge === "start" ? end : start; let normal = unitNormal(wall.from, wall.to, wall.interiorSide); if (item.swing === "outward") normal = [-normal[0], -normal[1]]; const open = add(hinge, normal, item.width); const cross = (closed[0] - hinge[0]) * (open[1] - hinge[1]) - (closed[1] - hinge[1]) * (open[0] - hinge[0]); return <g key={item.id} data-selectable className={`door-symbol ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="door-hit" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /><line className="door-leaf" x1={hinge[0]} y1={hinge[1]} x2={open[0]} y2={open[1]} /><path className="door-swing" d={`M ${closed[0]} ${closed[1]} A ${item.width} ${item.width} 0 0 ${cross > 0 ? 1 : 0} ${open[0]} ${open[1]}`} /></g>; })}
+            {pocPlan.doors.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const hinge = item.hinge === "start" ? start : end; const closed = item.hinge === "start" ? end : start; let normal = unitNormal(wall.from, wall.to, wall.interiorSide); if (item.swing === "outward") normal = [-normal[0], -normal[1]]; const open = add(hinge, normal, item.width); const cross = (closed[0] - hinge[0]) * (open[1] - hinge[1]) - (closed[1] - hinge[1]) * (open[0] - hinge[0]); return <g key={item.id} data-selectable className={`door-symbol ${item.status} ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="door-hit" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /><line className="door-leaf" x1={hinge[0]} y1={hinge[1]} x2={open[0]} y2={open[1]} /><path className="door-swing" d={`M ${closed[0]} ${closed[1]} A ${item.width} ${item.width} 0 0 ${cross > 0 ? 1 : 0} ${open[0]} ${open[1]}`} /></g>; })}
             {pocPlan.slidingDoors.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const midpoint = pointAlong(wall.from, wall.to, item.offset + item.width / 2); const normal = unitNormal(wall.from, wall.to, wall.interiorSide); const overlap = 4; const firstEnd = pointAlong(wall.from, wall.to, item.offset + item.width / 2 + overlap); const secondStart = pointAlong(wall.from, wall.to, item.offset + item.width / 2 - overlap); return <g key={item.id} data-selectable aria-label={item.label} className={`sliding-door-symbol ${item.status} ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="sliding-door-hit" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /><line className="sliding-door-panel" x1={add(start, normal, 2)[0]} y1={add(start, normal, 2)[1]} x2={add(firstEnd, normal, 2)[0]} y2={add(firstEnd, normal, 2)[1]} /><line className="sliding-door-panel" x1={add(secondStart, normal, -2)[0]} y1={add(secondStart, normal, -2)[1]} x2={add(end, normal, -2)[0]} y2={add(end, normal, -2)[1]} /><line className="sliding-door-center" x1={add(midpoint, normal, -4)[0]} y1={add(midpoint, normal, -4)[1]} x2={add(midpoint, normal, 4)[0]} y2={add(midpoint, normal, 4)[1]} /></g>; })}
             {toggles.water && <g className="water-layer">{pocPlan.waterValves.map((item) => <WaterValveMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}</g>}
             {pocPlan.stairs.map((item) => <StairMark key={item.id} item={item} selected={item.id === selectedId} onSelect={() => selectItem(item.id)} />)}
@@ -411,7 +428,7 @@ export function BasementPlanner() {
           </svg>
           <div className="plan-hint print-hide">Drag to pan · Scroll to zoom · Select any symbol</div>
         </div>
-        <footer className="drawing-footer"><div><strong>{pocPlan.title}</strong><span>{pocPlan.subtitle}</span></div><div className="print-legend"><span>← North</span><span>↑ Stairs up</span><span>═ Window</span><span>◜ Door swing</span><span>⇆ Bypass doors</span>{toggles.water && <span>⊗ Water shutoff</span>}{toggles.framing && <><span>━ Framed</span><span>┅ Needs framing</span></>}</div>{toggles.framing && <div className="print-framing-summary"><FramingSummary compact /></div>}<p>{pocPlan.warning}</p></footer>
+        <footer className="drawing-footer"><div><strong>{pocPlan.title}</strong><span>{pocPlan.subtitle}</span></div><div className="print-legend"><span>← North</span><span>↑ Stairs up</span><span>═ Window</span><span>◜ Door swing</span><span>⇆ Bypass doors</span>{toggles.water && <span>⊗ Water shutoff</span>}<span>┄ Proposed work</span>{toggles.framing && <><span>━ Framed</span><span>┅ Needs framing</span></>}</div>{toggles.framing && <div className="print-framing-summary"><FramingSummary compact /></div>}<p>{pocPlan.warning}</p></footer>
         {issues.length > 0 && <div className="validation-error" role="alert">Plan data has {issues.length} validation issue{issues.length === 1 ? "" : "s"}.</div>}
       </section>
     </main>
