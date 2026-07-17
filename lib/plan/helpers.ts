@@ -3,6 +3,8 @@ import type {
   Dimension,
   Door,
   Light,
+  HvacEquipment,
+  HorizontalHvacDuct,
   Joist,
   Point,
   SlidingDoor,
@@ -11,6 +13,7 @@ import type {
   Switch,
   Wall,
   WaterValve,
+  VerticalHvacDuct,
   WindowOpening,
 } from "./types.ts";
 
@@ -39,6 +42,15 @@ export const joist = (value: Omit<Joist, "kind">): Joist => ({
   kind: "joist",
   ...value,
 });
+export const hvacEquipment = (
+  value: Omit<HvacEquipment, "kind">,
+): HvacEquipment => ({ kind: "hvac-equipment", ...value });
+export const horizontalHvacDuct = (
+  value: Omit<HorizontalHvacDuct, "kind" | "orientation">,
+): HorizontalHvacDuct => ({ kind: "hvac-duct", orientation: "horizontal", ...value });
+export const verticalHvacDuct = (
+  value: Omit<VerticalHvacDuct, "kind" | "orientation">,
+): VerticalHvacDuct => ({ kind: "hvac-duct", orientation: "vertical", ...value });
 export const circuit = (value: Omit<Circuit, "kind">): Circuit => ({
   kind: "circuit",
   ...value,

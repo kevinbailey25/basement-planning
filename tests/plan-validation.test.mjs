@@ -76,3 +76,38 @@ test("reports water-valve enclosures outside their parent wall", () => {
   };
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-water-valve"));
 });
+
+test("stores the approximate furnace footprint from the field survey", () => {
+  const furnace = pocPlan.hvacEquipment.find((item) => item.id === "existing-furnace");
+  assert.ok(furnace);
+  assert.equal(furnace.equipmentType, "furnace");
+  assert.deepEqual([furnace.center, furnace.width, furnace.depth, furnace.rotation], [[408.5, 247], 18, 30, 0]);
+  assert.equal(furnace.status, "existing");
+  assert.equal(furnace.confidence, "approximate");
+});
+
+test("reports HVAC equipment without a usable footprint", () => {
+  const malformed = {
+    ...pocPlan,
+    hvacEquipment: [{ ...pocPlan.hvacEquipment[0], width: 0 }],
+  };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-hvac-equipment"));
+});
+
+test("stores the measured furnace return assembly", () => {
+  const riser = pocPlan.hvacDucts.find((item) => item.id === "furnace-return-vertical-trunk");
+  const trunk = pocPlan.hvacDucts.find((item) => item.id === "main-return-ceiling-trunk");
+  assert.ok(riser && riser.orientation === "vertical");
+  assert.ok(trunk && trunk.orientation === "horizontal");
+  assert.deepEqual([riser.center, riser.width, riser.depth, riser.bottomAboveFloor, riser.topAboveFloor], [[392.5, 250], 12, 24, 0, 91]);
+  assert.deepEqual([trunk.from, trunk.to, trunk.width, trunk.height, trunk.bottomAboveFloor], [[392.5, 250], [84.5, 250], 24, 10, 81]);
+  assert.equal(trunk.airflowRole, "return");
+});
+
+test("reports invalid HVAC ducts", () => {
+  const malformedDuct = {
+    ...pocPlan,
+    hvacDucts: [{ ...pocPlan.hvacDucts[0], topAboveFloor: 0 }],
+  };
+  assert.ok(validatePlan(malformedDuct).some((issue) => issue.code === "invalid-hvac-duct"));
+});

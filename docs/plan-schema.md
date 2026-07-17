@@ -172,6 +172,61 @@ circuit({
 
 Omit `waypoints` for a direct conceptual run. Add them only when the route itself is meaningful.
 
+## HVAC equipment
+
+HVAC equipment uses an absolute plan center, an outer plan footprint, and a clockwise SVG rotation in degrees. Use the outermost physical envelope so the footprint remains useful for clearance planning. Equipment height is optional when it has not yet been measured.
+
+```ts
+hvacEquipment({
+  id: "existing-furnace",
+  label: "Existing furnace",
+  equipmentType: "furnace",
+  center: [408.5, 247],
+  width: 18,
+  depth: 30,
+  rotation: 0,
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+Preserve field references in `note`, especially when a footprint is derived from wall clearances. HVAC footprints are planning constraints, not equipment specifications or mechanical-design documentation.
+
+Horizontal HVAC ducts use a plan centerline plus their measured outer width. Their vertical placement is stored as a duct height and underside height above the floor. Vertical ducts use a plan footprint and bottom/top elevations:
+
+```ts
+horizontalHvacDuct({
+  id: "main-return-ceiling-trunk",
+  label: "Main return ceiling trunk",
+  airflowRole: "return",
+  shape: "rectangular",
+  from: [392.5, 250],
+  to: [84.5, 250],
+  width: 24,
+  height: 10,
+  bottomAboveFloor: 81,
+  status: "existing",
+  confidence: "approximate",
+})
+
+verticalHvacDuct({
+  id: "furnace-return-vertical-trunk",
+  label: "Furnace return vertical trunk",
+  airflowRole: "return",
+  shape: "rectangular",
+  center: [392.5, 250],
+  width: 12,
+  depth: 24,
+  rotation: 0,
+  bottomAboveFloor: 0,
+  topAboveFloor: 91,
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+Split horizontal runs at bends, branches, size changes, meaningful elevation changes, and transitions between visible and concealed work. `airflowRole` is independent from construction `status`; use `unknown` rather than inferring supply or return from duct size.
+
 ## Stairs
 
 Stairs use a centerline from the bottom of the run toward the top when `direction` is `up`. The renderer derives the outline, riser lines, and direction arrow. Set `planBreakOffset` to an optional distance from `from` when the floor plan should stop the visible lower stair run at a conventional zigzag break; this can clarify that the remaining footprint is accessible beneath the upper stairs.

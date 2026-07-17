@@ -4,6 +4,7 @@ export type MeasurementConfidence = "exact" | "approximate" | "unknown";
 export type ConstructionStatus = "existing" | "proposed" | "remove";
 export type FramingStatus = "framed" | "needs-framing" | "unknown";
 export type WallSide = "left" | "right";
+export type AirflowRole = "supply" | "return" | "unknown";
 
 export interface PlanItemBase {
   id: string;
@@ -111,6 +112,43 @@ export interface Joist extends PlanItemBase {
   width: number;
 }
 
+export interface HvacEquipment extends PlanItemBase {
+  kind: "hvac-equipment";
+  equipmentType: "furnace";
+  center: Point;
+  width: number;
+  depth: number;
+  rotation: number;
+  height?: number;
+}
+
+export interface HorizontalHvacDuct extends PlanItemBase {
+  kind: "hvac-duct";
+  orientation: "horizontal";
+  airflowRole: AirflowRole;
+  shape: "rectangular";
+  from: Point;
+  to: Point;
+  width: number;
+  height: number;
+  bottomAboveFloor: number;
+}
+
+export interface VerticalHvacDuct extends PlanItemBase {
+  kind: "hvac-duct";
+  orientation: "vertical";
+  airflowRole: AirflowRole;
+  shape: "rectangular";
+  center: Point;
+  width: number;
+  depth: number;
+  rotation: number;
+  bottomAboveFloor: number;
+  topAboveFloor: number;
+}
+
+export type HvacDuct = HorizontalHvacDuct | VerticalHvacDuct;
+
 export interface CircuitConnection {
   fromId: string;
   toId: string;
@@ -143,6 +181,8 @@ export type SelectablePlanItem =
   | WaterValve
   | Stairs
   | Joist
+  | HvacEquipment
+  | HvacDuct
   | Circuit
   | Dimension;
 
@@ -165,6 +205,8 @@ export interface FloorPlan {
   waterValves: readonly WaterValve[];
   stairs: readonly Stairs[];
   joists: readonly Joist[];
+  hvacEquipment: readonly HvacEquipment[];
+  hvacDucts: readonly HvacDuct[];
   circuits: readonly Circuit[];
   dimensions: readonly Dimension[];
 }

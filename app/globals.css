@@ -87,6 +87,8 @@ button { cursor: pointer; }
 .legend-sliding-door::before { transform: translate(-2px, -2px); }
 .legend-sliding-door::after { transform: translate(2px, 2px); }
 .legend-water-valve { color: #8bc4d3; border: 1px dashed #5d98a8; font: 800 12px/1 ui-monospace, monospace; }
+.legend-hvac-equipment { color: #8bc4d3; border: 1px solid #5d98a8; font: 800 10px/1 ui-monospace, monospace; }
+.legend-return-duct { height: 11px !important; border: 1px solid #5d98a8; background: rgb(73 124 137 / 18%); }
 .legend-joist::before { content: ""; height: 19px; border-left: 3px solid #8fa49d; }
 .legend-existing::before { content: ""; width: 20px; border-top: 4px solid #b9c1bd; }
 .legend-framed::before { content: ""; width: 20px; border-top: 4px solid #75948a; }
@@ -150,6 +152,25 @@ button { cursor: pointer; }
 .joist-hit { stroke: transparent; stroke-width: 8; }
 .joist-board { stroke: currentColor; stroke-linecap: butt; opacity: .58; }
 .joist-symbol.selected .joist-board { stroke: #c66e12; opacity: 1; }
+.hvac-equipment-symbol { cursor: pointer; }
+.hvac-equipment-hit { fill: transparent; stroke: none; }
+.hvac-equipment-footprint { fill: rgb(73 124 137 / 16%); stroke: #39798a; stroke-width: 1.2; }
+.hvac-equipment-centerline { fill: none; stroke: #5d98a8; stroke-width: .45; stroke-dasharray: 2 1.5; }
+.hvac-equipment-label { fill: #2f6e7f; stroke: var(--paper); stroke-width: 1.5; paint-order: stroke; font: 700 3.8px/1 ui-monospace, monospace; text-anchor: middle; pointer-events: none; }
+.hvac-equipment-symbol.proposed .hvac-equipment-footprint { stroke: #b87518; stroke-dasharray: 3 2; }
+.hvac-equipment-symbol.selected .hvac-equipment-footprint, .hvac-equipment-symbol.selected .hvac-equipment-centerline { stroke: #c66e12; stroke-width: 1.8; }
+.hvac-equipment-symbol.selected .hvac-equipment-label { fill: #a75b0a; }
+.hvac-duct-symbol { cursor: pointer; }
+.hvac-duct-hit { fill: transparent; stroke: transparent; }
+.hvac-duct-footprint { fill: rgb(73 124 137 / 15%); stroke: #39798a; stroke-width: 1.1; stroke-linejoin: round; }
+.hvac-duct-centerline { fill: none; stroke: #5d98a8; stroke-width: .55; stroke-dasharray: 3 2; }
+.hvac-duct-label { fill: #2f6e7f; stroke: var(--paper); stroke-width: 2; paint-order: stroke; font: 700 4.2px/1 ui-monospace, monospace; text-anchor: middle; pointer-events: none; }
+.hvac-duct-symbol.supply .hvac-duct-footprint { fill: rgb(185 111 13 / 12%); stroke: #a86817; }
+.hvac-duct-symbol.supply .hvac-duct-centerline { stroke: #b87518; }
+.hvac-duct-symbol.supply .hvac-duct-label { fill: #8c5813; }
+.hvac-duct-symbol.proposed .hvac-duct-footprint { stroke: #b87518; stroke-dasharray: 5 3; }
+.hvac-duct-symbol.selected .hvac-duct-footprint, .hvac-duct-symbol.selected .hvac-duct-centerline { stroke: #c66e12; stroke-width: 1.8; }
+.hvac-duct-symbol.selected .hvac-duct-label { fill: #a75b0a; }
 .space-label-layer { pointer-events: none; }
 .framing-layer { pointer-events: none; }
 .framing-line { fill: none; stroke-linecap: butt; }
@@ -245,7 +266,10 @@ button { cursor: pointer; }
   .wall-line { stroke: #000; }
   .joist-board { stroke: #777; opacity: .7; }
   .joist-symbol.selected .joist-board { stroke: #111; }
-  .window-symbol, .door-symbol, .door-symbol.proposed, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .wire-run, .light-symbol, .switch-symbol circle, .dimension-mark { stroke: #111; }
+  .window-symbol, .door-symbol, .door-symbol.proposed, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-centerline, .wire-run, .light-symbol, .switch-symbol circle, .dimension-mark { stroke: #111; }
+  .hvac-equipment-footprint { fill: #eee; }
+  .hvac-duct-footprint { fill: #eee; }
+  .hvac-equipment-label, .hvac-duct-label { fill: #111; stroke: #fff; }
   .water-valve-symbol .valve-label { fill: #111; stroke: #fff; }
   .north-arrow { stroke: #111; }
   .north-arrow text { fill: #111; }

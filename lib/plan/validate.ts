@@ -2,7 +2,7 @@ import { distance } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-hvac-equipment" | "invalid-hvac-duct";
   itemId: string;
   message: string;
 }
@@ -19,6 +19,8 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.waterValves,
     ...plan.stairs,
     ...plan.joists,
+    ...plan.hvacEquipment,
+    ...plan.hvacDucts,
     ...plan.circuits,
     ...plan.dimensions,
   ];
@@ -54,6 +56,38 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
   for (const item of plan.joists) {
     if (distance(item.from, item.to) === 0 || item.width <= 0 || item.number < 1) {
       issues.push({ code: "invalid-joist", itemId: item.id, message: `Joist “${item.id}” requires a run, positive width, and positive sequence number.` });
+    }
+  }
+  for (const item of plan.hvacEquipment) {
+    if (
+      !Number.isFinite(item.center[0])
+      || !Number.isFinite(item.center[1])
+      || item.width <= 0
+      || item.depth <= 0
+      || !Number.isFinite(item.rotation)
+      || (item.height != null && item.height <= 0)
+    ) {
+      issues.push({ code: "invalid-hvac-equipment", itemId: item.id, message: `HVAC equipment “${item.id}” requires a finite position and rotation with positive footprint dimensions.` });
+    }
+  }
+  for (const item of plan.hvacDucts) {
+    const invalidHorizontal = item.orientation === "horizontal" && (
+      distance(item.from, item.to) === 0
+      || item.width <= 0
+      || item.height <= 0
+      || item.bottomAboveFloor < 0
+    );
+    const invalidVertical = item.orientation === "vertical" && (
+      !Number.isFinite(item.center[0])
+      || !Number.isFinite(item.center[1])
+      || item.width <= 0
+      || item.depth <= 0
+      || !Number.isFinite(item.rotation)
+      || item.bottomAboveFloor < 0
+      || item.topAboveFloor <= item.bottomAboveFloor
+    );
+    if (invalidHorizontal || invalidVertical) {
+      issues.push({ code: "invalid-hvac-duct", itemId: item.id, message: `HVAC duct “${item.id}” requires positive dimensions, valid elevations, and usable plan geometry.` });
     }
   }
   for (const item of [...plan.doors, ...plan.slidingDoors, ...plan.windows]) {
