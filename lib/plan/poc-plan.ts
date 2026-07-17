@@ -1,6 +1,7 @@
 import {
   dimension,
   door,
+  joist,
   slidingDoor,
   space,
   stairs,
@@ -19,6 +20,33 @@ const exteriorWall = 8;
 const interiorWall = 5;
 const framed = { framingStatus: "framed" as const };
 const needsFraming = { framingStatus: "needs-framing" as const };
+
+const joistWidth = 2.25;
+const joistClearGaps = [
+  9.5, 9.5, 9.5, 9.5, 7.5, 0, 10, 7.25, 0, 9.75,
+  9.5, 8, 15.25, 13.5, 13.75, 12.5, 14.25, 13.5, 13.5, 13.5,
+  13.5, 13.5, 13.5, 15, 0, 10.25, 7, 0, 17.5, 13,
+  13.5, 13.25, 14, 13.5, 13.5, 13.5, 13.5, 13.5, 13.5, 13.5,
+] as const;
+
+const joistNorthEdges = joistClearGaps.reduce<number[]>(
+  (edges, gap) => [...edges, edges.at(-1)! + joistWidth + gap],
+  [8 / 2 + 9.25],
+);
+
+const bathroomMainJoistNumbers = [1, 3, 5, 8, 11] as const;
+const officeClearGapsAfterJoistFive = [9.75, 9.5, 9.5, 10, 9.5, 4.75, 12, 16.5, 17] as const;
+const officeJoistNorthEdges = officeClearGapsAfterJoistFive.reduce<number[]>(
+  (edges, gap) => [...edges, edges.at(-1)! + joistWidth + gap],
+  [...joistNorthEdges.slice(0, 5)],
+);
+
+function joistRunAt(northEdge: number) {
+  const centerX = northEdge + joistWidth / 2;
+  const eastEnd = centerX < 125 ? 8 / 2 : 26 + 8 / 2;
+  const westEnd = 267 - (centerX < 477 ? 5 / 2 : 8 / 2);
+  return { centerX, eastEnd, westEnd };
+}
 
 export const pocPlan = {
   id: "existing-basement",
@@ -226,6 +254,61 @@ export const pocPlan = {
       planBreakOffset: 81,
       note: "Run, width, riser count, and midpoint plan break are approximate traces from the sketch.",
       ...existing,
+    }),
+  ],
+  joists: [
+    ...joistNorthEdges.map((northEdge, index) => {
+      const number = index + 1;
+      const { centerX, eastEnd, westEnd } = joistRunAt(northEdge);
+      const alignmentNote = number === 17
+        ? "Approximately aligns with the left edge of east-wall-window-north."
+        : number === 32
+          ? "Approximately aligns with the left edge of east-wall-window-south."
+          : undefined;
+      return joist({
+        id: `main-ceiling-joist-${String(number).padStart(2, "0")}`,
+        label: `Main ceiling joist ${number}`,
+        number,
+        from: [centerX, eastEnd],
+        to: [centerX, westEnd],
+        width: joistWidth,
+        note: number === 1
+          ? "North edge measured approximately 9.25 inches from the interior face of north-exterior-wall."
+          : alignmentNote,
+        ...existing,
+      });
+    }),
+    ...bathroomMainJoistNumbers.map((mainNumber) => {
+      const northEdge = joistNorthEdges[mainNumber - 1];
+      const centerX = northEdge + joistWidth / 2;
+      return joist({
+        id: `bathroom-ceiling-joist-${String(mainNumber).padStart(2, "0")}`,
+        label: `Bathroom ceiling joist at main ${mainNumber}`,
+        number: mainNumber,
+        from: [centerX, 267 + interiorWall / 2],
+        to: [centerX, 327 - interiorWall / 2],
+        width: joistWidth,
+        note: mainNumber === 1
+          ? "Aligned to main joists 1, 3, 5, 8, and 11. Main positions 2, 4, 6, 7, 9, 10, and 12 are absent in the Bathroom."
+          : mainNumber === 11
+            ? "Main positions 9 and 10 are absent at the cold-air intake; framing resumes here at main position 11."
+            : `Aligned with main ceiling joist ${mainNumber}.`,
+        ...existing,
+      });
+    }),
+    ...officeJoistNorthEdges.map((northEdge, index) => {
+      const number = index + 1;
+      const centerX = northEdge + joistWidth / 2;
+      return joist({
+        id: `office-ceiling-joist-${String(number).padStart(2, "0")}`,
+        label: `Office ceiling joist ${number}`,
+        number,
+        from: [centerX, 327 + interiorWall / 2],
+        to: [centerX, centerX < 124 ? 571 - exteriorWall / 2 : 529 - exteriorWall / 2],
+        width: joistWidth,
+        note: number <= 5 ? `Aligned with main ceiling joist ${number}.` : undefined,
+        ...existing,
+      });
     }),
   ],
   circuits: [

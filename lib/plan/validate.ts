@@ -2,7 +2,7 @@ import { distance } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-framing-plan" | "invalid-water-valve";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve";
   itemId: string;
   message: string;
 }
@@ -18,6 +18,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.switches,
     ...plan.waterValves,
     ...plan.stairs,
+    ...plan.joists,
     ...plan.circuits,
     ...plan.dimensions,
   ];
@@ -48,6 +49,11 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     const runLength = distance(item.from, item.to);
     if (runLength === 0 || item.width <= 0 || item.risers < 2 || (item.planBreakOffset != null && (item.planBreakOffset <= 0 || item.planBreakOffset >= runLength))) {
       issues.push({ code: "invalid-stairs", itemId: item.id, message: `Stairs “${item.id}” require a run, positive width, at least two risers, and any plan break strictly inside the run.` });
+    }
+  }
+  for (const item of plan.joists) {
+    if (distance(item.from, item.to) === 0 || item.width <= 0 || item.number < 1) {
+      issues.push({ code: "invalid-joist", itemId: item.id, message: `Joist “${item.id}” requires a run, positive width, and positive sequence number.` });
     }
   }
   for (const item of [...plan.doors, ...plan.slidingDoors, ...plan.windows]) {

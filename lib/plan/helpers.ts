@@ -3,6 +3,7 @@ import type {
   Dimension,
   Door,
   Light,
+  Joist,
   Point,
   SlidingDoor,
   Space,
@@ -32,6 +33,10 @@ export const waterValve = (
 ): WaterValve => ({ kind: "water-valve", ...value });
 export const stairs = (value: Omit<Stairs, "kind">): Stairs => ({
   kind: "stairs",
+  ...value,
+});
+export const joist = (value: Omit<Joist, "kind">): Joist => ({
+  kind: "joist",
   ...value,
 });
 export const circuit = (value: Omit<Circuit, "kind">): Circuit => ({

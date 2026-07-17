@@ -87,6 +87,7 @@ button { cursor: pointer; }
 .legend-sliding-door::before { transform: translate(-2px, -2px); }
 .legend-sliding-door::after { transform: translate(2px, 2px); }
 .legend-water-valve { color: #8bc4d3; border: 1px dashed #5d98a8; font: 800 12px/1 ui-monospace, monospace; }
+.legend-joist::before { content: ""; height: 19px; border-left: 3px solid #8fa49d; }
 .legend-existing::before { content: ""; width: 20px; border-top: 4px solid #b9c1bd; }
 .legend-framed::before { content: ""; width: 20px; border-top: 4px solid #75948a; }
 .legend-needs-framing::before { content: ""; width: 20px; border-top: 3px dashed var(--amber-bright); }
@@ -144,6 +145,12 @@ button { cursor: pointer; }
 .space-area { fill: #8a948f; font: 5.5px/1 ui-monospace, monospace; text-anchor: middle; pointer-events: none; }
 .wall-hit { stroke: transparent; stroke-width: 14; cursor: pointer; }
 .wall-line { stroke: #222b29; stroke-width: 6; stroke-linecap: butt; }
+.joist-layer { color: #8fa49d; }
+.joist-symbol { cursor: pointer; }
+.joist-hit { stroke: transparent; stroke-width: 8; }
+.joist-board { stroke: currentColor; stroke-linecap: butt; opacity: .58; }
+.joist-symbol.selected .joist-board { stroke: #c66e12; opacity: 1; }
+.space-label-layer { pointer-events: none; }
 .framing-layer { pointer-events: none; }
 .framing-line { fill: none; stroke-linecap: butt; }
 .framing-line.framed { stroke: #668b80; stroke-width: 2.4; }
@@ -236,6 +243,8 @@ button { cursor: pointer; }
   .plan-frame { height: 6.4in; min-height: 0; border: 1px solid #333; box-shadow: none; }
   .floor-plan { height: 100%; min-height: 0; }
   .wall-line { stroke: #000; }
+  .joist-board { stroke: #777; opacity: .7; }
+  .joist-symbol.selected .joist-board { stroke: #111; }
   .window-symbol, .door-symbol, .door-symbol.proposed, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .wire-run, .light-symbol, .switch-symbol circle, .dimension-mark { stroke: #111; }
   .water-valve-symbol .valve-label { fill: #111; stroke: #fff; }
   .north-arrow { stroke: #111; }

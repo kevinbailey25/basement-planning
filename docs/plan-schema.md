@@ -193,6 +193,25 @@ stairs({
 
 Keep the run and riser count approximate when they were inferred from a sketch. Verify them on site before using the plan for construction decisions.
 
+## Ceiling joists
+
+Ceiling joists use a centerline run and measured board width. Keep each joist independent so irregular clear gaps and doubled joists remain visible. Compass direction comes from plan metadata; in the current plan, an east-west joist appears vertical on screen.
+
+```ts
+joist({
+  id: "main-ceiling-joist-01",
+  label: "Main ceiling joist 1",
+  number: 1,
+  from: [14.375, 4],
+  to: [14.375, 264.5],
+  width: 2.25,
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+Record field spacing as clear edge-to-edge gaps. Convert the measured north edge to a centerline by adding half the joist width. Prefix IDs by measured area when separate joist runs have different spacing. The `main-` set stops at the nominal east face of the load-bearing `main-west-divider` and its collinear continuation. The `bathroom-` set contains only aligned main positions 1, 3, 5, 8, and 11; positions 9 and 10 are absent at the cold-air intake. The `office-` set numbers its own 14 joists, with the first five aligned to the corresponding main joists. Office joists within the closet footprint continue through the closet to `office-west-wall`; joists beyond the closet jog stop at `office-west-jog-wall`. Verify bearing, intake framing, and concealed conditions on site.
+
 ## Dimensions
 
 General dimensions are explicit annotations. The current plan uses these only for the overall footprint. The Framing status layer derives gross wall-run dimensions directly from every wall marked `needs-framing`; doors, sliding doors, and windows do not shorten those framing dimensions.

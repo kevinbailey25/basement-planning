@@ -103,6 +103,14 @@ export interface Stairs extends PlanItemBase {
   planBreakOffset?: number;
 }
 
+export interface Joist extends PlanItemBase {
+  kind: "joist";
+  number: number;
+  from: Point;
+  to: Point;
+  width: number;
+}
+
 export interface CircuitConnection {
   fromId: string;
   toId: string;
@@ -134,6 +142,7 @@ export type SelectablePlanItem =
   | Switch
   | WaterValve
   | Stairs
+  | Joist
   | Circuit
   | Dimension;
 
@@ -155,6 +164,7 @@ export interface FloorPlan {
   switches: readonly Switch[];
   waterValves: readonly WaterValve[];
   stairs: readonly Stairs[];
+  joists: readonly Joist[];
   circuits: readonly Circuit[];
   dimensions: readonly Dimension[];
 }
