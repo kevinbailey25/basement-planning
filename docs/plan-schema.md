@@ -227,6 +227,45 @@ verticalHvacDuct({
 
 Split horizontal runs at bends, branches, size changes, meaningful elevation changes, and transitions between visible and concealed work. `airflowRole` is independent from construction `status`; use `unknown` rather than inferring supply or return from duct size.
 
+A constant-size horizontal duct may include intentional waypoints. Set `bendStyle: "round"` when a measured elbow has a curved outside corner:
+
+```ts
+horizontalHvacDuct({
+  id: "main-supply-ceiling-trunk-24",
+  label: "Main supply ceiling trunk — 24 inch",
+  airflowRole: "supply",
+  shape: "rectangular",
+  from: [412.25, 219.5],
+  waypoints: [[412.25, 207.5]],
+  to: [161.5, 207.5],
+  bendStyle: "round",
+  width: 24,
+  height: 8,
+  bottomAboveFloor: 83,
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+Asymmetric expansions and reductions use a measured four-point footprint so one fixed edge and one angled edge remain explicit:
+
+```ts
+hvacDuctTransition({
+  id: "main-supply-reduction-24-to-20",
+  label: "Main supply reduction — 24 to 20 inch",
+  airflowRole: "supply",
+  shape: "rectangular",
+  polygon: [[161.5, 219.5], [161.5, 195.5], [150, 199.5], [150, 219.5]],
+  fromWidth: 24,
+  toWidth: 20,
+  height: 8,
+  bottomAboveFloor: 83,
+  fixedEdge: "west",
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
 ## Stairs
 
 Stairs use a centerline from the bottom of the run toward the top when `direction` is `up`. The renderer derives the outline, riser lines, and direction arrow. Set `planBreakOffset` to an optional distance from `from` when the floor plan should stop the visible lower stair run at a conventional zigzag break; this can clarify that the remaining footprint is accessible beneath the upper stairs.

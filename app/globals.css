@@ -73,9 +73,6 @@ button { cursor: pointer; }
 .legend .section-heading { grid-column: 1 / -1; margin-bottom: 1px; }
 .legend > div:not(.section-heading) { display: flex; align-items: center; gap: 8px; }
 .legend i { width: 19px; height: 19px; display: inline-grid; place-items: center; flex: 0 0 auto; font-style: normal; }
-.legend-light { border: 1px solid var(--amber-bright); border-radius: 50%; box-shadow: inset 0 0 0 4px var(--panel), inset 0 0 0 5px var(--amber-bright); }
-.legend-switch { border: 1px solid var(--amber-bright); border-radius: 50%; color: var(--amber-bright); font: 700 9px/1 ui-monospace, monospace; }
-.legend-wire::before { content: ""; width: 20px; border-top: 1px dashed var(--amber-bright); }
 .legend-proposed::before { content: ""; width: 20px; border-top: 3px solid #aab6b2; }
 .legend-proposed::after { content: ""; width: 20px; margin-left: -20px; border-top: 1px dashed var(--amber-bright); }
 .legend-north { color: #c7cfcc; font-weight: 800; }
@@ -89,6 +86,7 @@ button { cursor: pointer; }
 .legend-water-valve { color: #8bc4d3; border: 1px dashed #5d98a8; font: 800 12px/1 ui-monospace, monospace; }
 .legend-hvac-equipment { color: #8bc4d3; border: 1px solid #5d98a8; font: 800 10px/1 ui-monospace, monospace; }
 .legend-return-duct { height: 11px !important; border: 1px solid #5d98a8; background: rgb(73 124 137 / 18%); }
+.legend-supply-duct { height: 11px !important; border: 1px solid #a86817; background: rgb(185 111 13 / 15%); }
 .legend-joist::before { content: ""; height: 19px; border-left: 3px solid #8fa49d; }
 .legend-existing::before { content: ""; width: 20px; border-top: 4px solid #b9c1bd; }
 .legend-framed::before { content: ""; width: 20px; border-top: 4px solid #75948a; }
@@ -160,17 +158,28 @@ button { cursor: pointer; }
 .hvac-equipment-symbol.proposed .hvac-equipment-footprint { stroke: #b87518; stroke-dasharray: 3 2; }
 .hvac-equipment-symbol.selected .hvac-equipment-footprint, .hvac-equipment-symbol.selected .hvac-equipment-centerline { stroke: #c66e12; stroke-width: 1.8; }
 .hvac-equipment-symbol.selected .hvac-equipment-label { fill: #a75b0a; }
-.hvac-duct-symbol { cursor: pointer; }
+.hvac-duct-symbol, .hvac-transition-symbol { cursor: pointer; }
 .hvac-duct-hit { fill: transparent; stroke: transparent; }
 .hvac-duct-footprint { fill: rgb(73 124 137 / 15%); stroke: #39798a; stroke-width: 1.1; stroke-linejoin: round; }
+.hvac-duct-band-outline { fill: none; stroke: #39798a; stroke-linecap: butt; }
+.hvac-duct-band { fill: none; stroke: color-mix(in srgb, #497c89 15%, var(--paper)); stroke-linecap: butt; }
 .hvac-duct-centerline { fill: none; stroke: #5d98a8; stroke-width: .55; stroke-dasharray: 3 2; }
 .hvac-duct-label { fill: #2f6e7f; stroke: var(--paper); stroke-width: 2; paint-order: stroke; font: 700 4.2px/1 ui-monospace, monospace; text-anchor: middle; pointer-events: none; }
 .hvac-duct-symbol.supply .hvac-duct-footprint { fill: rgb(185 111 13 / 12%); stroke: #a86817; }
+.hvac-duct-symbol.supply .hvac-duct-band-outline { stroke: #a86817; }
+.hvac-duct-symbol.supply .hvac-duct-band { stroke: color-mix(in srgb, #b96f0d 12%, var(--paper)); }
 .hvac-duct-symbol.supply .hvac-duct-centerline { stroke: #b87518; }
 .hvac-duct-symbol.supply .hvac-duct-label { fill: #8c5813; }
 .hvac-duct-symbol.proposed .hvac-duct-footprint { stroke: #b87518; stroke-dasharray: 5 3; }
 .hvac-duct-symbol.selected .hvac-duct-footprint, .hvac-duct-symbol.selected .hvac-duct-centerline { stroke: #c66e12; stroke-width: 1.8; }
+.hvac-duct-symbol.selected .hvac-duct-band-outline { stroke: #c66e12; }
 .hvac-duct-symbol.selected .hvac-duct-label { fill: #a75b0a; }
+.hvac-transition-hit { fill: transparent; stroke: transparent; stroke-width: 8; }
+.hvac-transition-footprint { fill: rgb(73 124 137 / 15%); stroke: #39798a; stroke-width: 1.1; stroke-linejoin: round; }
+.hvac-transition-symbol.supply .hvac-transition-footprint { fill: rgb(185 111 13 / 12%); stroke: #a86817; }
+.hvac-transition-symbol.proposed .hvac-transition-footprint { stroke-dasharray: 5 3; }
+.hvac-transition-symbol.selected .hvac-transition-footprint { stroke: #c66e12; stroke-width: 1.8; }
+.hvac-transition-symbol.selected .hvac-duct-label { fill: #a75b0a; }
 .space-label-layer { pointer-events: none; }
 .framing-layer { pointer-events: none; }
 .framing-line { fill: none; stroke-linecap: butt; }
@@ -194,12 +203,6 @@ button { cursor: pointer; }
 .door-hit { stroke: transparent; stroke-width: 14; }
 .door-leaf { stroke-width: 1.3; }
 .door-swing { stroke-width: .7; stroke-dasharray: 2 1.5; }
-.wire-run { fill: none; stroke: #d48b23; stroke-width: 1.25; stroke-dasharray: 4 2.5; stroke-linecap: round; stroke-linejoin: round; cursor: pointer; }
-.light-symbol { fill: var(--paper); stroke: #b96f0d; stroke-width: 1; cursor: pointer; }
-.light-symbol path { fill: none; stroke-width: .65; }
-.switch-symbol { cursor: pointer; }
-.switch-symbol circle { fill: var(--paper); stroke: #b96f0d; stroke-width: 1; }
-.switch-symbol text { fill: #9b5d0c; font: 700 4.2px/1 ui-monospace, monospace; text-anchor: middle; }
 .stair-symbol { fill: rgb(109 156 165 / 8%); stroke: #52635f; stroke-width: 1.1; cursor: pointer; }
 .stair-symbol .stair-footprint-broken { stroke: none; }
 .stair-symbol .stair-outline { fill: none; }
@@ -223,8 +226,6 @@ button { cursor: pointer; }
 .floor-plan .selected.water-valve-symbol .valve-enclosure, .floor-plan .selected.water-valve-symbol .valve-body, .floor-plan .selected.water-valve-symbol .valve-handle, .floor-plan .selected.water-valve-symbol .valve-leader { stroke: #c66e12; stroke-width: 1.5; }
 .floor-plan .selected.water-valve-symbol .valve-label { fill: #a75b0a; }
 .floor-plan .selected .space-fill { stroke: #c66e12; stroke-width: 1; }
-.floor-plan .selected .wire-run { stroke: #8c3f09; stroke-width: 2.2; }
-.floor-plan .selected.light-symbol, .floor-plan .selected.switch-symbol circle { stroke: #8c3f09; stroke-width: 2; }
 .floor-plan .selected.dimension-mark { stroke: #c66e12; stroke-width: 1; }
 .plan-hint { position: absolute; left: 14px; bottom: 12px; padding: 7px 10px; color: #66716d; background: rgb(246 243 235 / 88%); border: 1px solid #d8d7cf; font-size: 9px; letter-spacing: .03em; }
 .drawing-footer { min-height: 55px; padding-top: 11px; display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 4px 18px; color: #4f5b57; font-size: 9px; }
@@ -266,14 +267,16 @@ button { cursor: pointer; }
   .wall-line { stroke: #000; }
   .joist-board { stroke: #777; opacity: .7; }
   .joist-symbol.selected .joist-board { stroke: #111; }
-  .window-symbol, .door-symbol, .door-symbol.proposed, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-centerline, .wire-run, .light-symbol, .switch-symbol circle, .dimension-mark { stroke: #111; }
+  .window-symbol, .door-symbol, .door-symbol.proposed, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .dimension-mark { stroke: #111; }
   .hvac-equipment-footprint { fill: #eee; }
   .hvac-duct-footprint { fill: #eee; }
+  .hvac-duct-band, .hvac-duct-symbol.supply .hvac-duct-band { stroke: #eee; }
+  .hvac-transition-footprint { fill: #eee; }
   .hvac-equipment-label, .hvac-duct-label { fill: #111; stroke: #fff; }
   .water-valve-symbol .valve-label { fill: #111; stroke: #fff; }
   .north-arrow { stroke: #111; }
   .north-arrow text { fill: #111; }
-  .switch-symbol text, .dimension-mark text, .space-label, .space-area { fill: #111; }
+  .dimension-mark text, .space-label, .space-area { fill: #111; }
   .drawing-footer { min-height: 0; padding-top: 8px; grid-template-columns: 1fr auto; }
   .print-legend { display: flex; gap: 14px; }
   .print-legend span { color: #222; }

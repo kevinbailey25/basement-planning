@@ -2,7 +2,7 @@ import { distance } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-hvac-equipment" | "invalid-hvac-duct";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-transition";
   itemId: string;
   message: string;
 }
@@ -21,6 +21,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.joists,
     ...plan.hvacEquipment,
     ...plan.hvacDucts,
+    ...plan.hvacDuctTransitions,
     ...plan.circuits,
     ...plan.dimensions,
   ];
@@ -71,12 +72,14 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     }
   }
   for (const item of plan.hvacDucts) {
-    const invalidHorizontal = item.orientation === "horizontal" && (
-      distance(item.from, item.to) === 0
+    const invalidHorizontal = item.orientation === "horizontal" && (() => {
+      const points = [item.from, ...(item.waypoints ?? []), item.to];
+      const hasZeroSegment = points.slice(1).some((point, index) => distance(points[index], point) === 0);
+      return hasZeroSegment
       || item.width <= 0
       || item.height <= 0
-      || item.bottomAboveFloor < 0
-    );
+      || item.bottomAboveFloor < 0;
+    })();
     const invalidVertical = item.orientation === "vertical" && (
       !Number.isFinite(item.center[0])
       || !Number.isFinite(item.center[1])
@@ -88,6 +91,15 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     );
     if (invalidHorizontal || invalidVertical) {
       issues.push({ code: "invalid-hvac-duct", itemId: item.id, message: `HVAC duct “${item.id}” requires positive dimensions, valid elevations, and usable plan geometry.` });
+    }
+  }
+  for (const item of plan.hvacDuctTransitions) {
+    const twiceArea = Math.abs(item.polygon.reduce((sum, point, index) => {
+      const next = item.polygon[(index + 1) % item.polygon.length];
+      return sum + point[0] * next[1] - next[0] * point[1];
+    }, 0));
+    if (twiceArea === 0 || item.fromWidth <= 0 || item.toWidth <= 0 || item.height <= 0 || item.bottomAboveFloor < 0) {
+      issues.push({ code: "invalid-hvac-transition", itemId: item.id, message: `HVAC transition “${item.id}” requires a usable footprint, positive widths and height, and a valid elevation.` });
     }
   }
   for (const item of [...plan.doors, ...plan.slidingDoors, ...plan.windows]) {

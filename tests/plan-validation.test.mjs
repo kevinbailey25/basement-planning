@@ -111,3 +111,32 @@ test("reports invalid HVAC ducts", () => {
   };
   assert.ok(validatePlan(malformedDuct).some((issue) => issue.code === "invalid-hvac-duct"));
 });
+
+test("stores the measured furnace supply trunk through its first reduction", () => {
+  const plenum = pocPlan.hvacDucts.find((item) => item.id === "furnace-supply-vertical-plenum");
+  const trunk24 = pocPlan.hvacDucts.find((item) => item.id === "main-supply-ceiling-trunk-24");
+  const trunk20 = pocPlan.hvacDucts.find((item) => item.id === "main-supply-ceiling-trunk-20");
+  const expansion = pocPlan.hvacDuctTransitions.find((item) => item.id === "furnace-supply-east-expansion");
+  const reduction = pocPlan.hvacDuctTransitions.find((item) => item.id === "main-supply-reduction-24-to-20");
+  assert.ok(plenum && plenum.orientation === "vertical");
+  assert.ok(trunk24 && trunk24.orientation === "horizontal");
+  assert.ok(trunk20 && trunk20.orientation === "horizontal");
+  assert.ok(expansion);
+  assert.ok(reduction);
+  assert.deepEqual([plenum.center, plenum.width, plenum.depth, plenum.bottomAboveFloor, plenum.topAboveFloor], [[408.5, 251.75], 16.5, 20.5, 58, 91]);
+  assert.deepEqual([trunk24.from, trunk24.waypoints, trunk24.to, trunk24.width, trunk24.height], [[412.25, 219.5], [[412.25, 207.5]], [161.5, 207.5], 24, 8]);
+  assert.deepEqual([expansion.fromWidth, expansion.toWidth, expansion.fixedEdge], [16.5, 24, "north"]);
+  assert.deepEqual([reduction.fromWidth, reduction.toWidth, reduction.fixedEdge], [24, 20, "west"]);
+  assert.deepEqual([trunk20.from, trunk20.to, trunk20.width, trunk20.bottomAboveFloor], [[150, 209.5], [4, 209.5], 20, 83]);
+});
+
+test("reports an HVAC transition without a usable footprint", () => {
+  const malformed = {
+    ...pocPlan,
+    hvacDuctTransitions: [{
+      ...pocPlan.hvacDuctTransitions[0],
+      polygon: [[0, 0], [1, 1], [2, 2], [3, 3]],
+    }],
+  };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-hvac-transition"));
+});

@@ -129,6 +129,8 @@ export interface HorizontalHvacDuct extends PlanItemBase {
   shape: "rectangular";
   from: Point;
   to: Point;
+  waypoints?: readonly Point[];
+  bendStyle?: "round";
   width: number;
   height: number;
   bottomAboveFloor: number;
@@ -148,6 +150,18 @@ export interface VerticalHvacDuct extends PlanItemBase {
 }
 
 export type HvacDuct = HorizontalHvacDuct | VerticalHvacDuct;
+
+export interface HvacDuctTransition extends PlanItemBase {
+  kind: "hvac-duct-transition";
+  airflowRole: AirflowRole;
+  shape: "rectangular";
+  polygon: readonly [Point, Point, Point, Point];
+  fromWidth: number;
+  toWidth: number;
+  height: number;
+  bottomAboveFloor: number;
+  fixedEdge: "north" | "south" | "east" | "west";
+}
 
 export interface CircuitConnection {
   fromId: string;
@@ -183,6 +197,7 @@ export type SelectablePlanItem =
   | Joist
   | HvacEquipment
   | HvacDuct
+  | HvacDuctTransition
   | Circuit
   | Dimension;
 
@@ -207,6 +222,7 @@ export interface FloorPlan {
   joists: readonly Joist[];
   hvacEquipment: readonly HvacEquipment[];
   hvacDucts: readonly HvacDuct[];
+  hvacDuctTransitions: readonly HvacDuctTransition[];
   circuits: readonly Circuit[];
   dimensions: readonly Dimension[];
 }
