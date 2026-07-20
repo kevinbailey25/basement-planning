@@ -2,7 +2,7 @@ import { distance } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -18,6 +18,8 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.switches,
     ...plan.waterValves,
     ...plan.plumbingDrains,
+    ...plan.plumbingEquipment,
+    ...plan.gasLines,
     ...plan.stairs,
     ...plan.joists,
     ...plan.hvacEquipment,
@@ -180,6 +182,29 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
       || item.heightAboveFloor < 0
     ) {
       issues.push({ code: "invalid-plumbing-drain", itemId: item.id, message: `Plumbing drain “${item.id}” requires a finite position, positive diameter, and non-negative height.` });
+    }
+  }
+  for (const item of plan.plumbingEquipment) {
+    if (
+      !Number.isFinite(item.center[0])
+      || !Number.isFinite(item.center[1])
+      || item.diameter <= 0
+      || item.height <= 0
+    ) {
+      issues.push({ code: "invalid-plumbing-equipment", itemId: item.id, message: `Plumbing equipment “${item.id}” requires a finite position, positive footprint, and positive height.` });
+    }
+  }
+  for (const item of plan.gasLines) {
+    const points = [item.from, ...(item.waypoints ?? []), item.to];
+    const hasInvalidPoint = points.some((point) => !Number.isFinite(point[0]) || !Number.isFinite(point[1]));
+    const hasZeroSegment = points.slice(1).some((point, index) => distance(points[index], point) === 0);
+    if (
+      hasInvalidPoint
+      || hasZeroSegment
+      || (item.heightAboveFloor != null && item.heightAboveFloor < 0)
+      || (item.offsetBelowJoists != null && item.offsetBelowJoists < 0)
+    ) {
+      issues.push({ code: "invalid-gas-line", itemId: item.id, message: `Gas line “${item.id}” requires usable plan geometry and non-negative placement measurements.` });
     }
   }
 

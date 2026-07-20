@@ -163,6 +163,47 @@ plumbingDrain({
 
 The `at` point is the pipe center. Preserve the field references to bathroom-facing wall surfaces in `note`, including whether the measurement is exact or approximate. Use `fixture: "unknown"` instead of guessing from pipe diameter, cap color, or location. The Plumbing layer's Drains sublayer controls these objects independently from Shutoffs.
 
+### Plumbing equipment
+
+Freestanding plumbing equipment uses an absolute center and a simple outer footprint. A cylindrical water heater stores its approximate plan diameter and measured or estimated height:
+
+```ts
+plumbingEquipment({
+  id: "furnace-room-water-heater",
+  label: "Existing water heater",
+  equipmentType: "water-heater",
+  shape: "cylinder",
+  center: [464, 254],
+  diameter: 20,
+  height: 59,
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+When the exact tank diameter is not important or has not been measured, use a deliberately approximate symbol footprint and say so in `note`. Do not present the footprint as an equipment specification. The Plumbing layer's Equipment sublayer controls these objects independently from Shutoffs and Drains.
+
+## Natural gas
+
+Natural-gas routing is its own optional layer. Each object is an independent plan-centerline run, split at branches, meaningful elevation changes, wall penetrations, and appliance connections:
+
+```ts
+gasLine({
+  id: "gas-main-room-south-run",
+  label: "Gas main south beside return trunk",
+  from: [20, 236],
+  to: [335.25, 236],
+  placement: "below-joists",
+  offsetBelowJoists: 5,
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+`placement` is `joist-bay`, `below-joists`, `equipment-room`, or `unknown`. Store `heightAboveFloor` only when an absolute elevation is useful and actually known; use `offsetBelowJoists` when that measured relationship is the better reference. `fromEndpoint` and `toEndpoint` may mark a `service-entry`, `wall-termination`, `rise`, `drop`, or `appliance` connection. These markers document observed topology and vertical transitions without inventing fitting geometry.
+
+Pipe diameter is intentionally absent from this proof-of-concept schema. The rendered line is a planning symbol, not a claim about pipe size, capacity, materials, pressure, code compliance, or installation requirements. Preserve uncertain concealed routing and inaccessible elevations in `note` and use `approximate` or `unknown` confidence.
+
 ## Lighting and circuits
 
 Ceiling fixtures use absolute plan coordinates. Circuits reference stable fixture/device IDs and represent connectivity rather than an exact cable route.
@@ -435,4 +476,4 @@ Openings and wall junctions are counted but their extra king studs, trimmers, he
 
 ## Validation
 
-`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, water-valve enclosure bounds and reference junctions, missing circuit endpoints, zero-length walls, invalid stairs, and invalid framing assumptions. Run `npm test` before handing off a change.
+`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, water-valve enclosure bounds and reference junctions, plumbing equipment footprints, usable gas-line geometry and placement measurements, missing circuit endpoints, zero-length walls, invalid stairs, and invalid framing assumptions. Run `npm test` before handing off a change.

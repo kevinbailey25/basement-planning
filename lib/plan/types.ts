@@ -104,6 +104,29 @@ export interface PlumbingDrain extends PlanItemBase {
   pipeColor: "white" | "black" | "unknown";
 }
 
+export interface PlumbingEquipment extends PlanItemBase {
+  kind: "plumbing-equipment";
+  equipmentType: "water-heater";
+  shape: "cylinder";
+  center: Point;
+  diameter: number;
+  height: number;
+}
+
+export type GasEndpoint = "none" | "service-entry" | "wall-termination" | "rise" | "drop" | "appliance";
+
+export interface GasLine extends PlanItemBase {
+  kind: "gas-line";
+  from: Point;
+  to: Point;
+  waypoints?: readonly Point[];
+  placement: "joist-bay" | "below-joists" | "equipment-room" | "unknown";
+  heightAboveFloor?: number;
+  offsetBelowJoists?: number;
+  fromEndpoint?: GasEndpoint;
+  toEndpoint?: GasEndpoint;
+}
+
 export interface Stairs extends PlanItemBase {
   kind: "stairs";
   from: Point;
@@ -231,6 +254,8 @@ export type SelectablePlanItem =
   | Switch
   | WaterValve
   | PlumbingDrain
+  | PlumbingEquipment
+  | GasLine
   | Stairs
   | Joist
   | HvacEquipment
@@ -259,6 +284,8 @@ export interface FloorPlan {
   switches: readonly Switch[];
   waterValves: readonly WaterValve[];
   plumbingDrains: readonly PlumbingDrain[];
+  plumbingEquipment: readonly PlumbingEquipment[];
+  gasLines: readonly GasLine[];
   stairs: readonly Stairs[];
   joists: readonly Joist[];
   hvacEquipment: readonly HvacEquipment[];

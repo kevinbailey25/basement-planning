@@ -4,6 +4,7 @@ import type {
   Door,
   Light,
   HvacEquipment,
+  GasLine,
   HvacJoistReturn,
   HvacRefrigerantLine,
   HorizontalHvacDuct,
@@ -11,6 +12,7 @@ import type {
   Joist,
   Point,
   PlumbingDrain,
+  PlumbingEquipment,
   SlidingDoor,
   Space,
   Stairs,
@@ -41,6 +43,13 @@ export const waterValve = (
 export const plumbingDrain = (
   value: Omit<PlumbingDrain, "kind">,
 ): PlumbingDrain => ({ kind: "plumbing-drain", ...value });
+export const plumbingEquipment = (
+  value: Omit<PlumbingEquipment, "kind">,
+): PlumbingEquipment => ({ kind: "plumbing-equipment", ...value });
+export const gasLine = (value: Omit<GasLine, "kind">): GasLine => ({
+  kind: "gas-line",
+  ...value,
+});
 export const stairs = (value: Omit<Stairs, "kind">): Stairs => ({
   kind: "stairs",
   ...value,

@@ -113,6 +113,81 @@ test("reports plumbing drains without a usable diameter", () => {
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-plumbing-drain"));
 });
 
+test("stores the approximate Furnace Room water heater", () => {
+  const heater = pocPlan.plumbingEquipment.find((item) => item.id === "furnace-room-water-heater");
+  assert.ok(heater);
+  assert.deepEqual(
+    [heater.equipmentType, heater.shape, heater.center, heater.diameter, heater.height],
+    ["water-heater", "cylinder", [464, 254], 20, 59],
+  );
+  assert.match(heater.note, /deliberately approximate symbol footprint/);
+});
+
+test("reports plumbing equipment without a usable footprint", () => {
+  const malformed = {
+    ...pocPlan,
+    plumbingEquipment: [{ ...pocPlan.plumbingEquipment[0], diameter: 0 }],
+  };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-plumbing-equipment"));
+});
+
+test("stores the surveyed natural-gas route and field references", () => {
+  const southRun = pocPlan.gasLines.find((item) => item.id === "gas-main-room-south-run");
+  const fireplace = pocPlan.gasLines.find((item) => item.id === "gas-fireplace-branch-joist-bay");
+  const waterHeater = pocPlan.gasLines.find((item) => item.id === "gas-water-heater-branch");
+  assert.ok(southRun && fireplace && waterHeater);
+  assert.deepEqual(
+    [southRun.from, southRun.to, southRun.placement, southRun.offsetBelowJoists],
+    [[20, 236], [335.25, 236], "below-joists", 5],
+  );
+  assert.deepEqual(
+    [fireplace.from, fireplace.to, fireplace.fromEndpoint, fireplace.toEndpoint],
+    [[335.25, 236], [335.25, 83], "rise", "rise"],
+  );
+  assert.match(fireplace.note, /2 inches to its south/);
+  assert.deepEqual([waterHeater.from, waterHeater.to, waterHeater.toEndpoint], [[423.5, 232], [465, 232], "appliance"]);
+  assert.equal(pocPlan.gasLines.every((item) => item.confidence === "approximate"), true);
+});
+
+test("anchors the fireplace gas branch to the measured joist and wall references", () => {
+  const fireplace = pocPlan.gasLines.find((item) => item.id === "gas-fireplace-branch-joist-bay");
+  const singleJoist = pocPlan.joists.find((item) => item.id === "main-ceiling-joist-27");
+  const furnaceWall = pocPlan.walls.find((item) => item.id === "furnace-room-north-wall");
+  const eastWall = pocPlan.walls.find((item) => item.id === "east-exterior-wall");
+  assert.ok(fireplace && singleJoist && furnaceWall && eastWall);
+  const singleJoistNorthEdge = singleJoist.from[0] - singleJoist.width / 2;
+  const furnaceWallMainRoomFace = furnaceWall.from[0] - furnaceWall.thickness / 2;
+  const eastWallInteriorFace = eastWall.from[1] + eastWall.thickness / 2;
+  assert.equal(singleJoistNorthEdge - fireplace.from[0], 2);
+  assert.equal(furnaceWallMainRoomFace - fireplace.from[0], 37.25);
+  assert.equal(fireplace.to[1] - eastWallInteriorFace, 53);
+});
+
+test("keeps the Office closet gas entry approximately 2.5 inches off office-west-wall", () => {
+  const service = pocPlan.gasLines.find((item) => item.id === "gas-service-entry-office-closet-to-main-room");
+  const officeWestWall = pocPlan.walls.find((item) => item.id === "office-west-wall");
+  assert.ok(service && officeWestWall);
+  const officeWestWallInteriorFace = officeWestWall.from[1] - officeWestWall.thickness / 2;
+  assert.equal(officeWestWallInteriorFace - service.from[1], 2.5);
+  assert.deepEqual(service.waypoints, [[20, 564.5]]);
+});
+
+test("places the second-floor furnace gas rise southwest of the Furnace Room vent", () => {
+  const branch = pocPlan.gasLines.find((item) => item.id === "gas-second-floor-furnace-branch");
+  const vent = pocPlan.hvacDucts.find((item) => item.id === "joists-33-34-east-wall-exhaust-10");
+  assert.ok(branch && vent && vent.orientation === "horizontal" && vent.shape === "round");
+  const ventSouthEdge = vent.from[0] + vent.diameter / 2;
+  assert.equal(branch.to[0] - ventSouthEdge, 5);
+  assert.equal(vent.from[1] - branch.to[1], 5);
+  assert.deepEqual(branch.toEndpoint, "rise");
+});
+
+test("reports malformed gas routes", () => {
+  const line = pocPlan.gasLines[0];
+  const malformed = { ...pocPlan, gasLines: [{ ...line, to: line.waypoints.at(-1) }] };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-gas-line"));
+});
+
 test("stores the approximate furnace footprint from the field survey", () => {
   const furnace = pocPlan.hvacEquipment.find((item) => item.id === "existing-furnace");
   assert.ok(furnace);
