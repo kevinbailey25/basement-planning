@@ -5,6 +5,7 @@ import type {
   Light,
   HvacEquipment,
   HvacJoistReturn,
+  HvacRefrigerantLine,
   HorizontalHvacDuct,
   HvacDuctTransition,
   Joist,
@@ -64,6 +65,9 @@ export const verticalHvacDuct = (
 export const hvacDuctTransition = (
   value: Omit<HvacDuctTransition, "kind">,
 ): HvacDuctTransition => ({ kind: "hvac-duct-transition", ...value });
+export const hvacRefrigerantLine = (
+  value: Omit<HvacRefrigerantLine, "kind">,
+): HvacRefrigerantLine => ({ kind: "hvac-refrigerant-line", ...value });
 export const circuit = (value: Omit<Circuit, "kind">): Circuit => ({
   kind: "circuit",
   ...value,

@@ -242,7 +242,41 @@ horizontalHvacDuct({
 })
 ```
 
-Split horizontal runs at bends, branches, size changes, meaningful elevation changes, and transitions between visible and concealed work. `airflowRole` is independent from construction `status`; use `unknown` rather than inferring supply or return from duct size.
+Split horizontal runs at bends, branches, size changes, meaningful elevation changes, and transitions between visible and concealed work. `airflowRole` is independent from construction `status`; use `unknown` rather than inferring supply or return from duct size. Use `exhaust` for a verified HVAC venting run that is neither supply nor return:
+
+```ts
+horizontalHvacDuct({
+  id: "joists-33-34-east-wall-exhaust-10",
+  label: "Furnace Room east-wall exhaust — approximately 10 inch round",
+  airflowRole: "exhaust",
+  shape: "round",
+  from: [424.25, 256.5],
+  to: [424.25, 22],
+  diameter: 10,
+  bottomAboveFloor: 91,
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+Refrigerant lines are HVAC services, but they are not air ducts. Store their top-down route independently, including intentional wall and exterior waypoints. Use the measured offset below the joist bottoms instead of inventing an absolute elevation when only that relationship is known:
+
+```ts
+hvacRefrigerantLine({
+  id: "furnace-to-south-exterior-refrigerant-line",
+  label: "Furnace to south exterior refrigerant line",
+  from: [408.5, 247],
+  waypoints: [[477, 243], [552, 243]],
+  to: [560, 243],
+  wallPenetrationBelowJoists: 4,
+  support: "joist-underside",
+  exteriorTurn: "up",
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+The route may be deliberately conceptual through an equipment room when only the downstream obstruction matters. Record that limitation in `note`; do not imply measured fittings, line-set size, or exterior routing.
 
 Returns formed by sheet-metal panning across joist bays use an explicit plan footprint and stable joist references. This keeps observed panning distinct from an ordinary freestanding rectangular duct:
 

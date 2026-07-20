@@ -121,6 +121,41 @@ test("stores the four newly surveyed return runs", () => {
   assert.match(office.note, /approximately 90 inches west/);
 });
 
+test("stores the joist-bay HVAC exhaust route", () => {
+  const exhaust = pocPlan.hvacDucts.find((item) => item.id === "joists-33-34-east-wall-exhaust-10");
+  assert.ok(exhaust && exhaust.orientation === "horizontal" && exhaust.shape === "round");
+  assert.deepEqual(
+    [exhaust.from, exhaust.to, exhaust.diameter, exhaust.bottomAboveFloor, exhaust.airflowRole],
+    [[424.25, 256.5], [424.25, 22], 10, 91, "exhaust"],
+  );
+  assert.match(exhaust.note, /main-ceiling-joist-33 and main-ceiling-joist-34/);
+  assert.equal(exhaust.confidence, "approximate");
+});
+
+test("stores the approximate refrigerant route through Storage", () => {
+  const line = pocPlan.hvacRefrigerantLines.find((item) => item.id === "furnace-to-south-exterior-refrigerant-line");
+  assert.ok(line);
+  assert.deepEqual(
+    [line.from, line.waypoints, line.to],
+    [[408.5, 247], [[477, 243], [552, 243]], [560, 243]],
+  );
+  assert.deepEqual(
+    [line.wallPenetrationBelowJoists, line.support, line.exteriorTurn],
+    [4, "joist-underside", "up"],
+  );
+  assert.match(line.note, /24 inches east of the west\/back wall/);
+  assert.equal(line.confidence, "approximate");
+});
+
+test("reports malformed HVAC refrigerant routes", () => {
+  const line = pocPlan.hvacRefrigerantLines[0];
+  const malformed = {
+    ...pocPlan,
+    hvacRefrigerantLines: [{ ...line, to: line.waypoints.at(-1) }],
+  };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-hvac-refrigerant-line"));
+});
+
 test("reports malformed or unanchored panned joist returns", () => {
   const panned = pocPlan.hvacJoistReturns[0];
   const malformed = { ...pocPlan, hvacJoistReturns: [{ ...panned, polygon: [[0, 0], [1, 1]], joistIds: ["missing-joist"] }] };

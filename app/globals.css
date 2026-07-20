@@ -88,6 +88,8 @@ button { cursor: pointer; }
 .legend-return-duct { height: 11px !important; border: 1px solid #5d98a8; background: rgb(73 124 137 / 18%); }
 .legend-panned-return { height: 11px !important; border: 1px solid #5d98a8; background: repeating-linear-gradient(45deg, rgb(73 124 137 / 18%) 0 2px, transparent 2px 5px); }
 .legend-supply-duct { height: 11px !important; border: 1px solid #a86817; background: rgb(185 111 13 / 15%); }
+.legend-exhaust-duct { height: 11px !important; border: 1px dashed #aeb6d2; background: rgb(105 111 137 / 18%); }
+.legend-refrigerant-line::before { content: ""; width: 19px; border-top: 3px double #c0c7c4; }
 .legend-joist::before { content: ""; height: 19px; border-left: 3px solid #8fa49d; }
 .legend-existing::before { content: ""; width: 20px; border-top: 4px solid #b9c1bd; }
 .legend-framed::before { content: ""; width: 20px; border-top: 4px solid #75948a; }
@@ -170,6 +172,11 @@ button { cursor: pointer; }
 .hvac-duct-symbol.supply .hvac-duct-band { stroke: color-mix(in srgb, #b96f0d 12%, var(--paper)); }
 .hvac-duct-symbol.supply .hvac-duct-centerline { stroke: #b87518; }
 .hvac-duct-symbol.supply .hvac-duct-label { fill: #8c5813; }
+.hvac-duct-symbol.exhaust .hvac-duct-footprint { fill: rgb(105 111 137 / 13%); stroke: #626b88; stroke-dasharray: 6 2; }
+.hvac-duct-symbol.exhaust .hvac-duct-band-outline { stroke: #626b88; stroke-dasharray: 6 2; }
+.hvac-duct-symbol.exhaust .hvac-duct-band { stroke: color-mix(in srgb, #69708c 13%, var(--paper)); }
+.hvac-duct-symbol.exhaust .hvac-duct-centerline { stroke: #626b88; }
+.hvac-duct-symbol.exhaust .hvac-duct-label { fill: #515a78; }
 .hvac-duct-symbol.proposed .hvac-duct-footprint { stroke: #b87518; stroke-dasharray: 5 3; }
 .hvac-duct-symbol.selected .hvac-duct-footprint, .hvac-duct-symbol.selected .hvac-duct-centerline { stroke: #c66e12; stroke-width: 1.8; }
 .hvac-duct-symbol.selected .hvac-duct-band-outline { stroke: #c66e12; }
@@ -184,6 +191,15 @@ button { cursor: pointer; }
 .hvac-joist-return-footprint { fill: url(#panned-return); stroke: #39798a; stroke-width: 1.1; stroke-linejoin: round; }
 .hvac-joist-return-symbol.selected .hvac-joist-return-footprint { stroke: #c66e12; stroke-width: 1.8; }
 .hvac-joist-return-symbol.selected .hvac-duct-label { fill: #a75b0a; }
+.hvac-refrigerant-symbol { cursor: pointer; }
+.hvac-refrigerant-hit { fill: none; stroke: transparent; stroke-width: 12; }
+.hvac-refrigerant-casing { fill: none; stroke: #344744; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.hvac-refrigerant-centerline { fill: none; stroke: var(--paper); stroke-width: 1.1; stroke-dasharray: 3 1.5; stroke-linecap: round; }
+.hvac-refrigerant-rise { fill: var(--paper); stroke: #344744; stroke-width: 1; }
+.hvac-refrigerant-label { fill: #344744; stroke: var(--paper); stroke-width: 2; paint-order: stroke; font: 700 4px/1 ui-monospace, monospace; text-anchor: middle; pointer-events: none; }
+.hvac-refrigerant-symbol.proposed .hvac-refrigerant-casing { stroke: #b87518; stroke-dasharray: 5 3; }
+.hvac-refrigerant-symbol.selected .hvac-refrigerant-casing, .hvac-refrigerant-symbol.selected .hvac-refrigerant-rise { stroke: #c66e12; stroke-width: 1.8; }
+.hvac-refrigerant-symbol.selected .hvac-refrigerant-label { fill: #a75b0a; }
 .space-label-layer { pointer-events: none; }
 .framing-layer { pointer-events: none; }
 .framing-line { fill: none; stroke-linecap: butt; }
@@ -271,13 +287,13 @@ button { cursor: pointer; }
   .wall-line { stroke: #000; }
   .joist-board { stroke: #777; opacity: .7; }
   .joist-symbol.selected .joist-board { stroke: #111; }
-  .window-symbol, .door-symbol, .door-symbol.proposed, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .dimension-mark { stroke: #111; }
+  .window-symbol, .door-symbol, .door-symbol.proposed, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
   .hvac-equipment-footprint { fill: #eee; }
   .hvac-duct-footprint { fill: #eee; }
   .hvac-duct-band, .hvac-duct-symbol.supply .hvac-duct-band { stroke: #eee; }
   .hvac-transition-footprint { fill: #eee; }
   .hvac-joist-return-footprint { fill: #eee; stroke-dasharray: 2 1; }
-  .hvac-equipment-label, .hvac-duct-label { fill: #111; stroke: #fff; }
+  .hvac-equipment-label, .hvac-duct-label, .hvac-refrigerant-label { fill: #111; stroke: #fff; }
   .water-valve-symbol .valve-label { fill: #111; stroke: #fff; }
   .north-arrow { stroke: #111; }
   .north-arrow text { fill: #111; }

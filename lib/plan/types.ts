@@ -4,7 +4,7 @@ export type MeasurementConfidence = "exact" | "approximate" | "unknown";
 export type ConstructionStatus = "existing" | "proposed" | "remove";
 export type FramingStatus = "framed" | "needs-framing" | "unknown";
 export type WallSide = "left" | "right";
-export type AirflowRole = "supply" | "return" | "unknown";
+export type AirflowRole = "supply" | "return" | "exhaust" | "unknown";
 
 export interface PlanItemBase {
   id: string;
@@ -180,6 +180,16 @@ export interface HvacDuctTransition extends PlanItemBase {
   fixedEdge: "north" | "south" | "east" | "west";
 }
 
+export interface HvacRefrigerantLine extends PlanItemBase {
+  kind: "hvac-refrigerant-line";
+  from: Point;
+  to: Point;
+  waypoints?: readonly Point[];
+  wallPenetrationBelowJoists: number;
+  support: "joist-underside";
+  exteriorTurn: "up" | "down" | "unknown";
+}
+
 export interface CircuitConnection {
   fromId: string;
   toId: string;
@@ -216,6 +226,7 @@ export type SelectablePlanItem =
   | HvacDuct
   | HvacJoistReturn
   | HvacDuctTransition
+  | HvacRefrigerantLine
   | Circuit
   | Dimension;
 
@@ -242,6 +253,7 @@ export interface FloorPlan {
   hvacDucts: readonly HvacDuct[];
   hvacJoistReturns: readonly HvacJoistReturn[];
   hvacDuctTransitions: readonly HvacDuctTransition[];
+  hvacRefrigerantLines: readonly HvacRefrigerantLine[];
   circuits: readonly Circuit[];
   dimensions: readonly Dimension[];
 }

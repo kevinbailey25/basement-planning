@@ -2,7 +2,7 @@ import { distance } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -23,6 +23,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.hvacDucts,
     ...plan.hvacJoistReturns,
     ...plan.hvacDuctTransitions,
+    ...plan.hvacRefrigerantLines,
     ...plan.circuits,
     ...plan.dimensions,
   ];
@@ -116,6 +117,16 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     }, 0));
     if (twiceArea === 0 || item.fromWidth <= 0 || item.toWidth <= 0 || item.height <= 0 || item.bottomAboveFloor < 0) {
       issues.push({ code: "invalid-hvac-transition", itemId: item.id, message: `HVAC transition “${item.id}” requires a usable footprint, positive widths and height, and a valid elevation.` });
+    }
+  }
+  for (const item of plan.hvacRefrigerantLines) {
+    const points = [item.from, ...(item.waypoints ?? []), item.to];
+    const hasZeroSegment = points.slice(1).some((point, index) => distance(points[index], point) === 0);
+    if (
+      hasZeroSegment
+      || item.wallPenetrationBelowJoists < 0
+    ) {
+      issues.push({ code: "invalid-hvac-refrigerant-line", itemId: item.id, message: `HVAC refrigerant line “${item.id}” requires usable plan geometry and a non-negative joist offset.` });
     }
   }
   for (const item of [...plan.doors, ...plan.slidingDoors, ...plan.windows]) {
