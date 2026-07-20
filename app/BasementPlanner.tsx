@@ -232,6 +232,10 @@ function hvacDuctLength(item: HorizontalHvacDuct) {
   return points.slice(1).reduce((total, point, index) => total + distance(points[index], point), 0);
 }
 
+function hvacDuctPlanWidth(item: HorizontalHvacDuct) {
+  return item.shape === "round" ? item.diameter : item.width;
+}
+
 function hvacDuctMidpoint(item: HorizontalHvacDuct): Point {
   const points = hvacDuctPoints(item);
   const midpointOffset = hvacDuctLength(item) / 2;
@@ -258,22 +262,23 @@ function HvacDuctMark({ item, selected, onSelect }: { item: HvacDuct; selected: 
       </g>
     );
   }
+  const planWidth = hvacDuctPlanWidth(item);
   if (item.waypoints && item.waypoints.length > 0) {
     const points = hvacDuctPoints(item);
     const pointsText = points.map((point) => point.join(",")).join(" ");
     const midpoint = hvacDuctMidpoint(item);
     return (
       <g data-selectable aria-label={item.label} className={className} onClick={(event) => { event.stopPropagation(); onSelect(); }}>
-        <polyline className="hvac-duct-hit" points={pointsText} strokeWidth={item.width + 8} />
-        <polyline className="hvac-duct-band-outline" points={pointsText} strokeWidth={item.width + (selected ? 3.6 : 2.2)} strokeLinejoin={item.bendStyle === "round" ? "round" : "miter"} />
-        <polyline className="hvac-duct-band" points={pointsText} strokeWidth={item.width} strokeLinejoin={item.bendStyle === "round" ? "round" : "miter"} />
+        <polyline className="hvac-duct-hit" points={pointsText} strokeWidth={planWidth + 8} />
+        <polyline className="hvac-duct-band-outline" points={pointsText} strokeWidth={planWidth + (selected ? 3.6 : 2.2)} strokeLinejoin={item.bendStyle === "round" ? "round" : "miter"} />
+        <polyline className="hvac-duct-band" points={pointsText} strokeWidth={planWidth} strokeLinejoin={item.bendStyle === "round" ? "round" : "miter"} />
         <polyline className="hvac-duct-centerline" points={pointsText} />
         <text className="hvac-duct-label" x={midpoint[0]} y={midpoint[1] - 2}>{item.airflowRole === "supply" ? "SUPPLY" : item.airflowRole === "return" ? "RETURN" : "UNKNOWN"}</text>
       </g>
     );
   }
   const normal = unitNormal(item.from, item.to, "right");
-  const halfWidth = item.width / 2;
+  const halfWidth = planWidth / 2;
   const corners = [
     add(item.from, normal, halfWidth),
     add(item.to, normal, halfWidth),
@@ -286,7 +291,7 @@ function HvacDuctMark({ item, selected, onSelect }: { item: HvacDuct; selected: 
   if (angle < -90) angle += 180;
   return (
     <g data-selectable aria-label={item.label} className={className} onClick={(event) => { event.stopPropagation(); onSelect(); }}>
-      <line className="hvac-duct-hit" x1={item.from[0]} y1={item.from[1]} x2={item.to[0]} y2={item.to[1]} strokeWidth={item.width + 8} />
+      <line className="hvac-duct-hit" x1={item.from[0]} y1={item.from[1]} x2={item.to[0]} y2={item.to[1]} strokeWidth={planWidth + 8} />
       <polygon className="hvac-duct-footprint" points={corners.map((point) => point.join(",")).join(" ")} />
       <line className="hvac-duct-centerline" x1={item.from[0]} y1={item.from[1]} x2={item.to[0]} y2={item.to[1]} />
       <text className="hvac-duct-label" x={midpoint[0]} y={midpoint[1] - 2} transform={`rotate(${angle} ${midpoint[0]} ${midpoint[1] - 2})`}>{item.airflowRole === "supply" ? "SUPPLY" : item.airflowRole === "return" ? "RETURN" : "UNKNOWN"}</text>
@@ -403,12 +408,20 @@ function Inspector({ item, openingMeasurement, onMeasurementSideChange }: {
   if (item.kind === "hvac-duct") {
     rows.push(["Airflow", item.airflowRole], ["Orientation", item.orientation], ["Shape", item.shape]);
     if (item.orientation === "horizontal") {
-      rows.push(
-        ["Run", `≈ ${formatInches(hvacDuctLength(item))}`],
-        ["Duct height", `≈ ${formatInches(item.height)}`],
-        ["Underside", `≈ ${formatInches(item.bottomAboveFloor)} above floor`],
-        ["Top", `≈ ${formatInches(item.bottomAboveFloor + item.height)} above floor`],
-      );
+      rows.push(["Run", `≈ ${formatInches(hvacDuctLength(item))}`]);
+      if (item.shape === "round") {
+        rows.push(
+          ["Diameter", `≈ ${formatInches(item.diameter)}`],
+          ["Underside", `≈ ${formatInches(item.bottomAboveFloor)} above floor`],
+          ["Top", `≈ ${formatInches(item.bottomAboveFloor + item.diameter)} above floor`],
+        );
+      } else {
+        rows.push(
+          ["Duct height", `≈ ${formatInches(item.height)}`],
+          ["Underside", `≈ ${formatInches(item.bottomAboveFloor)} above floor`],
+          ["Top", `≈ ${formatInches(item.bottomAboveFloor + item.height)} above floor`],
+        );
+      }
     } else {
       rows.push(
         ["Plan depth", `≈ ${formatInches(item.depth)}`],

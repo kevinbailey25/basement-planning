@@ -75,9 +75,11 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     const invalidHorizontal = item.orientation === "horizontal" && (() => {
       const points = [item.from, ...(item.waypoints ?? []), item.to];
       const hasZeroSegment = points.slice(1).some((point, index) => distance(points[index], point) === 0);
+      const hasInvalidSize = item.shape === "round"
+        ? item.diameter <= 0
+        : item.width <= 0 || item.height <= 0;
       return hasZeroSegment
-      || item.width <= 0
-      || item.height <= 0
+      || hasInvalidSize
       || item.bottomAboveFloor < 0;
     })();
     const invalidVertical = item.orientation === "vertical" && (

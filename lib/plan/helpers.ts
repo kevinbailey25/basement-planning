@@ -46,9 +46,14 @@ export const joist = (value: Omit<Joist, "kind">): Joist => ({
 export const hvacEquipment = (
   value: Omit<HvacEquipment, "kind">,
 ): HvacEquipment => ({ kind: "hvac-equipment", ...value });
+type HorizontalHvacDuctInput = HorizontalHvacDuct extends infer Duct
+  ? Duct extends HorizontalHvacDuct
+    ? Omit<Duct, "kind" | "orientation">
+    : never
+  : never;
 export const horizontalHvacDuct = (
-  value: Omit<HorizontalHvacDuct, "kind" | "orientation">,
-): HorizontalHvacDuct => ({ kind: "hvac-duct", orientation: "horizontal", ...value });
+  value: HorizontalHvacDuctInput,
+): HorizontalHvacDuct => ({ kind: "hvac-duct", orientation: "horizontal", ...value } as HorizontalHvacDuct);
 export const verticalHvacDuct = (
   value: Omit<VerticalHvacDuct, "kind" | "orientation">,
 ): VerticalHvacDuct => ({ kind: "hvac-duct", orientation: "vertical", ...value });

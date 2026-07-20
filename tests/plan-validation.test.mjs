@@ -112,6 +112,39 @@ test("reports invalid HVAC ducts", () => {
   assert.ok(validatePlan(malformedDuct).some((issue) => issue.code === "invalid-hvac-duct"));
 });
 
+test("stores the north-bay round supply branch", () => {
+  const branch = pocPlan.hvacDucts.find((item) => item.id === "north-bay-upper-floor-supply-08");
+  assert.ok(branch && branch.orientation === "horizontal" && branch.shape === "round");
+  assert.deepEqual(
+    [branch.from, branch.to, branch.diameter, branch.bottomAboveFloor, branch.airflowRole],
+    [[8.625, 209.5], [8.625, 4], 8, 93, "supply"],
+  );
+  assert.equal(branch.status, "existing");
+  assert.equal(branch.confidence, "approximate");
+});
+
+test("stores the matching round supply branches in joist bays 16–17 and 23–24", () => {
+  const branch16 = pocPlan.hvacDucts.find((item) => item.id === "joists-16-17-upper-floor-supply-08");
+  const branch23 = pocPlan.hvacDucts.find((item) => item.id === "joists-23-24-upper-floor-supply-08");
+  assert.ok(branch16 && branch16.orientation === "horizontal" && branch16.shape === "round");
+  assert.ok(branch23 && branch23.orientation === "horizontal" && branch23.shape === "round");
+  assert.deepEqual(
+    [branch16.from, branch16.to, branch16.diameter, branch16.bottomAboveFloor],
+    [[188, 207.5], [188, 30], 8, 93],
+  );
+  assert.deepEqual(
+    [branch23.from, branch23.to, branch23.diameter, branch23.bottomAboveFloor],
+    [[298.5, 207.5], [298.5, 30], 8, 93],
+  );
+});
+
+test("reports a round HVAC duct without a usable diameter", () => {
+  const branch = pocPlan.hvacDucts.find((item) => item.id === "north-bay-upper-floor-supply-08");
+  assert.ok(branch && branch.orientation === "horizontal" && branch.shape === "round");
+  const malformed = { ...pocPlan, hvacDucts: [{ ...branch, diameter: 0 }] };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-hvac-duct"));
+});
+
 test("stores the measured furnace supply trunk through its first reduction", () => {
   const plenum = pocPlan.hvacDucts.find((item) => item.id === "furnace-supply-vertical-plenum");
   const trunk24 = pocPlan.hvacDucts.find((item) => item.id === "main-supply-ceiling-trunk-24");

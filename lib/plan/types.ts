@@ -122,19 +122,29 @@ export interface HvacEquipment extends PlanItemBase {
   height?: number;
 }
 
-export interface HorizontalHvacDuct extends PlanItemBase {
+interface HorizontalHvacDuctBase extends PlanItemBase {
   kind: "hvac-duct";
   orientation: "horizontal";
   airflowRole: AirflowRole;
-  shape: "rectangular";
   from: Point;
   to: Point;
   waypoints?: readonly Point[];
   bendStyle?: "round";
-  width: number;
-  height: number;
   bottomAboveFloor: number;
 }
+
+export interface RectangularHorizontalHvacDuct extends HorizontalHvacDuctBase {
+  shape: "rectangular";
+  width: number;
+  height: number;
+}
+
+export interface RoundHorizontalHvacDuct extends HorizontalHvacDuctBase {
+  shape: "round";
+  diameter: number;
+}
+
+export type HorizontalHvacDuct = RectangularHorizontalHvacDuct | RoundHorizontalHvacDuct;
 
 export interface VerticalHvacDuct extends PlanItemBase {
   kind: "hvac-duct";

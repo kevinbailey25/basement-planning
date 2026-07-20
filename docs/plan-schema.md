@@ -225,6 +225,23 @@ verticalHvacDuct({
 })
 ```
 
+Round horizontal ducts use their measured outer diameter instead of rectangular width and height:
+
+```ts
+horizontalHvacDuct({
+  id: "north-bay-upper-floor-supply-08",
+  label: "North bay upper-floor supply — 8 inch round",
+  airflowRole: "supply",
+  shape: "round",
+  from: [8.625, 209.5],
+  to: [8.625, 4],
+  diameter: 8,
+  bottomAboveFloor: 93,
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
 Split horizontal runs at bends, branches, size changes, meaningful elevation changes, and transitions between visible and concealed work. `airflowRole` is independent from construction `status`; use `unknown` rather than inferring supply or return from duct size.
 
 A constant-size horizontal duct may include intentional waypoints. Set `bendStyle: "round"` when a measured elbow has a curved outside corner:
