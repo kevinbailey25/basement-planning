@@ -11,7 +11,7 @@ import type { Dimension, HorizontalHvacDuct, HvacDuct, HvacDuctTransition, HvacE
 import { allPlanItems, validatePlan } from "../lib/plan/validate";
 
 const DEFAULT_VIEW = { x: -42, y: -42, width: 655, height: 665 };
-type ToggleKey = "hvac" | "hvacSupply" | "hvacReturn" | "water" | "framing" | "joists" | "dimensions" | "grid";
+type ToggleKey = "hvac" | "hvacSupply" | "hvacReturn" | "water" | "framing" | "joists" | "dimensions";
 
 function getWall(wallId: string) {
   return pocPlan.walls.find((item) => item.id === wallId);
@@ -492,7 +492,7 @@ function LayerToggle({ label, detail, checked, onChange, color }: { label: strin
 }
 
 export function BasementPlanner() {
-  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ hvac: false, hvacSupply: false, hvacReturn: false, water: false, framing: false, joists: false, dimensions: false, grid: false });
+  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ hvac: false, hvacSupply: false, hvacReturn: false, water: false, framing: false, joists: false, dimensions: false });
   const [selectedId, setSelectedId] = useState<string>();
   const [measurementSide, setMeasurementSide] = useState<WallSide>();
   const [view, setView] = useState(DEFAULT_VIEW);
@@ -556,7 +556,7 @@ export function BasementPlanner() {
         <div className="brand-block"><div className="brand-mark">BP</div><div><span className="eyebrow">Working plan</span><h1>{pocPlan.title}</h1></div></div>
         <p className="subtitle">{pocPlan.subtitle}</p>
         <section className="panel-section" aria-labelledby="layers-title">
-          <div className="section-heading"><h2 id="layers-title">Layers</h2><span>6 controls</span></div>
+          <div className="section-heading"><h2 id="layers-title">Layers</h2><span>5 controls</span></div>
           <LayerToggle label="HVAC" detail={`${pocPlan.hvacEquipment.length} equipment · ${pocPlan.hvacDucts.length + pocPlan.hvacJoistReturns.length + pocPlan.hvacDuctTransitions.length} runs/fittings`} checked={toggles.hvac} onChange={() => toggle("hvac")} color="blue" />
           <label className="sub-toggle"><input type="checkbox" checked={toggles.hvacSupply} disabled={!toggles.hvac} onChange={() => toggle("hvacSupply")} /> Supply · {supplyItemCount} mapped</label>
           <label className="sub-toggle"><input type="checkbox" checked={toggles.hvacReturn} disabled={!toggles.hvac} onChange={() => toggle("hvacReturn")} /> Return · {returnItemCount} mapped</label>
@@ -564,7 +564,6 @@ export function BasementPlanner() {
           <LayerToggle label="Framing status" detail={`${framingWalls.length} runs need framing`} checked={toggles.framing} onChange={() => toggle("framing")} color="amber" />
           <LayerToggle label="Ceiling joists" detail={`${pocPlan.joists.length} joists · 3 measured groups`} checked={toggles.joists} onChange={() => toggle("joists")} color="slate" />
           <LayerToggle label="Dimensions" detail="Overall footprint" checked={toggles.dimensions} onChange={() => toggle("dimensions")} color="slate" />
-          <LayerToggle label="12-inch grid" detail="Scale reference" checked={toggles.grid} onChange={() => toggle("grid")} color="blue" />
         </section>
         {toggles.framing && <section className="panel-section"><FramingSummary /></section>}
         <section className="panel-section legend" aria-labelledby="legend-title">
@@ -580,9 +579,8 @@ export function BasementPlanner() {
         <div className="plan-frame">
           <svg className="floor-plan" viewBox={`${view.x} ${view.y} ${view.width} ${view.height}`} role="img" aria-labelledby="plan-title plan-description" onWheel={onWheel} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={() => { drag.current = undefined; }}>
             <title id="plan-title">{pocPlan.title}</title><desc id="plan-description">Approximate existing basement footprint traced from the supplied measured sketch.</desc>
-            <defs><pattern id="grid-small" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M 12 0 L 0 0 0 12" fill="none" stroke="currentColor" strokeWidth="0.35" /></pattern><pattern id="panned-return" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="rgb(73 124 137 / 12%)" /><line x1="0" y1="0" x2="0" y2="6" stroke="#5d98a8" strokeWidth="0.7" /></pattern></defs>
+            <defs><pattern id="panned-return" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="rgb(73 124 137 / 12%)" /><line x1="0" y1="0" x2="0" y2="6" stroke="#5d98a8" strokeWidth="0.7" /></pattern></defs>
             <rect className="pan-surface" x="-1000" y="-1000" width="2000" height="2000" />
-            {toggles.grid && <rect className="plan-grid" x="-1000" y="-1000" width="2000" height="2000" fill="url(#grid-small)" />}
             <g className="north-arrow" aria-label="North points left" transform="translate(550 550)">
               <text x="-20" y="-10">N</text>
               <line x1="0" y1="0" x2="-42" y2="0" />

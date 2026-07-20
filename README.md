@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by the development server. Use the layer controls to toggle lighting, dimensions, and the 12-inch grid. Drag the plan to pan, scroll to zoom, select objects to inspect their data, and use **Print current view** for a print-friendly layout.
+Open the local URL printed by the development server. Use the layer controls to toggle plan overlays such as HVAC, framing status, ceiling joists, and dimensions. Drag the plan to pan, scroll to zoom, select objects to inspect their data, and use **Print current view** for a print-friendly layout.
 
 ## Change the plan
 

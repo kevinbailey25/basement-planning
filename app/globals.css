@@ -138,7 +138,6 @@ button { cursor: pointer; }
 .floor-plan { width: 100%; height: 100%; min-height: 0; display: block; cursor: grab; touch-action: none; user-select: none; overscroll-behavior: contain; }
 .floor-plan:active { cursor: grabbing; }
 .pan-surface { fill: var(--paper); }
-.plan-grid { color: #b8c6c2; opacity: .42; pointer-events: none; }
 .north-arrow { fill: none; stroke: #46534f; stroke-width: 2; pointer-events: none; }
 .north-arrow text { fill: #46534f; stroke: none; font: 800 11px/1 ui-monospace, monospace; text-anchor: middle; }
 .space-fill { fill: #faf8f2; stroke: transparent; cursor: pointer; }
