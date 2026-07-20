@@ -145,6 +145,27 @@ test("reports a round HVAC duct without a usable diameter", () => {
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-hvac-duct"));
 });
 
+test("stores the three south-side supply runs from the field survey", () => {
+  const short29 = pocPlan.hvacDucts.find((item) => item.id === "joists-29-30-short-supply-06");
+  const short32 = pocPlan.hvacDucts.find((item) => item.id === "joist-32-short-side-takeoff-supply-06");
+  const under37 = pocPlan.hvacDucts.find((item) => item.id === "supply-elbow-to-joist-37-under-joist-run-08");
+  const bay37 = pocPlan.hvacDucts.find((item) => item.id === "joists-37-38-upper-floor-supply-08");
+  assert.ok(short29 && short29.orientation === "horizontal" && short29.shape === "round");
+  assert.ok(short32 && short32.orientation === "horizontal" && short32.shape === "round");
+  assert.ok(under37 && under37.orientation === "horizontal" && under37.shape === "round");
+  assert.ok(bay37 && bay37.orientation === "horizontal" && bay37.shape === "round");
+  assert.deepEqual(
+    [short29.from, short29.to, short29.diameter],
+    [[362, 204.5], [362, 126.5], 6],
+  );
+  assert.deepEqual([short32.from, short32.to, short32.diameter], [[400.625, 195.5], [405, 187.5], 6]);
+  assert.deepEqual(
+    [under37.from, under37.waypoints, under37.to, under37.diameter],
+    [[412.25, 207.5], [[420.25, 199.5]], [487.5, 199.5], 8],
+  );
+  assert.deepEqual([bay37.from, bay37.to, bay37.diameter], [[487.5, 199.5], [487.5, 30], 8]);
+});
+
 test("stores the measured furnace supply trunk through its first reduction", () => {
   const plenum = pocPlan.hvacDucts.find((item) => item.id === "furnace-supply-vertical-plenum");
   const trunk24 = pocPlan.hvacDucts.find((item) => item.id === "main-supply-ceiling-trunk-24");
