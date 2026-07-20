@@ -474,7 +474,7 @@ function LayerToggle({ label, detail, checked, onChange, color }: { label: strin
 }
 
 export function BasementPlanner() {
-  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ hvac: true, hvacSupply: true, hvacReturn: true, water: false, framing: false, joists: false, dimensions: false, grid: false });
+  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ hvac: false, hvacSupply: false, hvacReturn: false, water: false, framing: false, joists: false, dimensions: false, grid: false });
   const [selectedId, setSelectedId] = useState<string>();
   const [measurementSide, setMeasurementSide] = useState<WallSide>();
   const [view, setView] = useState(DEFAULT_VIEW);
