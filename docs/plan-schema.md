@@ -114,7 +114,9 @@ The selected opening defaults to the wall's `interiorSide`. An inspector control
 
 When the opening's wall ends at a connected collinear wall segment, measurement derivation follows the continuous wall run. A junction on the opposite face does not prematurely stop the active face; the measurement continues until an opening, junction on that face, or the end of the connected run.
 
-## Water shutoffs
+## Plumbing
+
+### Water shutoffs
 
 Water valves are wall-mounted devices with an offset to the valve center. `referenceWallId` identifies the wall at the parent wall's `from` point used for the field measurement. The valve and its enclosure retain separate construction statuses.
 
@@ -139,6 +141,27 @@ waterValve({
 ```
 
 The Plumbing layer's Shutoffs sublayer draws the existing valve as a solid symbol and its proposed recessed enclosure as a dashed outline. The top-down box width is centered on the valve offset; it does not imply a measured enclosure depth. Selecting the valve temporarily dimensions its center from the reference-wall junction. The inspector reports the enclosure's bottom, height, and calculated top above the floor.
+
+### Floor drain rough-ins
+
+Plumbing floor penetrations use an absolute plan center, visible pipe or cap diameter, and protrusion above the concrete floor:
+
+```ts
+plumbingDrain({
+  id: "bathroom-toilet-drain-rough-in",
+  label: "Bathroom toilet drain rough-in",
+  fixture: "toilet",
+  at: [53, 310.5],
+  diameter: 3.5,
+  heightAboveFloor: 2.5,
+  capStatus: "capped",
+  pipeColor: "white",
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+The `at` point is the pipe center. Preserve the field references to bathroom-facing wall surfaces in `note`, including whether the measurement is exact or approximate. Use `fixture: "unknown"` instead of guessing from pipe diameter, cap color, or location. The Plumbing layer's Drains sublayer controls these objects independently from Shutoffs.
 
 ## Lighting and circuits
 

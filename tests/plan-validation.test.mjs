@@ -77,6 +77,42 @@ test("reports water-valve enclosures outside their parent wall", () => {
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-water-valve"));
 });
 
+test("stores the four capped Bathroom drain rough-ins from wall-face measurements", () => {
+  const tub = pocPlan.plumbingDrains.find((item) => item.id === "bathroom-tub-shower-drain-rough-in");
+  const toilet = pocPlan.plumbingDrains.find((item) => item.id === "bathroom-toilet-drain-rough-in");
+  const sink = pocPlan.plumbingDrains.find((item) => item.id === "bathroom-sink-drain-rough-in");
+  const unknown = pocPlan.plumbingDrains.find((item) => item.id === "bathroom-unknown-black-drain-rough-in");
+  assert.ok(tub && toilet && sink && unknown);
+  assert.deepEqual(
+    [tub.fixture, tub.at, tub.diameter, tub.heightAboveFloor, tub.capStatus, tub.pipeColor],
+    ["tub-shower", [20, 320.25], 2.5, 8, "capped", "white"],
+  );
+  assert.deepEqual(
+    [toilet.fixture, toilet.at, toilet.diameter, toilet.heightAboveFloor],
+    ["toilet", [53, 310.5], 3.5, 2.5],
+  );
+  assert.deepEqual(
+    [sink.fixture, sink.at, sink.diameter, sink.heightAboveFloor],
+    ["sink", [94.5, 317.25], 2.5, 10.5],
+  );
+  assert.deepEqual(
+    [unknown.fixture, unknown.at, unknown.diameter, unknown.heightAboveFloor, unknown.capStatus, unknown.pipeColor],
+    ["unknown", [122, 311], 5.5, 3, "capped", "black"],
+  );
+  assert.equal(tub.at[0] - 4, 16);
+  assert.equal(324.5 - tub.at[1], 4.25);
+  assert.equal(126.5 - sink.at[0], 32);
+  assert.equal(126.5 - unknown.at[0], 4.5);
+});
+
+test("reports plumbing drains without a usable diameter", () => {
+  const malformed = {
+    ...pocPlan,
+    plumbingDrains: [{ ...pocPlan.plumbingDrains[0], diameter: 0 }],
+  };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-plumbing-drain"));
+});
+
 test("stores the approximate furnace footprint from the field survey", () => {
   const furnace = pocPlan.hvacEquipment.find((item) => item.id === "existing-furnace");
   assert.ok(furnace);

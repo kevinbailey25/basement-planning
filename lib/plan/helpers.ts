@@ -10,6 +10,7 @@ import type {
   HvacDuctTransition,
   Joist,
   Point,
+  PlumbingDrain,
   SlidingDoor,
   Space,
   Stairs,
@@ -37,6 +38,9 @@ export const wallSwitch = (value: Omit<Switch, "kind">): Switch => ({
 export const waterValve = (
   value: Omit<WaterValve, "kind">,
 ): WaterValve => ({ kind: "water-valve", ...value });
+export const plumbingDrain = (
+  value: Omit<PlumbingDrain, "kind">,
+): PlumbingDrain => ({ kind: "plumbing-drain", ...value });
 export const stairs = (value: Omit<Stairs, "kind">): Stairs => ({
   kind: "stairs",
   ...value,

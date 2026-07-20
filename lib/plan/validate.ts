@@ -2,7 +2,7 @@ import { distance } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -17,6 +17,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.lights,
     ...plan.switches,
     ...plan.waterValves,
+    ...plan.plumbingDrains,
     ...plan.stairs,
     ...plan.joists,
     ...plan.hvacEquipment,
@@ -169,6 +170,16 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
       || !referenceTouchesStart
     ) {
       issues.push({ code: "invalid-water-valve", itemId: item.id, message: `Water valve “${item.id}” requires valid enclosure dimensions and a reference wall at the start of “${item.wallId}”.` });
+    }
+  }
+  for (const item of plan.plumbingDrains) {
+    if (
+      !Number.isFinite(item.at[0])
+      || !Number.isFinite(item.at[1])
+      || item.diameter <= 0
+      || item.heightAboveFloor < 0
+    ) {
+      issues.push({ code: "invalid-plumbing-drain", itemId: item.id, message: `Plumbing drain “${item.id}” requires a finite position, positive diameter, and non-negative height.` });
     }
   }
 

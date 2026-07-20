@@ -94,6 +94,16 @@ export interface WaterValve extends PlanItemBase {
   dimensionDistance: number;
 }
 
+export interface PlumbingDrain extends PlanItemBase {
+  kind: "plumbing-drain";
+  fixture: "tub-shower" | "toilet" | "sink" | "unknown";
+  at: Point;
+  diameter: number;
+  heightAboveFloor: number;
+  capStatus: "capped" | "open" | "unknown";
+  pipeColor: "white" | "black" | "unknown";
+}
+
 export interface Stairs extends PlanItemBase {
   kind: "stairs";
   from: Point;
@@ -220,6 +230,7 @@ export type SelectablePlanItem =
   | Light
   | Switch
   | WaterValve
+  | PlumbingDrain
   | Stairs
   | Joist
   | HvacEquipment
@@ -247,6 +258,7 @@ export interface FloorPlan {
   lights: readonly Light[];
   switches: readonly Switch[];
   waterValves: readonly WaterValve[];
+  plumbingDrains: readonly PlumbingDrain[];
   stairs: readonly Stairs[];
   joists: readonly Joist[];
   hvacEquipment: readonly HvacEquipment[];

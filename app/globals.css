@@ -84,6 +84,8 @@ button { cursor: pointer; }
 .legend-sliding-door::before { transform: translate(-2px, -2px); }
 .legend-sliding-door::after { transform: translate(2px, 2px); }
 .legend-water-valve { color: #8bc4d3; border: 1px dashed #5d98a8; font: 800 12px/1 ui-monospace, monospace; }
+.legend-plumbing-drain { border: 2px solid #8bc4d3; border-radius: 50%; }
+.legend-plumbing-drain::before { content: "×"; color: #8bc4d3; font: 800 10px/1 ui-monospace, monospace; }
 .legend-hvac-equipment { color: #8bc4d3; border: 1px solid #5d98a8; font: 800 10px/1 ui-monospace, monospace; }
 .legend-return-duct { height: 11px !important; border: 1px solid #5d98a8; background: rgb(73 124 137 / 18%); }
 .legend-panned-return { height: 11px !important; border: 1px solid #5d98a8; background: repeating-linear-gradient(45deg, rgb(73 124 137 / 18%) 0 2px, transparent 2px 5px); }
@@ -220,6 +222,15 @@ button { cursor: pointer; }
 .valve-body { fill: var(--paper); stroke: #39798a; stroke-width: 1.3; }
 .valve-handle, .valve-leader { fill: none; stroke: #39798a; stroke-width: .8; }
 .valve-label { fill: #2f6e7f; stroke: var(--paper); stroke-width: 2.5; paint-order: stroke; font: 700 5.2px/1 ui-monospace, monospace; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.plumbing-drain-symbol { cursor: pointer; }
+.plumbing-drain-hit { fill: transparent; stroke: transparent; }
+.plumbing-drain-footprint { fill: var(--paper); stroke: #39798a; stroke-width: .9; }
+.plumbing-drain-symbol.black .plumbing-drain-footprint { fill: #34403d; }
+.plumbing-drain-cap, .plumbing-drain-leader { fill: none; stroke: #39798a; stroke-width: .65; }
+.plumbing-drain-symbol.black .plumbing-drain-cap { stroke: var(--paper); }
+.plumbing-drain-label { fill: #2f6e7f; stroke: var(--paper); stroke-width: 2; paint-order: stroke; font: 700 4px/1 ui-monospace, monospace; text-anchor: middle; pointer-events: none; }
+.plumbing-drain-symbol.selected .plumbing-drain-footprint, .plumbing-drain-symbol.selected .plumbing-drain-cap, .plumbing-drain-symbol.selected .plumbing-drain-leader { stroke: #c66e12; stroke-width: 1.4; }
+.plumbing-drain-symbol.selected .plumbing-drain-label { fill: #a75b0a; }
 .door-hit { stroke: transparent; stroke-width: 14; }
 .door-leaf { stroke-width: 1.3; }
 .door-swing { stroke-width: .7; stroke-dasharray: 2 1.5; }
@@ -287,14 +298,14 @@ button { cursor: pointer; }
   .wall-line { stroke: #000; }
   .joist-board { stroke: #777; opacity: .7; }
   .joist-symbol.selected .joist-board { stroke: #111; }
-  .window-symbol, .door-symbol, .door-symbol.proposed, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
+  .window-symbol, .door-symbol, .door-symbol.proposed, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .plumbing-drain-footprint, .plumbing-drain-cap, .plumbing-drain-leader, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
   .hvac-equipment-footprint { fill: #eee; }
   .hvac-duct-footprint { fill: #eee; }
   .hvac-duct-band, .hvac-duct-symbol.supply .hvac-duct-band { stroke: #eee; }
   .hvac-transition-footprint { fill: #eee; }
   .hvac-joist-return-footprint { fill: #eee; stroke-dasharray: 2 1; }
   .hvac-equipment-label, .hvac-duct-label, .hvac-refrigerant-label { fill: #111; stroke: #fff; }
-  .water-valve-symbol .valve-label { fill: #111; stroke: #fff; }
+  .water-valve-symbol .valve-label, .plumbing-drain-label { fill: #111; stroke: #fff; }
   .north-arrow { stroke: #111; }
   .north-arrow text { fill: #111; }
   .dimension-mark text, .space-label, .space-area { fill: #111; }
