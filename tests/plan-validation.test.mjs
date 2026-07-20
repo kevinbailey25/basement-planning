@@ -260,6 +260,17 @@ test("stores the measured furnace supply trunk through its first reduction", () 
   assert.deepEqual([trunk20.from, trunk20.to, trunk20.width, trunk20.bottomAboveFloor], [[150, 209.5], [4, 209.5], 20, 83]);
 });
 
+test("north-wall east window overlaps the 20-inch supply trunk by approximately 4 inches", () => {
+  const window = pocPlan.windows.find((item) => item.id === "north-wall-window-east");
+  const wall = pocPlan.walls.find((item) => item.id === window?.wallId);
+  const trunk = pocPlan.hvacDucts.find((item) => item.id === "main-supply-ceiling-trunk-20");
+  assert.ok(window && wall && trunk && trunk.orientation === "horizontal" && trunk.shape === "rectangular");
+  const windowWestEdge = wall.from[1] - window.offset;
+  const trunkEastEdge = trunk.from[1] - trunk.width / 2;
+  assert.equal(window.offset, 367.5);
+  assert.equal(windowWestEdge - trunkEastEdge, 4);
+});
+
 test("reports an HVAC transition without a usable footprint", () => {
   const malformed = {
     ...pocPlan,

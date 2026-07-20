@@ -138,7 +138,7 @@ waterValve({
 })
 ```
 
-The Water shutoffs layer draws the existing valve as a solid symbol and its proposed recessed enclosure as a dashed outline. The top-down box width is centered on the valve offset; it does not imply a measured enclosure depth. Selecting the valve temporarily dimensions its center from the reference-wall junction. The inspector reports the enclosure's bottom, height, and calculated top above the floor.
+The Plumbing layer's Shutoffs sublayer draws the existing valve as a solid symbol and its proposed recessed enclosure as a dashed outline. The top-down box width is centered on the valve offset; it does not imply a measured enclosure depth. Selecting the valve temporarily dimensions its center from the reference-wall junction. The inspector reports the enclosure's bottom, height, and calculated top above the floor.
 
 ## Lighting and circuits
 

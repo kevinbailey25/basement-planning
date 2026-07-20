@@ -203,7 +203,7 @@ export const pocPlan = {
   windows: [
     windowOpening({ id: "east-wall-window-north", label: "East wall window — north", wallId: "east-exterior-wall", offset: 70, width: 47, note: "Measured frame width and offset from the northeast jog.", ...existing }),
     windowOpening({ id: "east-wall-window-south", label: "East wall window — south", wallId: "east-exterior-wall", offset: 279, width: 47, note: "Measured frame width and offset from the northeast jog.", ...existing }),
-    windowOpening({ id: "north-wall-window-east", label: "North wall window — east", wallId: "north-exterior-wall", offset: 378, width: 48, note: "Width and offset scaled from the sketch.", ...existing }),
+    windowOpening({ id: "north-wall-window-east", label: "North wall window — east", wallId: "north-exterior-wall", offset: 367.5, width: 48, note: "Approximate 48-inch width. Moved west from the original sketch trace so the opening overlaps the plan footprint of main-supply-ceiling-trunk-20 by approximately 4 inches.", ...existing }),
     windowOpening({ id: "north-wall-office-window", label: "North wall office window", wallId: "north-exterior-wall", offset: 112, width: 47, note: "Placed approximately 112 inches east of the office-west-wall junction.", ...existing }),
   ],
   lights: [

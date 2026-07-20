@@ -40,7 +40,7 @@ test("stops a window measurement at the nearest intersecting wall", () => {
   const measurement = measureOpening(pocPlan, "north-wall-window-east");
   assert.ok(measurement);
   assert.equal(measurement.beforeBoundary, 304);
-  assert.equal(measurement.beforeDistance, 74);
+  assert.equal(measurement.beforeDistance, 63.5);
   assert.equal(measurement.openingWidth, 48);
   assert.equal(measurement.beforeDirection, "west");
   assert.equal(measurement.afterDirection, "east");
@@ -74,7 +74,7 @@ test("labels the opposite side of an exterior window", () => {
     { side: "left", label: "Exterior" },
   ]);
   assert.equal(exterior.sideLabel, "Exterior");
-  assert.equal(exterior.beforeDistance, 219);
+  assert.equal(exterior.beforeDistance, 208.5);
 });
 
 test("continues Storage-side measurements across connected collinear wall segments", () => {
