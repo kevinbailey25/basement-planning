@@ -2,7 +2,7 @@ import { distance } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-transition";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition";
   itemId: string;
   message: string;
 }
@@ -21,6 +21,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.joists,
     ...plan.hvacEquipment,
     ...plan.hvacDucts,
+    ...plan.hvacJoistReturns,
     ...plan.hvacDuctTransitions,
     ...plan.circuits,
     ...plan.dimensions,
@@ -93,6 +94,19 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     );
     if (invalidHorizontal || invalidVertical) {
       issues.push({ code: "invalid-hvac-duct", itemId: item.id, message: `HVAC duct “${item.id}” requires positive dimensions, valid elevations, and usable plan geometry.` });
+    }
+  }
+  const joistIds = new Set(plan.joists.map((item) => item.id));
+  for (const item of plan.hvacJoistReturns) {
+    const twiceArea = Math.abs(item.polygon.reduce((sum, point, index) => {
+      const next = item.polygon[(index + 1) % item.polygon.length];
+      return sum + point[0] * next[1] - next[0] * point[1];
+    }, 0));
+    if (item.polygon.length < 3 || twiceArea === 0 || item.joistIds.length < 2) {
+      issues.push({ code: "invalid-hvac-joist-return", itemId: item.id, message: `Panned joist return “${item.id}” requires a usable footprint and at least two framing references.` });
+    }
+    for (const joistId of item.joistIds) {
+      if (!joistIds.has(joistId)) issues.push({ code: "missing-joist", itemId: item.id, message: `Panned joist return “${item.id}” references missing joist “${joistId}”.` });
     }
   }
   for (const item of plan.hvacDuctTransitions) {

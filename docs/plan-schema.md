@@ -244,6 +244,21 @@ horizontalHvacDuct({
 
 Split horizontal runs at bends, branches, size changes, meaningful elevation changes, and transitions between visible and concealed work. `airflowRole` is independent from construction `status`; use `unknown` rather than inferring supply or return from duct size.
 
+Returns formed by sheet-metal panning across joist bays use an explicit plan footprint and stable joist references. This keeps observed panning distinct from an ordinary freestanding rectangular duct:
+
+```ts
+hvacJoistReturn({
+  id: "joists-23-25-west-wall-panned-return",
+  label: "Joists 23–25 west-wall panned return",
+  polygon: [[291.75, 238], [322.5, 238], [322.5, 264.5], [291.75, 264.5]],
+  joistIds: ["main-ceiling-joist-23", "main-ceiling-joist-24", "main-ceiling-joist-25"],
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+The polygon records only the observed or reasonably inferred plan projection. Describe uncertain wall, floor, or concealed continuations in `note`; do not invent an elevation or terminal grille. Every `joistIds` entry must reference an existing joist.
+
 A constant-size horizontal duct may include intentional waypoints. Set `bendStyle: "round"` when a measured elbow has a curved outside corner:
 
 ```ts

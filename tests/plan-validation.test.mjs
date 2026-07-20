@@ -104,6 +104,31 @@ test("stores the measured furnace return assembly", () => {
   assert.equal(trunk.airflowRole, "return");
 });
 
+test("stores the four newly surveyed return runs", () => {
+  const furnaceRoom = pocPlan.hvacDucts.find((item) => item.id === "furnace-return-riser-south-wall-run-08");
+  const bays23 = pocPlan.hvacJoistReturns.find((item) => item.id === "joists-23-25-west-wall-panned-return");
+  const bays19 = pocPlan.hvacJoistReturns.find((item) => item.id === "joists-19-21-west-wall-panned-return");
+  const office = pocPlan.hvacJoistReturns.find((item) => item.id === "north-trunk-bathroom-office-panned-return");
+  assert.ok(furnaceRoom && furnaceRoom.orientation === "horizontal" && furnaceRoom.shape === "round");
+  assert.deepEqual(
+    [furnaceRoom.from, furnaceRoom.waypoints, furnaceRoom.to, furnaceRoom.diameter, furnaceRoom.bottomAboveFloor],
+    [[392.5, 238], [[392.5, 234]], [474.5, 234], 8, 75],
+  );
+  assert.ok(bays23 && bays19 && office);
+  assert.deepEqual(bays23.joistIds, ["main-ceiling-joist-23", "main-ceiling-joist-24", "main-ceiling-joist-25"]);
+  assert.deepEqual(bays19.joistIds, ["main-ceiling-joist-19", "main-ceiling-joist-20", "main-ceiling-joist-21"]);
+  assert.deepEqual(office.polygon.slice(-3), [[86.25, 417], [86.25, 327], [86.75, 327]]);
+  assert.match(office.note, /approximately 90 inches west/);
+});
+
+test("reports malformed or unanchored panned joist returns", () => {
+  const panned = pocPlan.hvacJoistReturns[0];
+  const malformed = { ...pocPlan, hvacJoistReturns: [{ ...panned, polygon: [[0, 0], [1, 1]], joistIds: ["missing-joist"] }] };
+  const issues = validatePlan(malformed);
+  assert.ok(issues.some((issue) => issue.code === "invalid-hvac-joist-return"));
+  assert.ok(issues.some((issue) => issue.code === "missing-joist"));
+});
+
 test("reports invalid HVAC ducts", () => {
   const malformedDuct = {
     ...pocPlan,
@@ -136,6 +161,22 @@ test("stores the matching round supply branches in joist bays 16–17 and 23–2
     [branch23.from, branch23.to, branch23.diameter, branch23.bottomAboveFloor],
     [[298.5, 207.5], [298.5, 30], 8, 93],
   );
+});
+
+test("stores the three westbound supply branches from the field survey", () => {
+  const closet = pocPlan.hvacDucts.find((item) => item.id === "joists-04-05-office-closet-supply-08");
+  const flexible = pocPlan.hvacDucts.find((item) => item.id === "joists-05-06-short-flex-supply-08");
+  const officeWall = pocPlan.hvacDucts.find((item) => item.id === "joists-16-17-office-south-wall-supply-06");
+  assert.ok(closet && closet.orientation === "horizontal" && closet.shape === "round");
+  assert.ok(flexible && flexible.orientation === "horizontal" && flexible.shape === "round");
+  assert.ok(officeWall && officeWall.orientation === "horizontal" && officeWall.shape === "round");
+  assert.deepEqual(
+    [closet.from, closet.waypoints, closet.to, closet.diameter],
+    [[55.5, 209.5], [[55.5, 312], [43.75, 312]], [43.75, 567], 8],
+  );
+  assert.deepEqual([flexible.from, flexible.to, flexible.diameter], [[66.25, 209.5], [66.25, 235], 8]);
+  assert.match(flexible.note, /compressed to fit the approximately 7\.5-inch clear joist bay/);
+  assert.deepEqual([officeWall.from, officeWall.to, officeWall.diameter], [[188, 207.5], [188, 525], 6]);
 });
 
 test("reports a round HVAC duct without a usable diameter", () => {

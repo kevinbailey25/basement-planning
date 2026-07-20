@@ -161,6 +161,13 @@ export interface VerticalHvacDuct extends PlanItemBase {
 
 export type HvacDuct = HorizontalHvacDuct | VerticalHvacDuct;
 
+export interface HvacJoistReturn extends PlanItemBase {
+  kind: "hvac-joist-return";
+  airflowRole: "return";
+  polygon: readonly Point[];
+  joistIds: readonly string[];
+}
+
 export interface HvacDuctTransition extends PlanItemBase {
   kind: "hvac-duct-transition";
   airflowRole: AirflowRole;
@@ -207,6 +214,7 @@ export type SelectablePlanItem =
   | Joist
   | HvacEquipment
   | HvacDuct
+  | HvacJoistReturn
   | HvacDuctTransition
   | Circuit
   | Dimension;
@@ -232,6 +240,7 @@ export interface FloorPlan {
   joists: readonly Joist[];
   hvacEquipment: readonly HvacEquipment[];
   hvacDucts: readonly HvacDuct[];
+  hvacJoistReturns: readonly HvacJoistReturn[];
   hvacDuctTransitions: readonly HvacDuctTransition[];
   circuits: readonly Circuit[];
   dimensions: readonly Dimension[];

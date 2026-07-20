@@ -4,6 +4,7 @@ import type {
   Door,
   Light,
   HvacEquipment,
+  HvacJoistReturn,
   HorizontalHvacDuct,
   HvacDuctTransition,
   Joist,
@@ -46,6 +47,9 @@ export const joist = (value: Omit<Joist, "kind">): Joist => ({
 export const hvacEquipment = (
   value: Omit<HvacEquipment, "kind">,
 ): HvacEquipment => ({ kind: "hvac-equipment", ...value });
+export const hvacJoistReturn = (
+  value: Omit<HvacJoistReturn, "kind" | "airflowRole">,
+): HvacJoistReturn => ({ kind: "hvac-joist-return", airflowRole: "return", ...value });
 type HorizontalHvacDuctInput = HorizontalHvacDuct extends infer Duct
   ? Duct extends HorizontalHvacDuct
     ? Omit<Duct, "kind" | "orientation">
