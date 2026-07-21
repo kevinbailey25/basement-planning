@@ -294,6 +294,18 @@ test("stores the north-bay round supply branch", () => {
   assert.equal(branch.confidence, "approximate");
 });
 
+test("stores the proposed supply from joists 1–2 to the north-wall east window", () => {
+  const branch = pocPlan.hvacDucts.find((item) => item.id === "joists-01-02-north-wall-window-east-supply-06");
+  assert.ok(branch && branch.orientation === "horizontal" && branch.shape === "round");
+  assert.deepEqual(
+    [branch.from, branch.to, branch.diameter, branch.bottomAboveFloor, branch.airflowRole],
+    [[20.25, 209.5], [20.25, 179.5], 6, 93, "supply"],
+  );
+  assert.equal(branch.status, "proposed");
+  assert.equal(branch.confidence, "approximate");
+  assert.match(branch.note, /midpoint of north-wall-window-east/);
+});
+
 test("stores the matching round supply branches in joist bays 16–17 and 23–24", () => {
   const branch16 = pocPlan.hvacDucts.find((item) => item.id === "joists-16-17-upper-floor-supply-08");
   const branch23 = pocPlan.hvacDucts.find((item) => item.id === "joists-23-24-upper-floor-supply-08");
@@ -307,6 +319,19 @@ test("stores the matching round supply branches in joist bays 16–17 and 23–2
     [branch23.from, branch23.to, branch23.diameter, branch23.bottomAboveFloor],
     [[298.5, 207.5], [298.5, 30], 8, 93],
   );
+});
+
+test("stores the proposed supply from joists 18–19 to the east-wall north window", () => {
+  const branch = pocPlan.hvacDucts.find((item) => item.id === "joists-18-19-east-wall-window-north-supply-06");
+  assert.ok(branch && branch.orientation === "horizontal" && branch.shape === "round");
+  assert.deepEqual(
+    [branch.from, branch.to, branch.diameter, branch.bottomAboveFloor, branch.airflowRole],
+    [[219.75, 207.5], [219.75, 38.125], 6, 93, "supply"],
+  );
+  assert.equal(branch.status, "proposed");
+  assert.equal(branch.confidence, "approximate");
+  assert.match(branch.note, /8\.125 inches inside the east wall face/);
+  assert.match(branch.note, /1\.25 inches south of the midpoint of east-wall-window-north/);
 });
 
 test("stores the three westbound supply branches from the field survey", () => {
