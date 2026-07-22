@@ -138,7 +138,7 @@ test("stores the surveyed natural-gas route and field references", () => {
   assert.ok(southRun && fireplace && waterHeater);
   assert.deepEqual(
     [southRun.from, southRun.to, southRun.placement, southRun.offsetBelowJoists],
-    [[20, 236], [335.25, 236], "below-joists", 5],
+    [[17.875, 236], [335.25, 236], "below-joists", 5],
   );
   assert.deepEqual(
     [fireplace.from, fireplace.to, fireplace.fromEndpoint, fireplace.toEndpoint],
@@ -166,10 +166,19 @@ test("anchors the fireplace gas branch to the measured joist and wall references
 test("keeps the Office closet gas entry approximately 2.5 inches off office-west-wall", () => {
   const service = pocPlan.gasLines.find((item) => item.id === "gas-service-entry-office-closet-to-main-room");
   const officeWestWall = pocPlan.walls.find((item) => item.id === "office-west-wall");
-  assert.ok(service && officeWestWall);
+  const joist1 = pocPlan.joists.find((item) => item.id === "main-ceiling-joist-01");
+  assert.ok(service && officeWestWall && joist1);
   const officeWestWallInteriorFace = officeWestWall.from[1] - officeWestWall.thickness / 2;
+  const joist1SouthFace = joist1.from[0] + joist1.width / 2;
   assert.equal(officeWestWallInteriorFace - service.from[1], 2.5);
-  assert.deepEqual(service.waypoints, [[20, 564.5]]);
+  assert.equal(service.to[0] - joist1SouthFace, 2.375);
+  assert.deepEqual(service.waypoints, [[17.875, 564.5]]);
+  assert.match(service.note, /nearest outside edge/);
+  assert.match(service.note, /outside diameter is approximately 1\.75 inches/);
+  assert.match(service.note, /modeled centerline is 2\.375 inches/);
+  assert.match(service.note, /approximately 1 to 2 inches above the joist bottom/);
+  assert.match(service.note, /approximately 8 inches minimum clear/);
+  assert.match(service.note, /approximately 9 to 10 inches clear/);
 });
 
 test("places the second-floor furnace gas rise southwest of the Furnace Room vent", () => {
@@ -306,6 +315,35 @@ test("stores the proposed supply from joists 1–2 to the north-wall east window
   assert.match(branch.note, /midpoint of north-wall-window-east/);
 });
 
+test("stores the proposed supply from joists 1–2 to the north-wall Office window", () => {
+  const branch = pocPlan.hvacDucts.find((item) => item.id === "joists-01-02-north-wall-office-window-supply-06");
+  assert.ok(branch && branch.orientation === "horizontal" && branch.shape === "round");
+  assert.deepEqual(
+    [branch.from, branch.to, branch.diameter, branch.bottomAboveFloor, branch.airflowRole],
+    [[20.25, 209.5], [20.25, 435.5], 6, 93, "supply"],
+  );
+  assert.equal(branch.status, "proposed");
+  assert.equal(branch.confidence, "approximate");
+  assert.match(branch.note, /gas-service-entry-office-closet-to-main-room/);
+  assert.match(branch.note, /approximately 8 inches minimum clear/);
+  assert.match(branch.note, /midpoint of north-wall-office-window/);
+});
+
+test("stores the proposed supply from joists 11–12 to the Bathroom south side", () => {
+  const branch = pocPlan.hvacDucts.find((item) => item.id === "joists-11-12-bathroom-south-supply-05");
+  assert.ok(branch && branch.orientation === "horizontal" && branch.shape === "round");
+  assert.deepEqual(
+    [branch.from, branch.to, branch.diameter, branch.bottomAboveFloor, branch.airflowRole],
+    [[115.25, 209.5], [115.25, 297], 5, 93, "supply"],
+  );
+  assert.equal(branch.status, "proposed");
+  assert.equal(branch.confidence, "approximate");
+  assert.match(branch.note, /crosses above main-return-ceiling-trunk/);
+  assert.match(branch.note, /above the Bathroom doorway/);
+  assert.match(branch.note, /11\.25 inches north/);
+  assert.match(branch.note, /bathroom-ceiling-joist-11/);
+});
+
 test("stores the matching round supply branches in joist bays 16–17 and 23–24", () => {
   const branch16 = pocPlan.hvacDucts.find((item) => item.id === "joists-16-17-upper-floor-supply-08");
   const branch23 = pocPlan.hvacDucts.find((item) => item.id === "joists-23-24-upper-floor-supply-08");
@@ -332,6 +370,19 @@ test("stores the proposed supply from joists 18–19 to the east-wall north wind
   assert.equal(branch.confidence, "approximate");
   assert.match(branch.note, /8\.125 inches inside the east wall face/);
   assert.match(branch.note, /1\.25 inches south of the midpoint of east-wall-window-north/);
+});
+
+test("stores the proposed supply from joists 34–35 to the east-wall south window", () => {
+  const branch = pocPlan.hvacDucts.find((item) => item.id === "joists-34-35-east-wall-window-south-supply-06");
+  assert.ok(branch && branch.orientation === "horizontal" && branch.shape === "round");
+  assert.deepEqual(
+    [branch.from, branch.to, branch.diameter, branch.bottomAboveFloor, branch.airflowRole],
+    [[440.25, 199.5], [440.25, 38.125], 6, 93, "supply"],
+  );
+  assert.equal(branch.status, "proposed");
+  assert.equal(branch.confidence, "approximate");
+  assert.match(branch.note, /supply-elbow-to-joist-37-under-joist-run-08/);
+  assert.match(branch.note, /accessible balancing damper/);
 });
 
 test("stores the three westbound supply branches from the field survey", () => {
