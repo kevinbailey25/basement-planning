@@ -15,6 +15,7 @@ import {
   stairs,
   verticalHvacDuct,
   wall,
+  wallCabinet,
   waterValve,
   windowOpening,
 } from "./helpers.ts";
@@ -214,6 +215,47 @@ export const pocPlan = {
   ],
   switches: [
     // Wall devices will be added when the electrical layout is mapped.
+  ],
+  wallCabinets: [
+    wallCabinet({
+      id: "south-wall-west-electrical-panel",
+      label: "West electrical panel",
+      cabinetType: "breaker-panel",
+      wallId: "south-exterior-wall",
+      referenceWallId: "storage-west-wall",
+      offset: 12,
+      width: 15.25,
+      bottomAboveFloor: 45,
+      height: 27,
+      note: "Existing recessed breaker panel near the west end of the south exterior wall. Measurements are approximate; the cabinet occupies the stud cavity and its depth is intentionally not modeled.",
+      ...existing,
+    }),
+    wallCabinet({
+      id: "south-wall-east-electrical-panel",
+      label: "East electrical panel",
+      cabinetType: "breaker-panel",
+      wallId: "south-exterior-wall",
+      referenceWallId: "storage-west-wall",
+      offset: 27.5,
+      width: 15.25,
+      bottomAboveFloor: 45,
+      height: 27,
+      note: "Existing recessed breaker panel matching the west panel. Its west edge is approximately 0.25 inches east of the west panel frame.",
+      ...existing,
+    }),
+    wallCabinet({
+      id: "south-wall-networking-cabinet",
+      label: "Networking cabinet",
+      cabinetType: "networking",
+      wallId: "south-exterior-wall",
+      referenceWallId: "storage-west-wall",
+      offset: 42.5,
+      width: 15.5,
+      bottomAboveFloor: 29,
+      height: 43,
+      note: "Existing recessed low-voltage networking cabinet. Height is normalized to approximately 43 inches so its top aligns near 72 inches with both breaker panels; the outer frame overlaps the east panel by approximately 0.25 inches.",
+      ...existing,
+    }),
   ],
   waterValves: [
     waterValve({

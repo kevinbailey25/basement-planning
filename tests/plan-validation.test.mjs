@@ -77,6 +77,40 @@ test("reports water-valve enclosures outside their parent wall", () => {
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-water-valve"));
 });
 
+test("stores the south-wall electrical and networking cabinets from west-wall measurements", () => {
+  const westPanel = pocPlan.wallCabinets.find((item) => item.id === "south-wall-west-electrical-panel");
+  const eastPanel = pocPlan.wallCabinets.find((item) => item.id === "south-wall-east-electrical-panel");
+  const network = pocPlan.wallCabinets.find((item) => item.id === "south-wall-networking-cabinet");
+  assert.ok(westPanel && eastPanel && network);
+  assert.deepEqual(
+    [westPanel.wallId, westPanel.referenceWallId, westPanel.offset, westPanel.width, westPanel.bottomAboveFloor, westPanel.height],
+    ["south-exterior-wall", "storage-west-wall", 12, 15.25, 45, 27],
+  );
+  assert.deepEqual(
+    [eastPanel.offset, eastPanel.width, eastPanel.bottomAboveFloor, eastPanel.height],
+    [27.5, 15.25, 45, 27],
+  );
+  assert.deepEqual(
+    [network.cabinetType, network.offset, network.width, network.bottomAboveFloor, network.height],
+    ["networking", 42.5, 15.5, 29, 43],
+  );
+  assert.equal(eastPanel.offset - (westPanel.offset + westPanel.width), 0.25);
+  assert.equal(network.offset - (eastPanel.offset + eastPanel.width), -0.25);
+  assert.deepEqual(
+    [westPanel.bottomAboveFloor + westPanel.height, eastPanel.bottomAboveFloor + eastPanel.height, network.bottomAboveFloor + network.height],
+    [72, 72, 72],
+  );
+  assert.equal(pocPlan.wallCabinets.every((item) => item.confidence === "approximate"), true);
+});
+
+test("reports wall cabinets with invalid wall-relative geometry", () => {
+  const malformed = {
+    ...pocPlan,
+    wallCabinets: [{ ...pocPlan.wallCabinets[0], width: 500 }],
+  };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-wall-cabinet"));
+});
+
 test("stores the four capped Bathroom drain rough-ins from wall-face measurements", () => {
   const tub = pocPlan.plumbingDrains.find((item) => item.id === "bathroom-tub-shower-drain-rough-in");
   const toilet = pocPlan.plumbingDrains.find((item) => item.id === "bathroom-toilet-drain-rough-in");

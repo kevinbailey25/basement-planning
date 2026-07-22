@@ -2,16 +2,16 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
-import { add, distance, formatInches, pointAlong, unitNormal } from "../lib/plan/helpers";
+import { add, distance, formatInches, pointAlong, unitNormal, wallCabinetSpan } from "../lib/plan/helpers";
 import { estimateFraming, wallsNeedingFraming } from "../lib/plan/framing";
 import { measureOpening } from "../lib/plan/opening-measurements";
 import { pocPlan } from "../lib/plan/poc-plan";
 import type { OpeningMeasurement } from "../lib/plan/opening-measurements";
-import type { AirflowRole, Dimension, GasEndpoint, GasLine, HorizontalHvacDuct, HvacDuct, HvacDuctTransition, HvacEquipment, HvacJoistReturn, HvacRefrigerantLine, Joist, PlumbingDrain, PlumbingEquipment, Point, SelectablePlanItem, Stairs, Wall, WallSide, WaterValve } from "../lib/plan/types";
+import type { AirflowRole, Dimension, GasEndpoint, GasLine, HorizontalHvacDuct, HvacDuct, HvacDuctTransition, HvacEquipment, HvacJoistReturn, HvacRefrigerantLine, Joist, PlumbingDrain, PlumbingEquipment, Point, SelectablePlanItem, Stairs, Wall, WallCabinet, WallSide, WaterValve } from "../lib/plan/types";
 import { allPlanItems, validatePlan } from "../lib/plan/validate";
 
 const DEFAULT_VIEW = { x: -42, y: -42, width: 655, height: 665 };
-type ToggleKey = "hvac" | "hvacSupply" | "hvacReturn" | "hvacVenting" | "hvacRefrigerant" | "gas" | "plumbing" | "plumbingShutoffs" | "plumbingDrains" | "plumbingEquipment" | "framing" | "joists" | "dimensions";
+type ToggleKey = "hvac" | "hvacSupply" | "hvacReturn" | "hvacVenting" | "hvacRefrigerant" | "gas" | "plumbing" | "plumbingShutoffs" | "plumbingDrains" | "plumbingEquipment" | "electrical" | "electricalPanels" | "electricalLowVoltage" | "framing" | "joists" | "dimensions";
 
 function getWall(wallId: string) {
   return pocPlan.walls.find((item) => item.id === wallId);
@@ -369,6 +369,30 @@ function WaterValveMark({ item, selected, onSelect }: { item: WaterValve; select
   );
 }
 
+function WallCabinetMark({ item, selected, onSelect }: { item: WallCabinet; selected: boolean; onSelect: () => void }) {
+  const wall = getWall(item.wallId)!;
+  const referenceWall = getWall(item.referenceWallId)!;
+  const [startOffset, endOffset] = wallCabinetSpan(item, wall, referenceWall)!;
+  const start = pointAlong(wall.from, wall.to, startOffset);
+  const end = pointAlong(wall.from, wall.to, endOffset);
+  const midpoint = pointAlong(wall.from, wall.to, (startOffset + endOffset) / 2);
+  const normal = unitNormal(wall.from, wall.to, wall.interiorSide);
+  const halfWallDepth = wall.thickness / 2;
+  const interiorStart = add(start, normal, halfWallDepth);
+  const interiorEnd = add(end, normal, halfWallDepth);
+  const corners = [interiorStart, interiorEnd, add(end, normal, -halfWallDepth), add(start, normal, -halfWallDepth)];
+  const labelAt = midpoint;
+  const label = item.cabinetType === "breaker-panel" ? (item.id.includes("west") ? "P1" : "P2") : "NET";
+  return (
+    <g data-selectable aria-label={item.label} className={`wall-cabinet-symbol ${item.cabinetType} ${selected ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); onSelect(); }}>
+      <polygon className="wall-cabinet-hit" points={corners.map((point) => point.join(",")).join(" ")} />
+      <polygon className="wall-cabinet-footprint" points={corners.map((point) => point.join(",")).join(" ")} />
+      <line className="wall-cabinet-face" x1={interiorStart[0]} y1={interiorStart[1]} x2={interiorEnd[0]} y2={interiorEnd[1]} />
+      <text className="wall-cabinet-label" x={labelAt[0]} y={labelAt[1]}>{label}</text>
+    </g>
+  );
+}
+
 function PlumbingDrainMark({ item, selected, onSelect }: { item: PlumbingDrain; selected: boolean; onSelect: () => void }) {
   const radius = item.diameter / 2;
   const label = item.fixture === "tub-shower" ? "TUB" : item.fixture === "toilet" ? "WC" : item.fixture === "sink" ? "SINK" : "?";
@@ -475,11 +499,21 @@ function Inspector({ item, openingMeasurement, onMeasurementSideChange }: {
       [openingMeasurement.combined ? "Combined opening" : "Opening width", measuredValue(openingMeasurement.openingWidth)],
       [afterLabel, measuredValue(openingMeasurement.afterDistance)],
     );
-  } else if ("width" in item) rows.push(["Width", item.kind === "joist" ? `≈ ${item.width}″` : formatInches(item.width)]);
+  } else if ("width" in item) rows.push(["Width", item.kind === "joist" ? `≈ ${item.width}″` : item.kind === "wall-cabinet" ? `≈ ${formatInches(item.width)}` : formatInches(item.width)]);
   if ("heightAboveFloor" in item && item.heightAboveFloor != null) rows.push(["Height above floor", formatInches(item.heightAboveFloor)]);
   if (item.kind === "wall") rows.push(["Length", formatInches(distance(item.from, item.to))], ["Thickness", `${item.thickness}″`], ["Framing", item.framingStatus]);
   if (item.kind === "light") rows.push(["Position", `x ${item.at[0]}″ · y ${item.at[1]}″`]);
   if (item.kind === "switch") rows.push(["Wall offset", formatInches(item.offset)]);
+  if (item.kind === "wall-cabinet") {
+    const referenceWall = getWall(item.referenceWallId);
+    rows.push(
+      ["Cabinet", item.cabinetType === "breaker-panel" ? "Breaker panel" : "Low-voltage networking"],
+      [`Near edge from ${referenceWall?.label ?? item.referenceWallId}`, `≈ ${formatInches(item.offset)}`],
+      ["Bottom", `≈ ${formatInches(item.bottomAboveFloor)} above floor`],
+      ["Height", `≈ ${formatInches(item.height)}`],
+      ["Top", `≈ ${formatInches(item.bottomAboveFloor + item.height)} above floor`],
+    );
+  }
   if (item.kind === "water-valve") {
     const referenceWall = getWall(item.referenceWallId);
     rows.push(
@@ -621,7 +655,7 @@ function LayerToggle({ label, detail, checked, onChange, color }: { label: strin
 }
 
 export function BasementPlanner() {
-  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ hvac: false, hvacSupply: true, hvacReturn: true, hvacVenting: true, hvacRefrigerant: true, gas: false, plumbing: false, plumbingShutoffs: true, plumbingDrains: true, plumbingEquipment: true, framing: false, joists: false, dimensions: false });
+  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ hvac: false, hvacSupply: true, hvacReturn: true, hvacVenting: true, hvacRefrigerant: true, gas: false, plumbing: false, plumbingShutoffs: true, plumbingDrains: true, plumbingEquipment: true, electrical: false, electricalPanels: false, electricalLowVoltage: false, framing: false, joists: false, dimensions: false });
   const [selectedId, setSelectedId] = useState<string>();
   const [measurementSide, setMeasurementSide] = useState<WallSide>();
   const [view, setView] = useState(DEFAULT_VIEW);
@@ -686,7 +720,7 @@ export function BasementPlanner() {
         <div className="brand-block"><div className="brand-mark">BP</div><div><span className="eyebrow">Working plan</span><h1>{pocPlan.title}</h1></div></div>
         <p className="subtitle">{pocPlan.subtitle}</p>
         <section className="panel-section" aria-labelledby="layers-title">
-          <div className="section-heading"><h2 id="layers-title">Layers</h2><span>6 controls</span></div>
+          <div className="section-heading"><h2 id="layers-title">Layers</h2><span>7 controls</span></div>
           <LayerToggle label="HVAC" detail={`${pocPlan.hvacEquipment.length} equipment · ${pocPlan.hvacDucts.length + pocPlan.hvacJoistReturns.length + pocPlan.hvacDuctTransitions.length + pocPlan.hvacRefrigerantLines.length} runs/fittings`} checked={toggles.hvac} onChange={() => toggle("hvac")} color="blue" />
           <label className="sub-toggle"><input type="checkbox" checked={toggles.hvacSupply} disabled={!toggles.hvac} onChange={() => toggle("hvacSupply")} /> Supply · {supplyItemCount} mapped</label>
           <label className="sub-toggle"><input type="checkbox" checked={toggles.hvacReturn} disabled={!toggles.hvac} onChange={() => toggle("hvacReturn")} /> Return · {returnItemCount} mapped</label>
@@ -697,6 +731,9 @@ export function BasementPlanner() {
           <label className="sub-toggle"><input type="checkbox" checked={toggles.plumbingShutoffs} disabled={!toggles.plumbing} onChange={() => toggle("plumbingShutoffs")} /> Shutoffs · {pocPlan.waterValves.length} mapped</label>
           <label className="sub-toggle"><input type="checkbox" checked={toggles.plumbingDrains} disabled={!toggles.plumbing} onChange={() => toggle("plumbingDrains")} /> Drains · {pocPlan.plumbingDrains.length} mapped</label>
           <label className="sub-toggle"><input type="checkbox" checked={toggles.plumbingEquipment} disabled={!toggles.plumbing} onChange={() => toggle("plumbingEquipment")} /> Equipment · {pocPlan.plumbingEquipment.length} mapped</label>
+          <LayerToggle label="Electrical" detail={`${pocPlan.wallCabinets.length} wall cabinets`} checked={toggles.electrical} onChange={() => toggle("electrical")} color="amber" />
+          <label className="sub-toggle"><input type="checkbox" checked={toggles.electricalPanels} disabled={!toggles.electrical} onChange={() => toggle("electricalPanels")} /> Panels · {pocPlan.wallCabinets.filter((item) => item.cabinetType === "breaker-panel").length} mapped</label>
+          <label className="sub-toggle"><input type="checkbox" checked={toggles.electricalLowVoltage} disabled={!toggles.electrical} onChange={() => toggle("electricalLowVoltage")} /> Low voltage · {pocPlan.wallCabinets.filter((item) => item.cabinetType === "networking").length} mapped</label>
           <LayerToggle label="Framing status" detail={`${framingWalls.length} runs need framing`} checked={toggles.framing} onChange={() => toggle("framing")} color="amber" />
           <LayerToggle label="Ceiling joists" detail={`${pocPlan.joists.length} joists · 3 measured groups`} checked={toggles.joists} onChange={() => toggle("joists")} color="slate" />
           <LayerToggle label="Dimensions" detail="Overall footprint" checked={toggles.dimensions} onChange={() => toggle("dimensions")} color="slate" />
@@ -704,7 +741,7 @@ export function BasementPlanner() {
         {toggles.framing && <section className="panel-section"><FramingSummary /></section>}
         <section className="panel-section legend" aria-labelledby="legend-title">
           <div className="section-heading"><h2 id="legend-title">Legend</h2><span>Planning symbols</span></div>
-          <div><i className="legend-north">←</i> North</div><div><i className="legend-stairs">↑</i> Stairs up</div><div><i className="legend-window" /> Window</div><div><i className="legend-door" /> Door swing</div><div><i className="legend-sliding-door" /> Bypass doors</div>{toggles.hvac && <div><i className="legend-hvac-equipment">F</i> HVAC equipment</div>}{toggles.hvac && toggles.hvacSupply && <div><i className="legend-supply-duct" /> Supply duct</div>}{toggles.hvac && toggles.hvacReturn && <div><i className="legend-return-duct" /> Return duct</div>}{toggles.hvac && toggles.hvacReturn && <div><i className="legend-panned-return" /> Panned joist return</div>}{toggles.hvac && toggles.hvacVenting && <div><i className="legend-exhaust-duct" /> HVAC vent</div>}{toggles.hvac && toggles.hvacRefrigerant && <div><i className="legend-refrigerant-line" /> Refrigerant</div>}{toggles.gas && <div><i className="legend-gas-line" /> Natural gas</div>}{toggles.joists && <div><i className="legend-joist" /> Ceiling joist</div>}{toggles.plumbing && toggles.plumbingShutoffs && <div><i className="legend-water-valve">×</i> Water shutoff</div>}{toggles.plumbing && toggles.plumbingDrains && <div><i className="legend-plumbing-drain" /> Drain rough-in</div>}{toggles.plumbing && toggles.plumbingEquipment && <div><i className="legend-water-heater">WH</i> Water heater</div>}<div><i className="legend-existing" /> Existing wall</div><div><i className="legend-proposed" /> Proposed work</div>{toggles.framing && <><div><i className="legend-framed" /> Already framed</div><div><i className="legend-needs-framing" /> Needs framing</div></>}
+          <div><i className="legend-north">←</i> North</div><div><i className="legend-stairs">↑</i> Stairs up</div><div><i className="legend-window" /> Window</div><div><i className="legend-door" /> Door swing</div><div><i className="legend-sliding-door" /> Bypass doors</div>{toggles.hvac && <div><i className="legend-hvac-equipment">F</i> HVAC equipment</div>}{toggles.hvac && toggles.hvacSupply && <div><i className="legend-supply-duct" /> Supply duct</div>}{toggles.hvac && toggles.hvacReturn && <div><i className="legend-return-duct" /> Return duct</div>}{toggles.hvac && toggles.hvacReturn && <div><i className="legend-panned-return" /> Panned joist return</div>}{toggles.hvac && toggles.hvacVenting && <div><i className="legend-exhaust-duct" /> HVAC vent</div>}{toggles.hvac && toggles.hvacRefrigerant && <div><i className="legend-refrigerant-line" /> Refrigerant</div>}{toggles.gas && <div><i className="legend-gas-line" /> Natural gas</div>}{toggles.joists && <div><i className="legend-joist" /> Ceiling joist</div>}{toggles.plumbing && toggles.plumbingShutoffs && <div><i className="legend-water-valve">×</i> Water shutoff</div>}{toggles.plumbing && toggles.plumbingDrains && <div><i className="legend-plumbing-drain" /> Drain rough-in</div>}{toggles.plumbing && toggles.plumbingEquipment && <div><i className="legend-water-heater">WH</i> Water heater</div>}{toggles.electrical && toggles.electricalPanels && <div><i className="legend-electrical-panel">P</i> Breaker panel</div>}{toggles.electrical && toggles.electricalLowVoltage && <div><i className="legend-network-cabinet">NET</i> Networking</div>}<div><i className="legend-existing" /> Existing wall</div><div><i className="legend-proposed" /> Proposed work</div>{toggles.framing && <><div><i className="legend-framed" /> Already framed</div><div><i className="legend-needs-framing" /> Needs framing</div></>}
         </section>
         <section className="panel-section inspector" aria-live="polite"><Inspector item={selected} openingMeasurement={selectedOpeningMeasurement} onMeasurementSideChange={setMeasurementSide} /></section>
         <div className="panel-footer"><button type="button" onClick={() => window.print()} className="print-button">Print current view</button><p>{pocPlan.warning}</p></div>
@@ -745,6 +782,9 @@ export function BasementPlanner() {
               {toggles.plumbingDrains && pocPlan.plumbingDrains.map((item) => <PlumbingDrainMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}
               {toggles.plumbingEquipment && pocPlan.plumbingEquipment.map((item) => <PlumbingEquipmentMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}
             </g>}
+            {toggles.electrical && <g className="electrical-layer">
+              {pocPlan.wallCabinets.filter((item) => (item.cabinetType === "breaker-panel" ? toggles.electricalPanels : toggles.electricalLowVoltage)).map((item) => <WallCabinetMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}
+            </g>}
             {pocPlan.stairs.map((item) => <StairMark key={item.id} item={item} selected={item.id === selectedId} onSelect={() => selectItem(item.id)} />)}
             {toggles.framing && framingWalls.map((wall) => <FramingDimensionMark key={`framing-${wall.id}`} wall={wall} onSelect={() => selectItem(wall.id)} />)}
             {toggles.dimensions && pocPlan.dimensions.map((item) => <DimensionMark key={item.id} item={item} onSelect={() => selectItem(item.id)} />)}
@@ -753,7 +793,7 @@ export function BasementPlanner() {
           </svg>
           <div className="plan-hint print-hide">Drag to pan · Scroll to zoom · Select any symbol</div>
         </div>
-        <footer className="drawing-footer"><div><strong>{pocPlan.title}</strong><span>{pocPlan.subtitle}</span></div><div className="print-legend"><span>← North</span><span>↑ Stairs up</span><span>═ Window</span><span>◜ Door swing</span><span>⇆ Bypass doors</span>{toggles.hvac && <span>▣ HVAC equipment</span>}{toggles.hvac && toggles.hvacSupply && <span>▭ Supply duct</span>}{toggles.hvac && toggles.hvacReturn && <span>▭ Return duct</span>}{toggles.hvac && toggles.hvacReturn && <span>▧ Panned return</span>}{toggles.gas && <span>═ GAS</span>}{toggles.joists && <span>│ Ceiling joist</span>}{toggles.plumbing && toggles.plumbingShutoffs && <span>⊗ Water shutoff</span>}{toggles.plumbing && toggles.plumbingDrains && <span>⊙ Drain rough-in</span>}{toggles.plumbing && toggles.plumbingEquipment && <span>◯ Water heater</span>}<span>┄ Proposed work</span>{toggles.framing && <><span>━ Framed</span><span>┅ Needs framing</span></>}</div>{toggles.framing && <div className="print-framing-summary"><FramingSummary compact /></div>}<p>{pocPlan.warning}</p></footer>
+        <footer className="drawing-footer"><div><strong>{pocPlan.title}</strong><span>{pocPlan.subtitle}</span></div><div className="print-legend"><span>← North</span><span>↑ Stairs up</span><span>═ Window</span><span>◜ Door swing</span><span>⇆ Bypass doors</span>{toggles.hvac && <span>▣ HVAC equipment</span>}{toggles.hvac && toggles.hvacSupply && <span>▭ Supply duct</span>}{toggles.hvac && toggles.hvacReturn && <span>▭ Return duct</span>}{toggles.hvac && toggles.hvacReturn && <span>▧ Panned return</span>}{toggles.gas && <span>═ GAS</span>}{toggles.joists && <span>│ Ceiling joist</span>}{toggles.plumbing && toggles.plumbingShutoffs && <span>⊗ Water shutoff</span>}{toggles.plumbing && toggles.plumbingDrains && <span>⊙ Drain rough-in</span>}{toggles.plumbing && toggles.plumbingEquipment && <span>◯ Water heater</span>}{toggles.electrical && toggles.electricalPanels && <span>▣ Breaker panel</span>}{toggles.electrical && toggles.electricalLowVoltage && <span>▤ Networking</span>}<span>┄ Proposed work</span>{toggles.framing && <><span>━ Framed</span><span>┅ Needs framing</span></>}</div>{toggles.framing && <div className="print-framing-summary"><FramingSummary compact /></div>}<p>{pocPlan.warning}</p></footer>
         {issues.length > 0 && <div className="validation-error" role="alert">Plan data has {issues.length} validation issue{issues.length === 1 ? "" : "s"}.</div>}
       </section>
     </main>

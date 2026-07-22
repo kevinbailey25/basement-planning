@@ -236,6 +236,28 @@ circuit({
 
 Omit `waypoints` for a direct conceptual run. Add them only when the route itself is meaningful.
 
+## Electrical and low-voltage cabinets
+
+Recessed breaker panels and networking cabinets are wall-mounted cabinets. `offset` is the distance from the junction with `referenceWallId` to the cabinet's nearer edge, so field measurements remain readable even when the parent wall's stored direction is reversed:
+
+```ts
+wallCabinet({
+  id: "south-wall-west-electrical-panel",
+  label: "West electrical panel",
+  cabinetType: "breaker-panel",
+  wallId: "south-exterior-wall",
+  referenceWallId: "storage-west-wall",
+  offset: 12,
+  width: 15.25,
+  bottomAboveFloor: 45,
+  height: 27,
+  status: "existing",
+  confidence: "approximate",
+})
+```
+
+The reference wall must meet one endpoint of the mounting wall. The viewer derives the top-down span from that junction and renders only a shallow planning symbol; cabinet depth and stud framing are not implied. The Electrical layer's Panels and Low voltage sublayers control breaker panels and networking cabinets independently.
+
 ## HVAC equipment
 
 HVAC equipment uses an absolute plan center, an outer plan footprint, and a clockwise SVG rotation in degrees. Use the outermost physical envelope so the footprint remains useful for clearance planning. Equipment height is optional when it has not yet been measured.

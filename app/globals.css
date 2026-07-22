@@ -95,6 +95,8 @@ button { cursor: pointer; }
 .legend-refrigerant-line::before { content: ""; width: 19px; border-top: 3px double #c0c7c4; }
 .legend-gas-line::before { content: ""; width: 19px; border-top: 3px double #b07a45; }
 .legend-water-heater { color: #8bc4d3; border: 1px solid #5d98a8; border-radius: 50%; font: 800 7px/1 ui-monospace, monospace; }
+.legend-electrical-panel { color: #7c5317; border: 1px solid #a87524; background: rgb(185 111 13 / 15%); font: 800 9px/1 ui-monospace, monospace; }
+.legend-network-cabinet { color: #476b62; border: 1px solid #668d83; background: rgb(86 126 116 / 13%); font: 800 5px/1 ui-monospace, monospace; }
 .legend-joist::before { content: ""; height: 19px; border-left: 3px solid #8fa49d; }
 .legend-existing::before { content: ""; width: 20px; border-top: 4px solid #b9c1bd; }
 .legend-framed::before { content: ""; width: 20px; border-top: 4px solid #75948a; }
@@ -242,6 +244,16 @@ button { cursor: pointer; }
 .plumbing-equipment-symbol.proposed .plumbing-equipment-footprint { stroke: #b87518; stroke-dasharray: 3 2; }
 .plumbing-equipment-symbol.selected .plumbing-equipment-footprint, .plumbing-equipment-symbol.selected .plumbing-equipment-tank { stroke: #c66e12; stroke-width: 1.6; }
 .plumbing-equipment-symbol.selected .plumbing-equipment-label { fill: #a75b0a; }
+.wall-cabinet-symbol { cursor: pointer; }
+.wall-cabinet-hit { fill: transparent; stroke: transparent; stroke-width: 8; }
+.wall-cabinet-footprint { fill: #f2e5cd; stroke: #98651d; stroke-width: 1; }
+.wall-cabinet-symbol.networking .wall-cabinet-footprint { fill: #dfe9e5; stroke: #4f7a70; }
+.wall-cabinet-face { fill: none; stroke: #704813; stroke-width: 1.5; }
+.wall-cabinet-symbol.networking .wall-cabinet-face { stroke: #3f685e; }
+.wall-cabinet-label { fill: #6b4514; font: 800 4px/1 ui-monospace, monospace; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.wall-cabinet-symbol.networking .wall-cabinet-label { fill: #365f56; font-size: 3.2px; }
+.wall-cabinet-symbol.selected .wall-cabinet-footprint, .wall-cabinet-symbol.selected .wall-cabinet-face { stroke: #c66e12; stroke-width: 1.7; }
+.wall-cabinet-symbol.selected .wall-cabinet-label { fill: #a75b0a; }
 .gas-line-symbol { cursor: pointer; }
 .gas-line-hit { fill: none; stroke: transparent; stroke-width: 13; }
 .gas-line-casing { fill: none; stroke: #70451c; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
@@ -321,14 +333,14 @@ button { cursor: pointer; }
   .wall-line { stroke: #000; }
   .joist-board { stroke: #777; opacity: .7; }
   .joist-symbol.selected .joist-board { stroke: #111; }
-  .window-symbol, .door-symbol, .door-symbol.proposed, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .plumbing-drain-footprint, .plumbing-drain-cap, .plumbing-drain-leader, .plumbing-equipment-footprint, .plumbing-equipment-tank, .gas-line-casing, .gas-line-centerline, .gas-endpoint circle, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
+  .window-symbol, .door-symbol, .door-symbol.proposed, .sliding-door-symbol, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .plumbing-drain-footprint, .plumbing-drain-cap, .plumbing-drain-leader, .plumbing-equipment-footprint, .plumbing-equipment-tank, .wall-cabinet-footprint, .wall-cabinet-face, .gas-line-casing, .gas-line-centerline, .gas-endpoint circle, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
   .hvac-equipment-footprint { fill: #eee; }
   .hvac-duct-footprint { fill: #eee; }
   .hvac-duct-band, .hvac-duct-symbol.supply .hvac-duct-band { stroke: #eee; }
   .hvac-transition-footprint { fill: #eee; }
   .hvac-joist-return-footprint { fill: #eee; stroke-dasharray: 2 1; }
   .hvac-equipment-label, .hvac-duct-label, .hvac-refrigerant-label, .gas-line-label, .gas-endpoint text { fill: #111; stroke: #fff; }
-  .water-valve-symbol .valve-label, .plumbing-drain-label, .plumbing-equipment-label { fill: #111; stroke: #fff; }
+  .water-valve-symbol .valve-label, .plumbing-drain-label, .plumbing-equipment-label, .wall-cabinet-label { fill: #111; stroke: #fff; }
   .north-arrow { stroke: #111; }
   .north-arrow text { fill: #111; }
   .dimension-mark text, .space-label, .space-area { fill: #111; }

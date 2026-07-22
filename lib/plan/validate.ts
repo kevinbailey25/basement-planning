@@ -1,8 +1,8 @@
-import { distance } from "./helpers.ts";
+import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-wall-cabinet" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -16,6 +16,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.windows,
     ...plan.lights,
     ...plan.switches,
+    ...plan.wallCabinets,
     ...plan.waterValves,
     ...plan.plumbingDrains,
     ...plan.plumbingEquipment,
@@ -145,6 +146,27 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
   for (const item of plan.switches) {
     const parent = walls.get(item.wallId);
     if (!parent) issues.push({ code: "missing-wall", itemId: item.id, message: `Switch “${item.id}” references missing wall “${item.wallId}”.` });
+  }
+  for (const item of plan.wallCabinets) {
+    const parent = walls.get(item.wallId);
+    const reference = walls.get(item.referenceWallId);
+    if (!parent || !reference) {
+      const missingId = !parent ? item.wallId : item.referenceWallId;
+      issues.push({ code: "missing-wall", itemId: item.id, message: `Wall cabinet “${item.id}” references missing wall “${missingId}”.` });
+      continue;
+    }
+    const span = wallCabinetSpan(item, parent, reference);
+    if (
+      !span
+      || item.offset < 0
+      || item.width <= 0
+      || item.bottomAboveFloor < 0
+      || item.height <= 0
+      || span[0] < 0
+      || span[1] > distance(parent.from, parent.to)
+    ) {
+      issues.push({ code: "invalid-wall-cabinet", itemId: item.id, message: `Wall cabinet “${item.id}” requires a connected reference wall, positive dimensions, and a span within its parent wall.` });
+    }
   }
   for (const item of plan.waterValves) {
     const parent = walls.get(item.wallId);

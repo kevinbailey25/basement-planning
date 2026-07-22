@@ -18,6 +18,7 @@ import type {
   Stairs,
   Switch,
   Wall,
+  WallCabinet,
   WaterValve,
   VerticalHvacDuct,
   WindowOpening,
@@ -37,6 +38,9 @@ export const wallSwitch = (value: Omit<Switch, "kind">): Switch => ({
   kind: "switch",
   ...value,
 });
+export const wallCabinet = (
+  value: Omit<WallCabinet, "kind">,
+): WallCabinet => ({ kind: "wall-cabinet", ...value });
 export const waterValve = (
   value: Omit<WaterValve, "kind">,
 ): WaterValve => ({ kind: "water-valve", ...value });
@@ -92,6 +96,23 @@ export const dimension = (value: Omit<Dimension, "kind">): Dimension => ({
 
 export function distance(from: Point, to: Point) {
   return Math.hypot(to[0] - from[0], to[1] - from[1]);
+}
+
+export function wallCabinetSpan(item: WallCabinet, wall: Wall, referenceWall: Wall) {
+  const tolerance = 0.001;
+  const referenceTouchesStart = Math.min(
+    distance(referenceWall.from, wall.from),
+    distance(referenceWall.to, wall.from),
+  ) < tolerance;
+  const referenceTouchesEnd = Math.min(
+    distance(referenceWall.from, wall.to),
+    distance(referenceWall.to, wall.to),
+  ) < tolerance;
+  if (referenceTouchesStart === referenceTouchesEnd) return undefined;
+  const wallLength = distance(wall.from, wall.to);
+  return referenceTouchesStart
+    ? [item.offset, item.offset + item.width] as const
+    : [wallLength - item.offset - item.width, wallLength - item.offset] as const;
 }
 
 export function pointAlong(from: Point, to: Point, offset: number): Point {

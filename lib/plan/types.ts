@@ -79,6 +79,17 @@ export interface Switch extends PlanItemBase {
   heightAboveFloor?: number;
 }
 
+export interface WallCabinet extends PlanItemBase {
+  kind: "wall-cabinet";
+  cabinetType: "breaker-panel" | "networking";
+  wallId: string;
+  referenceWallId: string;
+  offset: number;
+  width: number;
+  bottomAboveFloor: number;
+  height: number;
+}
+
 export interface WaterValve extends PlanItemBase {
   kind: "water-valve";
   wallId: string;
@@ -252,6 +263,7 @@ export type SelectablePlanItem =
   | WindowOpening
   | Light
   | Switch
+  | WallCabinet
   | WaterValve
   | PlumbingDrain
   | PlumbingEquipment
@@ -282,6 +294,7 @@ export interface FloorPlan {
   windows: readonly WindowOpening[];
   lights: readonly Light[];
   switches: readonly Switch[];
+  wallCabinets: readonly WallCabinet[];
   waterValves: readonly WaterValve[];
   plumbingDrains: readonly PlumbingDrain[];
   plumbingEquipment: readonly PlumbingEquipment[];
