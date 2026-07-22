@@ -91,7 +91,7 @@ button { cursor: pointer; }
 .legend-return-duct { height: 11px !important; border: 1px solid #5d98a8; background: rgb(73 124 137 / 18%); }
 .legend-panned-return { height: 11px !important; border: 1px solid #5d98a8; background: repeating-linear-gradient(45deg, rgb(73 124 137 / 18%) 0 2px, transparent 2px 5px); }
 .legend-supply-duct { height: 11px !important; border: 1px solid #a86817; background: rgb(185 111 13 / 15%); }
-.legend-exhaust-duct { height: 11px !important; border: 1px dashed #aeb6d2; background: rgb(105 111 137 / 18%); }
+.legend-exhaust-duct { height: 11px !important; border: 1px solid #aeb6d2; background: rgb(105 111 137 / 18%); }
 .legend-refrigerant-line::before { content: ""; width: 19px; border-top: 3px double #c0c7c4; }
 .legend-gas-line::before { content: ""; width: 19px; border-top: 3px double #e3b23c; }
 .legend-water-heater { color: #8bc4d3; border: 1px solid #5d98a8; border-radius: 50%; font: 800 7px/1 ui-monospace, monospace; }
@@ -177,8 +177,8 @@ button { cursor: pointer; }
 .hvac-duct-symbol.supply .hvac-duct-band { stroke: color-mix(in srgb, #b96f0d 12%, var(--paper)); }
 .hvac-duct-symbol.supply .hvac-duct-centerline { stroke: #b87518; }
 .hvac-duct-symbol.supply .hvac-duct-label { fill: #8c5813; }
-.hvac-duct-symbol.exhaust .hvac-duct-footprint { fill: rgb(105 111 137 / 13%); stroke: #626b88; stroke-dasharray: 6 2; }
-.hvac-duct-symbol.exhaust .hvac-duct-band-outline { stroke: #626b88; stroke-dasharray: 6 2; }
+.hvac-duct-symbol.exhaust .hvac-duct-footprint { fill: rgb(105 111 137 / 13%); stroke: #626b88; stroke-dasharray: none; }
+.hvac-duct-symbol.exhaust .hvac-duct-band-outline { stroke: #626b88; stroke-dasharray: none; }
 .hvac-duct-symbol.exhaust .hvac-duct-band { stroke: color-mix(in srgb, #69708c 13%, var(--paper)); }
 .hvac-duct-symbol.exhaust .hvac-duct-centerline { stroke: #626b88; }
 .hvac-duct-symbol.exhaust .hvac-duct-label { fill: #515a78; }
