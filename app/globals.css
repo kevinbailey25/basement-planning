@@ -57,7 +57,7 @@ button { cursor: pointer; }
 .layer-dot.amber { background: var(--amber-bright); }
 .layer-dot.slate { background: #b9c1bd; }
 .layer-dot.blue { background: #83b8c2; }
-.layer-dot.gas { background: #e3b23c; }
+.layer-dot.gas { background: #b07a45; }
 .layer-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .layer-copy strong { font-size: 13px; font-weight: 650; }
 .layer-copy small { color: #7f8d89; font-size: 10px; }
@@ -93,7 +93,7 @@ button { cursor: pointer; }
 .legend-supply-duct { height: 11px !important; border: 1px solid #a86817; background: rgb(185 111 13 / 15%); }
 .legend-exhaust-duct { height: 11px !important; border: 1px solid #aeb6d2; background: rgb(105 111 137 / 18%); }
 .legend-refrigerant-line::before { content: ""; width: 19px; border-top: 3px double #c0c7c4; }
-.legend-gas-line::before { content: ""; width: 19px; border-top: 3px double #e3b23c; }
+.legend-gas-line::before { content: ""; width: 19px; border-top: 3px double #b07a45; }
 .legend-water-heater { color: #8bc4d3; border: 1px solid #5d98a8; border-radius: 50%; font: 800 7px/1 ui-monospace, monospace; }
 .legend-joist::before { content: ""; height: 19px; border-left: 3px solid #8fa49d; }
 .legend-existing::before { content: ""; width: 20px; border-top: 4px solid #b9c1bd; }
@@ -244,12 +244,12 @@ button { cursor: pointer; }
 .plumbing-equipment-symbol.selected .plumbing-equipment-label { fill: #a75b0a; }
 .gas-line-symbol { cursor: pointer; }
 .gas-line-hit { fill: none; stroke: transparent; stroke-width: 13; }
-.gas-line-casing { fill: none; stroke: #a66f13; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.gas-line-casing { fill: none; stroke: #70451c; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
 .gas-line-centerline { fill: none; stroke: var(--paper); stroke-width: 1; stroke-dasharray: 3 1.5; stroke-linecap: round; stroke-linejoin: round; }
-.gas-line-label { fill: #7f5209; stroke: var(--paper); stroke-width: 2.6; paint-order: stroke; font: 800 4px/1 ui-monospace, monospace; text-anchor: middle; pointer-events: none; }
+.gas-line-label { fill: #5b3516; stroke: var(--paper); stroke-width: 2.6; paint-order: stroke; font: 800 4px/1 ui-monospace, monospace; text-anchor: middle; pointer-events: none; }
 .gas-endpoint { pointer-events: none; }
-.gas-endpoint circle { fill: var(--paper); stroke: #a66f13; stroke-width: 1.1; }
-.gas-endpoint text { fill: #7f5209; font: 800 3.2px/1 ui-monospace, monospace; text-anchor: middle; }
+.gas-endpoint circle { fill: var(--paper); stroke: #70451c; stroke-width: 1.1; }
+.gas-endpoint text { fill: #5b3516; font: 800 3.2px/1 ui-monospace, monospace; text-anchor: middle; }
 .gas-endpoint.wall-termination text, .gas-endpoint.appliance text { font-size: 2.1px; }
 .gas-line-symbol.proposed .gas-line-casing { stroke: #b87518; stroke-dasharray: 5 3; }
 .gas-line-symbol.selected .gas-line-casing, .gas-line-symbol.selected .gas-endpoint circle { stroke: #c54e18; stroke-width: 2; }
