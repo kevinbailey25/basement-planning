@@ -15,6 +15,45 @@ test("office door hinges on its south end and swings inward", () => {
   assert.equal(officeDoor.swing, "inward");
 });
 
+test("stores the Utility Room construction scope and final footprint", () => {
+  const utility = pocPlan.spaces.find((space) => space.id === "furnace-room");
+  const eastWall = pocPlan.walls.find((wall) => wall.id === "utility-room-east-wall");
+  const northExtension = pocPlan.walls.find((wall) => wall.id === "utility-room-north-wall-east-extension");
+  const oldEastWall = pocPlan.walls.find((wall) => wall.id === "furnace-room-east-wall");
+  const oldStorageWall = pocPlan.walls.find((wall) => wall.id === "furnace-room-storage-wall");
+  assert.ok(utility && eastWall && northExtension && oldEastWall && oldStorageWall);
+  assert.equal(utility.label, "Utility Room");
+  assert.deepEqual(utility.polygon, [[375, 186], [556, 186], [556, 267], [375, 267]]);
+  assert.deepEqual([eastWall.from, eastWall.to, eastWall.status], [[375, 186], [556, 186], "proposed"]);
+  assert.deepEqual([northExtension.from, northExtension.to, northExtension.status], [[375, 222], [375, 186], "proposed"]);
+  assert.equal(oldEastWall.status, "remove");
+  assert.equal(oldStorageWall.status, "remove");
+});
+
+test("stores the new Utility door and relocated Storage door", () => {
+  const utilityDoor = pocPlan.doors.find((door) => door.id === "utility-room-door");
+  const storageDoor = pocPlan.doors.find((door) => door.id === "storage-door");
+  assert.ok(utilityDoor && storageDoor);
+  assert.deepEqual(
+    [utilityDoor.wallId, utilityDoor.offset, utilityDoor.width, utilityDoor.hinge, utilityDoor.swing, utilityDoor.height],
+    ["utility-room-east-wall", 43, 36, "end", "outward", undefined],
+  );
+  assert.deepEqual([storageDoor.wallId, storageDoor.offset, storageDoor.width], ["storage-north-wall", 124, 32]);
+});
+
+test("stores the optional combined-trunk soffit with unknown bottom elevation", () => {
+  const item = pocPlan.soffits.find((soffit) => soffit.id === "main-supply-return-soffit");
+  assert.ok(item);
+  assert.deepEqual(item.polygon, [[0, 186], [375, 186], [375, 267], [0, 267]]);
+  assert.equal(item.bottomAboveFloor, undefined);
+  assert.equal(item.status, "proposed");
+});
+
+test("reports a soffit without a usable footprint", () => {
+  const malformed = { ...pocPlan, soffits: [{ ...pocPlan.soffits[0], polygon: [[0, 0], [1, 1], [2, 2], [3, 3]] }] };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-soffit"));
+});
+
 test("reports duplicate IDs and missing circuit endpoints", () => {
   const malformed = {
     ...pocPlan,

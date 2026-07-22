@@ -30,18 +30,18 @@ function pointOnWall(point: Point, wall: Wall) {
     && y <= Math.max(y1, y2) + 0.001;
 }
 
-export function wallsNeedingFraming(plan: FloorPlan) {
-  return plan.walls.filter((wall) => wall.framingStatus === "needs-framing");
+export function wallsToAdd(plan: FloorPlan) {
+  return plan.walls.filter((wall) => wall.status === "proposed");
 }
 
 export function estimateFraming(plan: FloorPlan): FramingEstimate {
-  const walls = wallsNeedingFraming(plan);
+  const walls = wallsToAdd(plan);
   const wallLengthInches = walls.reduce((sum, wall) => sum + distance(wall.from, wall.to), 0);
   const baseStudCount = walls.reduce(
     (sum, wall) => sum + Math.ceil(distance(wall.from, wall.to) / plan.framing.studSpacing) + 1,
     0,
   );
-  const purchaseStudCount = Math.ceil(baseStudCount * (1 + plan.framing.wasteFactor));
+  const purchaseStudCount = Math.ceil(baseStudCount * (1 + plan.framing.wasteFactor) - 1e-9);
   const basePlateBoards = Math.ceil(wallLengthInches / plan.framing.stockLength);
   const purchasePlateBoards = Math.ceil(
     (wallLengthInches * (1 + plan.framing.wasteFactor)) / plan.framing.stockLength,

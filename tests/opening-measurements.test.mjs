@@ -77,16 +77,16 @@ test("labels the opposite side of an exterior window", () => {
   assert.equal(exterior.beforeDistance, 208.5);
 });
 
-test("continues Storage-side measurements across connected collinear wall segments", () => {
+test("measures the relocated Storage door to the new Utility Room corner", () => {
   const mainArea = measureOpening(pocPlan, "storage-door");
   const storage = measureOpening(pocPlan, "storage-door", "left");
   assert.ok(mainArea);
   assert.ok(storage);
   assert.equal(mainArea.sideLabel, "Main open area");
-  assert.equal(mainArea.afterDistance, 28);
+  assert.equal(mainArea.afterDistance, 4);
   assert.equal(storage.sideLabel, "Storage");
-  assert.equal(storage.afterBoundary, 241);
-  assert.equal(storage.afterDistance, 73);
+  assert.equal(storage.afterBoundary, 160);
+  assert.equal(storage.afterDistance, 4);
   assert.equal(storage.afterDirection, "west");
 });
 

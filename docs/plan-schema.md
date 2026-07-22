@@ -25,6 +25,8 @@ For the current basement, positive `x` points south and positive `y` points west
 }
 ```
 
+For architectural geometry, construction status is a fixed scope classification rather than progress tracking: `existing` means retain, `proposed` means add, and `remove` means demolish. The default viewer shows the final layout (`existing` + `proposed`) and hides `remove`. The Construction scope overlay can reveal demolition and highlight additions without replacing the final plan.
+
 ## Walls and spaces
 
 Walls are arbitrary independent segments. `interiorSide` identifies which side of the directed segment faces the space.
@@ -37,21 +39,14 @@ wall({
   thickness: 6,
   interiorSide: "right",
   dimensionSide: "left",
-  framingStatus: "needs-framing",
   status: "proposed",
   confidence: "approximate",
 })
 ```
 
-Framing dimensions default to the side opposite `interiorSide`. Set optional `dimensionSide` when a particular wall's annotation is clearer on the other face.
+Addition dimensions default to the side opposite `interiorSide`. Set optional `dimensionSide` when a particular wall's annotation is clearer on the other face.
 
-`status` describes the physical construction object; `framingStatus` separately describes whether wall framing is already present:
-
-```ts
-framingStatus: "framed" | "needs-framing" | "unknown"
-```
-
-Split a wall when one portion is framed and another portion still needs framing. Preserve the existing ID on the segment that still represents the original named run, then give the new segment a stable descriptive ID. Move wall-relative openings to the appropriate segment and update their offsets from that segment's `from` point.
+Split a wall when portions have different construction scope. Preserve the existing ID on the segment that still represents the original named run, then give the new segment a stable descriptive ID. Move wall-relative openings to the appropriate segment and update their offsets from that segment's `from` point.
 
 Spaces are optional polygons for labels, fills, and area estimates. They do not own or generate walls.
 
@@ -65,6 +60,23 @@ space({
   confidence: "approximate",
 })
 ```
+
+## Soffits
+
+Soffits are optional overhead architectural footprints. They are hidden by default and shown by the independent Soffit layer:
+
+```ts
+soffit({
+  id: "main-supply-return-soffit",
+  label: "Combined supply and return trunk soffit",
+  polygon: [[0, 186], [375, 186], [375, 267], [0, 267]],
+  status: "proposed",
+  confidence: "approximate",
+  note: "Bottom elevation and framing details are unknown; verify on site.",
+})
+```
+
+Use `bottomAboveFloor` only when the underside elevation has been measured. Omitting it records an unknown elevation. The top-down footprint does not imply a framing direction, attachment method, or material estimate.
 
 ## Wall-relative objects
 
@@ -88,6 +100,7 @@ door({
   width: 36,
   hinge: "end",
   swing: "inward",
+  height: 80,
   status: "proposed",
   confidence: "approximate",
 })
@@ -104,7 +117,7 @@ slidingDoor({
 })
 ```
 
-Use `slidingDoor` for a two-panel bypass opening. It renders two overlapping parallel leaves and does not imply an accordion or bifold assembly.
+Use `slidingDoor` for a two-panel bypass opening. It renders two overlapping parallel leaves and does not imply an accordion or bifold assembly. Swing-door `height` is optional; omit it when the door or rough-opening height is unknown and preserve the verification requirement in `note`.
 
 Switches use the same wall-relative convention. `heightAboveFloor` is metadata; the primary viewer remains top-down.
 
@@ -333,7 +346,7 @@ Split horizontal runs at bends, branches, size changes, meaningful elevation cha
 ```ts
 horizontalHvacDuct({
   id: "joists-33-34-east-wall-exhaust-10",
-  label: "Furnace Room east-wall exhaust — approximately 10 inch round",
+  label: "Utility Room east-wall exhaust — approximately 10 inch round",
   airflowRole: "exhaust",
   shape: "round",
   from: [424.25, 256.5],
@@ -460,7 +473,7 @@ Record field spacing as clear edge-to-edge gaps. Convert the measured north edge
 
 ## Dimensions
 
-General dimensions are explicit annotations. The current plan uses these only for the overall footprint. The Framing status layer derives gross wall-run dimensions directly from every wall marked `needs-framing`; doors, sliding doors, and windows do not shorten those framing dimensions.
+General dimensions are explicit annotations. The current plan uses these only for the overall footprint. Construction scope → Additions derives gross wall-run dimensions directly from every proposed wall; doors, sliding doors, and windows do not shorten those framing dimensions.
 
 ```ts
 dimension({
@@ -492,10 +505,10 @@ framing: {
 }
 ```
 
-`estimateFraming` in `lib/plan/framing.ts` totals only walls marked `needs-framing`. It reports gross linear footage, base studs at the configured on-center spacing, one standard top plate, one treated bottom plate, and 8-foot stock equivalents. Purchase quantities add the configured planning waste allowance and round up.
+`estimateFraming` in `lib/plan/framing.ts` totals only walls whose construction status is `proposed`. It reports gross linear footage, base studs at the configured on-center spacing, one standard top plate, one treated bottom plate, and 8-foot stock equivalents. Purchase quantities add the configured planning waste allowance and round up.
 
-Openings and wall junctions are counted but their extra king studs, trimmers, headers, and backing are not automatically added. The viewer explicitly flags those framing details for on-site verification instead of inventing an assembly.
+Openings and wall junctions are counted but their extra king studs, trimmers, headers, and backing are not automatically added. Soffit framing is excluded. The viewer explicitly flags those details for on-site verification instead of inventing an assembly.
 
 ## Validation
 
-`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, water-valve enclosure bounds and reference junctions, plumbing equipment footprints, usable gas-line geometry and placement measurements, missing circuit endpoints, zero-length walls, invalid stairs, and invalid framing assumptions. Run `npm test` before handing off a change.
+`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, soffit footprints and known elevations, water-valve enclosure bounds and reference junctions, plumbing equipment footprints, usable gas-line geometry and placement measurements, missing circuit endpoints, zero-length walls, invalid stairs, and invalid framing assumptions. Run `npm test` before handing off a change.

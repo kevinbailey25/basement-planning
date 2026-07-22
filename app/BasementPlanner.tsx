@@ -3,15 +3,15 @@
 import { useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
 import { add, distance, formatInches, pointAlong, unitNormal, wallCabinetSpan } from "../lib/plan/helpers";
-import { estimateFraming, wallsNeedingFraming } from "../lib/plan/framing";
+import { estimateFraming, wallsToAdd } from "../lib/plan/framing";
 import { measureOpening } from "../lib/plan/opening-measurements";
 import { pocPlan } from "../lib/plan/poc-plan";
 import type { OpeningMeasurement } from "../lib/plan/opening-measurements";
-import type { AirflowRole, Dimension, GasEndpoint, GasLine, HorizontalHvacDuct, HvacDuct, HvacDuctTransition, HvacEquipment, HvacJoistReturn, HvacRefrigerantLine, Joist, PlumbingDrain, PlumbingEquipment, Point, SelectablePlanItem, Stairs, Wall, WallCabinet, WallSide, WaterValve } from "../lib/plan/types";
+import type { AirflowRole, Dimension, Door, GasEndpoint, GasLine, HorizontalHvacDuct, HvacDuct, HvacDuctTransition, HvacEquipment, HvacJoistReturn, HvacRefrigerantLine, Joist, PlumbingDrain, PlumbingEquipment, Point, SelectablePlanItem, Soffit, Stairs, Wall, WallCabinet, WallSide, WaterValve } from "../lib/plan/types";
 import { allPlanItems, validatePlan } from "../lib/plan/validate";
 
 const DEFAULT_VIEW = { x: -42, y: -42, width: 655, height: 665 };
-type ToggleKey = "hvac" | "hvacSupply" | "hvacReturn" | "hvacVenting" | "hvacRefrigerant" | "gas" | "plumbing" | "plumbingShutoffs" | "plumbingDrains" | "plumbingEquipment" | "electrical" | "electricalPanels" | "electricalLowVoltage" | "framing" | "joists" | "dimensions";
+type ToggleKey = "construction" | "constructionDemolition" | "constructionAdditions" | "soffits" | "hvac" | "hvacSupply" | "hvacReturn" | "hvacVenting" | "hvacRefrigerant" | "gas" | "plumbing" | "plumbingShutoffs" | "plumbingDrains" | "plumbingEquipment" | "electrical" | "electricalPanels" | "electricalLowVoltage" | "joists" | "dimensions";
 
 function getWall(wallId: string) {
   return pocPlan.walls.find((item) => item.id === wallId);
@@ -130,15 +130,15 @@ function FramingSummary({ compact = false }: { compact?: boolean }) {
   const linearFeet = estimate.wallLengthInches / 12;
   return (
     <div className={`framing-summary ${compact ? "compact" : ""}`}>
-      {!compact && <div className="section-heading"><h2>Framing estimate</h2><span>Rough purchase guide</span></div>}
-      <div className="framing-total"><strong>≈ {linearFeet.toFixed(1)} linear ft</strong><span>{estimate.wallCount} straight runs need framing</span></div>
+      {!compact && <div className="section-heading"><h2>Additions estimate</h2><span>Wall-framing purchase guide</span></div>}
+      <div className="framing-total"><strong>≈ {linearFeet.toFixed(1)} linear ft</strong><span>{estimate.wallCount} straight wall runs to add</span></div>
       <dl>
         <div><dt>8-ft 2×4 studs</dt><dd>{estimate.baseStudCount} base · <strong>{estimate.purchaseStudCount} purchase</strong></dd></div>
         <div><dt>8-ft top plate equivalents</dt><dd>{estimate.baseTopPlateBoards} base · <strong>{estimate.purchaseTopPlateBoards} purchase</strong></dd></div>
         <div><dt>8-ft treated bottom plate equivalents</dt><dd>{estimate.baseBottomPlateBoards} base · <strong>{estimate.purchaseBottomPlateBoards} purchase</strong></dd></div>
       </dl>
       <p><strong>Purchase quantities include a {wastePercent}% planning waste allowance.</strong> Base studs assume {pocPlan.framing.studSpacing}″ on center and an ≈ {formatInches(pocPlan.framing.defaultWallHeight)} wall height.</p>
-      <p>{estimate.openingCount} openings and {estimate.junctionCount} wall junctions/end conditions need additional framing details that are not included above.</p>
+      <p>{estimate.openingCount} openings and {estimate.junctionCount} wall junctions/end conditions need additional framing details that are not included above. Soffit framing is excluded.</p>
     </div>
   );
 }
@@ -483,13 +483,64 @@ function WaterValveDimensionMark({ item }: { item: WaterValve }) {
   );
 }
 
+function DoorMark({ item, selected, highlightAddition = false, demolition = false, onSelect }: {
+  item: Door;
+  selected: boolean;
+  highlightAddition?: boolean;
+  demolition?: boolean;
+  onSelect: () => void;
+}) {
+  const wall = getWall(item.wallId)!;
+  const start = pointAlong(wall.from, wall.to, item.offset);
+  const end = pointAlong(wall.from, wall.to, item.offset + item.width);
+  const hinge = item.hinge === "start" ? start : end;
+  const closed = item.hinge === "start" ? end : start;
+  let normal = unitNormal(wall.from, wall.to, wall.interiorSide);
+  if (item.swing === "outward") normal = [-normal[0], -normal[1]];
+  const open = add(hinge, normal, item.width);
+  const cross = (closed[0] - hinge[0]) * (open[1] - hinge[1]) - (closed[1] - hinge[1]) * (open[0] - hinge[0]);
+  return (
+    <g
+      data-selectable
+      aria-label={item.label}
+      className={`door-symbol ${item.status} ${highlightAddition ? "scope-addition" : ""} ${demolition ? "scope-demolition" : ""} ${selected ? "selected" : ""}`}
+      onClick={(event) => { event.stopPropagation(); onSelect(); }}
+    >
+      <line className="door-hit" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />
+      <line className="door-leaf" x1={hinge[0]} y1={hinge[1]} x2={open[0]} y2={open[1]} />
+      <path className="door-swing" d={`M ${closed[0]} ${closed[1]} A ${item.width} ${item.width} 0 0 ${cross > 0 ? 1 : 0} ${open[0]} ${open[1]}`} />
+    </g>
+  );
+}
+
+function SoffitMark({ item, selected, highlightAddition, onSelect }: {
+  item: Soffit;
+  selected: boolean;
+  highlightAddition: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <g
+      data-selectable
+      aria-label={item.label}
+      className={`soffit-symbol ${highlightAddition ? "scope-addition" : ""} ${selected ? "selected" : ""}`}
+      onClick={(event) => { event.stopPropagation(); onSelect(); }}
+    >
+      <polygon className="soffit-hit" points={item.polygon.map((point) => point.join(",")).join(" ")} />
+      <polygon className="soffit-outline" points={item.polygon.map((point) => point.join(",")).join(" ")} />
+      <text className="soffit-label" x={(item.polygon[0][0] + item.polygon[2][0]) / 2} y={(item.polygon[0][1] + item.polygon[2][1]) / 2}>SOFFIT · BOTTOM TBD</text>
+    </g>
+  );
+}
+
 function Inspector({ item, openingMeasurement, onMeasurementSideChange }: {
   item?: SelectablePlanItem;
   openingMeasurement?: OpeningMeasurement;
   onMeasurementSideChange: (side: WallSide) => void;
 }) {
   if (!item) return <div className="inspector-empty"><span className="eyebrow">Object inspector</span><p>Select a wall, opening, equipment item, space, or dimension to inspect its plan data.</p></div>;
-  const rows: Array<[string, string]> = [["ID", item.id], ["Type", item.kind], ["Status", item.status], ["Confidence", item.confidence]];
+  const scopeLabel = item.status === "existing" ? "Retain" : item.status === "proposed" ? "Add" : "Demolish";
+  const rows: Array<[string, string]> = [["ID", item.id], ["Type", item.kind], ["Construction scope", scopeLabel], ["Confidence", item.confidence]];
   const measuredValue = (value: number) => `${openingMeasurement?.confidence === "exact" ? "" : "≈ "}${formatInches(value)}`;
   if (openingMeasurement) {
     const beforeLabel = `${openingMeasurement.beforeDirection[0].toUpperCase()}${openingMeasurement.beforeDirection.slice(1)} clear wall`;
@@ -501,7 +552,13 @@ function Inspector({ item, openingMeasurement, onMeasurementSideChange }: {
     );
   } else if ("width" in item) rows.push(["Width", item.kind === "joist" ? `≈ ${item.width}″` : item.kind === "wall-cabinet" ? `≈ ${formatInches(item.width)}` : formatInches(item.width)]);
   if ("heightAboveFloor" in item && item.heightAboveFloor != null) rows.push(["Height above floor", formatInches(item.heightAboveFloor)]);
-  if (item.kind === "wall") rows.push(["Length", formatInches(distance(item.from, item.to))], ["Thickness", `${item.thickness}″`], ["Framing", item.framingStatus]);
+  if (item.kind === "wall") rows.push(["Length", formatInches(distance(item.from, item.to))], ["Thickness", `${item.thickness}″`]);
+  if (item.kind === "door") rows.push(["Door height", item.height == null ? "Unknown — verify on site" : formatInches(item.height)]);
+  if (item.kind === "soffit") rows.push(
+    ["Plan length", formatInches(distance(item.polygon[0], item.polygon[1]))],
+    ["Plan width", formatInches(distance(item.polygon[1], item.polygon[2]))],
+    ["Bottom elevation", item.bottomAboveFloor == null ? "Unknown — verify on site" : formatInches(item.bottomAboveFloor)],
+  );
   if (item.kind === "light") rows.push(["Position", `x ${item.at[0]}″ · y ${item.at[1]}″`]);
   if (item.kind === "switch") rows.push(["Wall offset", formatInches(item.offset)]);
   if (item.kind === "wall-cabinet") {
@@ -655,14 +712,15 @@ function LayerToggle({ label, detail, checked, onChange, color }: { label: strin
 }
 
 export function BasementPlanner() {
-  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ hvac: false, hvacSupply: true, hvacReturn: true, hvacVenting: true, hvacRefrigerant: true, gas: false, plumbing: false, plumbingShutoffs: true, plumbingDrains: true, plumbingEquipment: true, electrical: false, electricalPanels: false, electricalLowVoltage: false, framing: false, joists: false, dimensions: false });
+  const [toggles, setToggles] = useState<Record<ToggleKey, boolean>>({ construction: false, constructionDemolition: true, constructionAdditions: true, soffits: false, hvac: false, hvacSupply: true, hvacReturn: true, hvacVenting: true, hvacRefrigerant: true, gas: false, plumbing: false, plumbingShutoffs: true, plumbingDrains: true, plumbingEquipment: true, electrical: false, electricalPanels: true, electricalLowVoltage: true, joists: false, dimensions: false });
   const [selectedId, setSelectedId] = useState<string>();
   const [measurementSide, setMeasurementSide] = useState<WallSide>();
   const [view, setView] = useState(DEFAULT_VIEW);
   const drag = useRef<{ x: number; y: number; viewX: number; viewY: number; moved: boolean }>();
   const issues = useMemo(() => validatePlan(pocPlan), []);
   const items = useMemo(() => allPlanItems(pocPlan), []);
-  const framingWalls = useMemo(() => wallsNeedingFraming(pocPlan), []);
+  const additionWalls = useMemo(() => wallsToAdd(pocPlan), []);
+  const demolitionCount = useMemo(() => allPlanItems(pocPlan).filter((item) => item.status === "remove").length, []);
   const returnItemCount = pocPlan.hvacDucts.filter((item) => item.airflowRole === "return").length + pocPlan.hvacJoistReturns.length + pocPlan.hvacDuctTransitions.filter((item) => item.airflowRole === "return").length;
   const supplyItemCount = pocPlan.hvacDucts.filter((item) => item.airflowRole === "supply").length + pocPlan.hvacDuctTransitions.filter((item) => item.airflowRole === "supply").length;
   const ventingItemCount = pocPlan.hvacDucts.filter((item) => item.airflowRole === "exhaust").length + pocPlan.hvacDuctTransitions.filter((item) => item.airflowRole === "exhaust").length;
@@ -720,7 +778,11 @@ export function BasementPlanner() {
         <div className="brand-block"><div className="brand-mark">BP</div><div><span className="eyebrow">Working plan</span><h1>{pocPlan.title}</h1></div></div>
         <p className="subtitle">{pocPlan.subtitle}</p>
         <section className="panel-section" aria-labelledby="layers-title">
-          <div className="section-heading"><h2 id="layers-title">Layers</h2><span>7 controls</span></div>
+          <div className="section-heading"><h2 id="layers-title">Layers</h2><span>8 controls</span></div>
+          <LayerToggle label="Construction scope" detail={`${demolitionCount} demo · ${additionWalls.length} wall runs to add`} checked={toggles.construction} onChange={() => toggle("construction")} color="amber" />
+          <label className="sub-toggle"><input type="checkbox" checked={toggles.constructionDemolition} disabled={!toggles.construction} onChange={() => toggle("constructionDemolition")} /> Demolition · {demolitionCount} objects</label>
+          <label className="sub-toggle"><input type="checkbox" checked={toggles.constructionAdditions} disabled={!toggles.construction} onChange={() => toggle("constructionAdditions")} /> Additions · {additionWalls.length} wall runs</label>
+          <LayerToggle label="Soffit" detail={`${pocPlan.soffits.length} proposed enclosure`} checked={toggles.soffits} onChange={() => toggle("soffits")} color="slate" />
           <LayerToggle label="HVAC" detail={`${pocPlan.hvacEquipment.length} equipment · ${pocPlan.hvacDucts.length + pocPlan.hvacJoistReturns.length + pocPlan.hvacDuctTransitions.length + pocPlan.hvacRefrigerantLines.length} runs/fittings`} checked={toggles.hvac} onChange={() => toggle("hvac")} color="blue" />
           <label className="sub-toggle"><input type="checkbox" checked={toggles.hvacSupply} disabled={!toggles.hvac} onChange={() => toggle("hvacSupply")} /> Supply · {supplyItemCount} mapped</label>
           <label className="sub-toggle"><input type="checkbox" checked={toggles.hvacReturn} disabled={!toggles.hvac} onChange={() => toggle("hvacReturn")} /> Return · {returnItemCount} mapped</label>
@@ -734,24 +796,23 @@ export function BasementPlanner() {
           <LayerToggle label="Electrical" detail={`${pocPlan.wallCabinets.length} wall cabinets`} checked={toggles.electrical} onChange={() => toggle("electrical")} color="amber" />
           <label className="sub-toggle"><input type="checkbox" checked={toggles.electricalPanels} disabled={!toggles.electrical} onChange={() => toggle("electricalPanels")} /> Panels · {pocPlan.wallCabinets.filter((item) => item.cabinetType === "breaker-panel").length} mapped</label>
           <label className="sub-toggle"><input type="checkbox" checked={toggles.electricalLowVoltage} disabled={!toggles.electrical} onChange={() => toggle("electricalLowVoltage")} /> Low voltage · {pocPlan.wallCabinets.filter((item) => item.cabinetType === "networking").length} mapped</label>
-          <LayerToggle label="Framing status" detail={`${framingWalls.length} runs need framing`} checked={toggles.framing} onChange={() => toggle("framing")} color="amber" />
           <LayerToggle label="Ceiling joists" detail={`${pocPlan.joists.length} joists · 3 measured groups`} checked={toggles.joists} onChange={() => toggle("joists")} color="slate" />
           <LayerToggle label="Dimensions" detail="Overall footprint" checked={toggles.dimensions} onChange={() => toggle("dimensions")} color="slate" />
         </section>
-        {toggles.framing && <section className="panel-section"><FramingSummary /></section>}
+        {toggles.construction && toggles.constructionAdditions && <section className="panel-section"><FramingSummary /></section>}
         <section className="panel-section legend" aria-labelledby="legend-title">
           <div className="section-heading"><h2 id="legend-title">Legend</h2><span>Planning symbols</span></div>
-          <div><i className="legend-north">←</i> North</div><div><i className="legend-stairs">↑</i> Stairs up</div><div><i className="legend-window" /> Window</div><div><i className="legend-door" /> Door swing</div><div><i className="legend-sliding-door" /> Bypass doors</div>{toggles.hvac && <div><i className="legend-hvac-equipment">F</i> HVAC equipment</div>}{toggles.hvac && toggles.hvacSupply && <div><i className="legend-supply-duct" /> Supply duct</div>}{toggles.hvac && toggles.hvacReturn && <div><i className="legend-return-duct" /> Return duct</div>}{toggles.hvac && toggles.hvacReturn && <div><i className="legend-panned-return" /> Panned joist return</div>}{toggles.hvac && toggles.hvacVenting && <div><i className="legend-exhaust-duct" /> HVAC vent</div>}{toggles.hvac && toggles.hvacRefrigerant && <div><i className="legend-refrigerant-line" /> Refrigerant</div>}{toggles.gas && <div><i className="legend-gas-line" /> Natural gas</div>}{toggles.joists && <div><i className="legend-joist" /> Ceiling joist</div>}{toggles.plumbing && toggles.plumbingShutoffs && <div><i className="legend-water-valve">×</i> Water shutoff</div>}{toggles.plumbing && toggles.plumbingDrains && <div><i className="legend-plumbing-drain" /> Drain rough-in</div>}{toggles.plumbing && toggles.plumbingEquipment && <div><i className="legend-water-heater">WH</i> Water heater</div>}{toggles.electrical && toggles.electricalPanels && <div><i className="legend-electrical-panel">P</i> Breaker panel</div>}{toggles.electrical && toggles.electricalLowVoltage && <div><i className="legend-network-cabinet">NET</i> Networking</div>}<div><i className="legend-existing" /> Existing wall</div><div><i className="legend-proposed" /> Proposed work</div>{toggles.framing && <><div><i className="legend-framed" /> Already framed</div><div><i className="legend-needs-framing" /> Needs framing</div></>}
+          <div><i className="legend-north">←</i> North</div><div><i className="legend-stairs">↑</i> Stairs up</div><div><i className="legend-window" /> Window</div><div><i className="legend-door" /> Door swing</div><div><i className="legend-sliding-door" /> Bypass doors</div>{toggles.soffits && <div><i className="legend-soffit" /> Overhead soffit</div>}{toggles.construction && toggles.constructionDemolition && <div><i className="legend-demolition" /> Demolish</div>}{toggles.construction && toggles.constructionAdditions && <div><i className="legend-addition" /> Add</div>}{toggles.hvac && <div><i className="legend-hvac-equipment">F</i> HVAC equipment</div>}{toggles.hvac && toggles.hvacSupply && <div><i className="legend-supply-duct" /> Supply duct</div>}{toggles.hvac && toggles.hvacReturn && <div><i className="legend-return-duct" /> Return duct</div>}{toggles.hvac && toggles.hvacReturn && <div><i className="legend-panned-return" /> Panned joist return</div>}{toggles.hvac && toggles.hvacVenting && <div><i className="legend-exhaust-duct" /> HVAC vent</div>}{toggles.hvac && toggles.hvacRefrigerant && <div><i className="legend-refrigerant-line" /> Refrigerant</div>}{toggles.gas && <div><i className="legend-gas-line" /> Natural gas</div>}{toggles.joists && <div><i className="legend-joist" /> Ceiling joist</div>}{toggles.plumbing && toggles.plumbingShutoffs && <div><i className="legend-water-valve">×</i> Water shutoff</div>}{toggles.plumbing && toggles.plumbingDrains && <div><i className="legend-plumbing-drain" /> Drain rough-in</div>}{toggles.plumbing && toggles.plumbingEquipment && <div><i className="legend-water-heater">WH</i> Water heater</div>}{toggles.electrical && toggles.electricalPanels && <div><i className="legend-electrical-panel">P</i> Breaker panel</div>}{toggles.electrical && toggles.electricalLowVoltage && <div><i className="legend-network-cabinet">NET</i> Networking</div>}
         </section>
         <section className="panel-section inspector" aria-live="polite"><Inspector item={selected} openingMeasurement={selectedOpeningMeasurement} onMeasurementSideChange={setMeasurementSide} /></section>
         <div className="panel-footer"><button type="button" onClick={() => window.print()} className="print-button">Print current view</button><p>{pocPlan.warning}</p></div>
       </aside>
 
       <section className="drawing-area">
-        <header className="drawing-header"><div><span className="eyebrow">Plan 01 · Existing · Approximate</span><h2>Basement footprint</h2></div><div className="view-controls print-hide" aria-label="View controls"><button type="button" onClick={() => zoom(0.82)} aria-label="Zoom in">+</button><button type="button" onClick={() => zoom(1.22)} aria-label="Zoom out">−</button><button type="button" onClick={() => setView(DEFAULT_VIEW)}>Fit</button></div></header>
+        <header className="drawing-header"><div><span className="eyebrow">Plan 01 · Final layout · Approximate</span><h2>Basement footprint</h2></div><div className="view-controls print-hide" aria-label="View controls"><button type="button" onClick={() => zoom(0.82)} aria-label="Zoom in">+</button><button type="button" onClick={() => zoom(1.22)} aria-label="Zoom out">−</button><button type="button" onClick={() => setView(DEFAULT_VIEW)}>Fit</button></div></header>
         <div className="plan-frame">
           <svg className="floor-plan" viewBox={`${view.x} ${view.y} ${view.width} ${view.height}`} role="img" aria-labelledby="plan-title plan-description" onWheel={onWheel} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={() => { drag.current = undefined; }}>
-            <title id="plan-title">{pocPlan.title}</title><desc id="plan-description">Approximate existing basement footprint traced from the supplied measured sketch.</desc>
+            <title id="plan-title">{pocPlan.title}</title><desc id="plan-description">Approximate final basement layout with optional construction-scope and system overlays.</desc>
             <defs><pattern id="panned-return" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="rgb(73 124 137 / 12%)" /><line x1="0" y1="0" x2="0" y2="6" stroke="#5d98a8" strokeWidth="0.7" /></pattern></defs>
             <rect className="pan-surface" x="-1000" y="-1000" width="2000" height="2000" />
             <g className="north-arrow" aria-label="North points left" transform="translate(550 550)">
@@ -760,9 +821,12 @@ export function BasementPlanner() {
               <path d="M -42 0 L -32 -6 M -42 0 L -32 6" />
             </g>
             {pocPlan.spaces.map((item) => <g key={item.id} data-selectable onClick={(event) => { event.stopPropagation(); selectItem(item.id); }} className={selectedId === item.id ? "selected" : ""}><polygon className="space-fill" points={item.polygon.map((point) => point.join(",")).join(" ")} /></g>)}
+            {toggles.soffits && <g className="soffit-layer">{pocPlan.soffits.map((item) => <SoffitMark key={item.id} item={item} selected={selectedId === item.id} highlightAddition={toggles.construction && toggles.constructionAdditions && item.status === "proposed"} onSelect={() => selectItem(item.id)} />)}</g>}
             {toggles.joists && <g className="joist-layer">{pocPlan.joists.map((item) => <JoistMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}</g>}
             <g className="space-label-layer">{pocPlan.spaces.map((item) => <g key={item.id}><text className="space-label" x={item.labelAt[0]} y={item.labelAt[1] - 3}>{item.label}</text><text className="space-area" x={item.labelAt[0]} y={item.labelAt[1] + 7}>{item.confidence}</text></g>)}</g>
-            {pocPlan.walls.map((item) => <g key={item.id} data-selectable className={selectedId === item.id ? "selected" : ""} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="wall-hit" x1={item.from[0]} y1={item.from[1]} x2={item.to[0]} y2={item.to[1]} />{wallSegments(item).map(([from, to]) => { const start = pointAlong(item.from, item.to, from); const end = pointAlong(item.from, item.to, to); return <line key={`${from}-${to}`} className="wall-line" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />; })}</g>)}
+            {pocPlan.walls.filter((item) => item.status !== "remove").map((item) => <g key={item.id} data-selectable className={selectedId === item.id ? "selected" : ""} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="wall-hit" x1={item.from[0]} y1={item.from[1]} x2={item.to[0]} y2={item.to[1]} />{wallSegments(item).map(([from, to]) => { const start = pointAlong(item.from, item.to, from); const end = pointAlong(item.from, item.to, to); return <line key={`${from}-${to}`} className="wall-line" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />; })}</g>)}
+            {toggles.construction && toggles.constructionAdditions && <g className="construction-additions-layer">{additionWalls.map((item) => <g key={item.id} data-selectable className={selectedId === item.id ? "selected" : ""} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}>{wallSegments(item).map(([from, to]) => { const start = pointAlong(item.from, item.to, from); const end = pointAlong(item.from, item.to, to); return <line key={`${from}-${to}`} className="scope-wall addition" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />; })}</g>)}</g>}
+            {toggles.construction && toggles.constructionDemolition && <g className="construction-demolition-layer">{pocPlan.walls.filter((item) => item.status === "remove").map((item) => <g key={item.id} data-selectable className={selectedId === item.id ? "selected" : ""} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="wall-hit" x1={item.from[0]} y1={item.from[1]} x2={item.to[0]} y2={item.to[1]} />{wallSegments(item).map(([from, to]) => { const start = pointAlong(item.from, item.to, from); const end = pointAlong(item.from, item.to, to); return <line key={`${from}-${to}`} className="scope-wall demolition" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />; })}</g>)}</g>}
             {toggles.hvac && <g className="hvac-layer">
               {toggles.hvacReturn && pocPlan.hvacJoistReturns.map((item) => <HvacJoistReturnMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}
               {pocPlan.hvacDuctTransitions.filter((item) => item.airflowRole === "unknown" || (item.airflowRole === "return" ? toggles.hvacReturn : item.airflowRole === "exhaust" ? toggles.hvacVenting : toggles.hvacSupply)).map((item) => <HvacDuctTransitionMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}
@@ -771,12 +835,10 @@ export function BasementPlanner() {
               {pocPlan.hvacEquipment.map((item) => <HvacEquipmentMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}
             </g>}
             {toggles.gas && <g className="gas-layer">{pocPlan.gasLines.map((item) => <GasLineMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}</g>}
-            {toggles.framing && <g className="framing-layer">
-              {pocPlan.walls.map((item) => <g key={item.id} className={selectedId === item.id ? "selected" : ""}>{wallSegments(item).map(([from, to]) => { const start = pointAlong(item.from, item.to, from); const end = pointAlong(item.from, item.to, to); return <line key={`${from}-${to}`} className={`framing-line ${item.framingStatus}`} x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />; })}</g>)}
-            </g>}
-            {pocPlan.windows.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const normal = unitNormal(wall.from, wall.to, wall.interiorSide); return <g key={item.id} data-selectable className={`window-symbol ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line x1={add(start, normal, -2)[0]} y1={add(start, normal, -2)[1]} x2={add(end, normal, -2)[0]} y2={add(end, normal, -2)[1]} /><line x1={add(start, normal, 2)[0]} y1={add(start, normal, 2)[1]} x2={add(end, normal, 2)[0]} y2={add(end, normal, 2)[1]} /><line x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /></g>; })}
-            {pocPlan.doors.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const hinge = item.hinge === "start" ? start : end; const closed = item.hinge === "start" ? end : start; let normal = unitNormal(wall.from, wall.to, wall.interiorSide); if (item.swing === "outward") normal = [-normal[0], -normal[1]]; const open = add(hinge, normal, item.width); const cross = (closed[0] - hinge[0]) * (open[1] - hinge[1]) - (closed[1] - hinge[1]) * (open[0] - hinge[0]); return <g key={item.id} data-selectable className={`door-symbol ${item.status} ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="door-hit" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /><line className="door-leaf" x1={hinge[0]} y1={hinge[1]} x2={open[0]} y2={open[1]} /><path className="door-swing" d={`M ${closed[0]} ${closed[1]} A ${item.width} ${item.width} 0 0 ${cross > 0 ? 1 : 0} ${open[0]} ${open[1]}`} /></g>; })}
-            {pocPlan.slidingDoors.map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const midpoint = pointAlong(wall.from, wall.to, item.offset + item.width / 2); const normal = unitNormal(wall.from, wall.to, wall.interiorSide); const overlap = 4; const firstEnd = pointAlong(wall.from, wall.to, item.offset + item.width / 2 + overlap); const secondStart = pointAlong(wall.from, wall.to, item.offset + item.width / 2 - overlap); return <g key={item.id} data-selectable aria-label={item.label} className={`sliding-door-symbol ${item.status} ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="sliding-door-hit" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /><line className="sliding-door-panel" x1={add(start, normal, 2)[0]} y1={add(start, normal, 2)[1]} x2={add(firstEnd, normal, 2)[0]} y2={add(firstEnd, normal, 2)[1]} /><line className="sliding-door-panel" x1={add(secondStart, normal, -2)[0]} y1={add(secondStart, normal, -2)[1]} x2={add(end, normal, -2)[0]} y2={add(end, normal, -2)[1]} /><line className="sliding-door-center" x1={add(midpoint, normal, -4)[0]} y1={add(midpoint, normal, -4)[1]} x2={add(midpoint, normal, 4)[0]} y2={add(midpoint, normal, 4)[1]} /></g>; })}
+            {pocPlan.windows.filter((item) => item.status !== "remove" && getWall(item.wallId)?.status !== "remove").map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const normal = unitNormal(wall.from, wall.to, wall.interiorSide); return <g key={item.id} data-selectable className={`window-symbol ${toggles.construction && toggles.constructionAdditions && item.status === "proposed" ? "scope-addition" : ""} ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line x1={add(start, normal, -2)[0]} y1={add(start, normal, -2)[1]} x2={add(end, normal, -2)[0]} y2={add(end, normal, -2)[1]} /><line x1={add(start, normal, 2)[0]} y1={add(start, normal, 2)[1]} x2={add(end, normal, 2)[0]} y2={add(end, normal, 2)[1]} /><line x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /></g>; })}
+            {pocPlan.doors.filter((item) => item.status !== "remove" && getWall(item.wallId)?.status !== "remove").map((item) => <DoorMark key={item.id} item={item} selected={selectedOpeningIds.has(item.id)} highlightAddition={toggles.construction && toggles.constructionAdditions && item.status === "proposed"} onSelect={() => selectItem(item.id)} />)}
+            {toggles.construction && toggles.constructionDemolition && pocPlan.doors.filter((item) => item.status === "remove").map((item) => <DoorMark key={item.id} item={item} selected={selectedOpeningIds.has(item.id)} demolition onSelect={() => selectItem(item.id)} />)}
+            {pocPlan.slidingDoors.filter((item) => item.status !== "remove" && getWall(item.wallId)?.status !== "remove").map((item) => { const wall = getWall(item.wallId)!; const start = pointAlong(wall.from, wall.to, item.offset); const end = pointAlong(wall.from, wall.to, item.offset + item.width); const midpoint = pointAlong(wall.from, wall.to, item.offset + item.width / 2); const normal = unitNormal(wall.from, wall.to, wall.interiorSide); const overlap = 4; const firstEnd = pointAlong(wall.from, wall.to, item.offset + item.width / 2 + overlap); const secondStart = pointAlong(wall.from, wall.to, item.offset + item.width / 2 - overlap); return <g key={item.id} data-selectable aria-label={item.label} className={`sliding-door-symbol ${toggles.construction && toggles.constructionAdditions && item.status === "proposed" ? "scope-addition" : ""} ${selectedOpeningIds.has(item.id) ? "selected" : ""}`} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="sliding-door-hit" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} /><line className="sliding-door-panel" x1={add(start, normal, 2)[0]} y1={add(start, normal, 2)[1]} x2={add(firstEnd, normal, 2)[0]} y2={add(firstEnd, normal, 2)[1]} /><line className="sliding-door-panel" x1={add(secondStart, normal, -2)[0]} y1={add(secondStart, normal, -2)[1]} x2={add(end, normal, -2)[0]} y2={add(end, normal, -2)[1]} /><line className="sliding-door-center" x1={add(midpoint, normal, -4)[0]} y1={add(midpoint, normal, -4)[1]} x2={add(midpoint, normal, 4)[0]} y2={add(midpoint, normal, 4)[1]} /></g>; })}
             {toggles.plumbing && <g className="plumbing-layer">
               {toggles.plumbingShutoffs && pocPlan.waterValves.map((item) => <WaterValveMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}
               {toggles.plumbingDrains && pocPlan.plumbingDrains.map((item) => <PlumbingDrainMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}
@@ -786,14 +848,14 @@ export function BasementPlanner() {
               {pocPlan.wallCabinets.filter((item) => (item.cabinetType === "breaker-panel" ? toggles.electricalPanels : toggles.electricalLowVoltage)).map((item) => <WallCabinetMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}
             </g>}
             {pocPlan.stairs.map((item) => <StairMark key={item.id} item={item} selected={item.id === selectedId} onSelect={() => selectItem(item.id)} />)}
-            {toggles.framing && framingWalls.map((wall) => <FramingDimensionMark key={`framing-${wall.id}`} wall={wall} onSelect={() => selectItem(wall.id)} />)}
+            {toggles.construction && toggles.constructionAdditions && additionWalls.map((wall) => <FramingDimensionMark key={`addition-${wall.id}`} wall={wall} onSelect={() => selectItem(wall.id)} />)}
             {toggles.dimensions && pocPlan.dimensions.map((item) => <DimensionMark key={item.id} item={item} onSelect={() => selectItem(item.id)} />)}
             {selectedOpeningMeasurement && <OpeningMeasurementMarks measurement={selectedOpeningMeasurement} />}
             {toggles.plumbing && toggles.plumbingShutoffs && selected?.kind === "water-valve" && <WaterValveDimensionMark item={selected} />}
           </svg>
           <div className="plan-hint print-hide">Drag to pan · Scroll to zoom · Select any symbol</div>
         </div>
-        <footer className="drawing-footer"><div><strong>{pocPlan.title}</strong><span>{pocPlan.subtitle}</span></div><div className="print-legend"><span>← North</span><span>↑ Stairs up</span><span>═ Window</span><span>◜ Door swing</span><span>⇆ Bypass doors</span>{toggles.hvac && <span>▣ HVAC equipment</span>}{toggles.hvac && toggles.hvacSupply && <span>▭ Supply duct</span>}{toggles.hvac && toggles.hvacReturn && <span>▭ Return duct</span>}{toggles.hvac && toggles.hvacReturn && <span>▧ Panned return</span>}{toggles.gas && <span>═ GAS</span>}{toggles.joists && <span>│ Ceiling joist</span>}{toggles.plumbing && toggles.plumbingShutoffs && <span>⊗ Water shutoff</span>}{toggles.plumbing && toggles.plumbingDrains && <span>⊙ Drain rough-in</span>}{toggles.plumbing && toggles.plumbingEquipment && <span>◯ Water heater</span>}{toggles.electrical && toggles.electricalPanels && <span>▣ Breaker panel</span>}{toggles.electrical && toggles.electricalLowVoltage && <span>▤ Networking</span>}<span>┄ Proposed work</span>{toggles.framing && <><span>━ Framed</span><span>┅ Needs framing</span></>}</div>{toggles.framing && <div className="print-framing-summary"><FramingSummary compact /></div>}<p>{pocPlan.warning}</p></footer>
+        <footer className="drawing-footer"><div><strong>{pocPlan.title}</strong><span>{pocPlan.subtitle}</span></div><div className="print-legend"><span>← North</span><span>↑ Stairs up</span><span>═ Window</span><span>◜ Door swing</span><span>⇆ Bypass doors</span>{toggles.soffits && <span>┄ Overhead soffit</span>}{toggles.construction && toggles.constructionDemolition && <span>╳ Demolish</span>}{toggles.construction && toggles.constructionAdditions && <span>┄ Add</span>}{toggles.hvac && <span>▣ HVAC equipment</span>}{toggles.hvac && toggles.hvacSupply && <span>▭ Supply duct</span>}{toggles.hvac && toggles.hvacReturn && <span>▭ Return duct</span>}{toggles.hvac && toggles.hvacReturn && <span>▧ Panned return</span>}{toggles.gas && <span>═ GAS</span>}{toggles.joists && <span>│ Ceiling joist</span>}{toggles.plumbing && toggles.plumbingShutoffs && <span>⊗ Water shutoff</span>}{toggles.plumbing && toggles.plumbingDrains && <span>⊙ Drain rough-in</span>}{toggles.plumbing && toggles.plumbingEquipment && <span>◯ Water heater</span>}{toggles.electrical && toggles.electricalPanels && <span>▣ Breaker panel</span>}{toggles.electrical && toggles.electricalLowVoltage && <span>▤ Networking</span>}</div>{toggles.construction && toggles.constructionAdditions && <div className="print-framing-summary"><FramingSummary compact /></div>}<p>{pocPlan.warning}</p></footer>
         {issues.length > 0 && <div className="validation-error" role="alert">Plan data has {issues.length} validation issue{issues.length === 1 ? "" : "s"}.</div>}
       </section>
     </main>

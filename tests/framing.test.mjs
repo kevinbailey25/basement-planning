@@ -1,28 +1,28 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { estimateFraming, wallsNeedingFraming } from "../lib/plan/framing.ts";
+import { estimateFraming, wallsToAdd } from "../lib/plan/framing.ts";
 import { pocPlan } from "../lib/plan/poc-plan.ts";
 
-test("framing estimate uses only walls marked needs-framing", () => {
+test("framing estimate uses only walls in the Add construction scope", () => {
   const estimate = estimateFraming(pocPlan);
-  assert.equal(wallsNeedingFraming(pocPlan).length, 12);
-  assert.equal(estimate.wallCount, 12);
-  assert.equal(estimate.wallLengthInches, 2233);
-  assert.equal(estimate.baseStudCount, 156);
-  assert.equal(estimate.purchaseStudCount, 172);
-  assert.equal(estimate.baseTopPlateBoards, 24);
-  assert.equal(estimate.purchaseTopPlateBoards, 26);
-  assert.equal(estimate.baseBottomPlateBoards, 24);
-  assert.equal(estimate.purchaseBottomPlateBoards, 26);
-  assert.equal(estimate.openingCount, 6);
-  assert.equal(estimate.junctionCount, 14);
+  assert.equal(wallsToAdd(pocPlan).length, 14);
+  assert.equal(estimate.wallCount, 14);
+  assert.equal(estimate.wallLengthInches, 2414);
+  assert.equal(estimate.baseStudCount, 170);
+  assert.equal(estimate.purchaseStudCount, 187);
+  assert.equal(estimate.baseTopPlateBoards, 26);
+  assert.equal(estimate.purchaseTopPlateBoards, 28);
+  assert.equal(estimate.baseBottomPlateBoards, 26);
+  assert.equal(estimate.purchaseBottomPlateBoards, 28);
+  assert.equal(estimate.openingCount, 7);
+  assert.equal(estimate.junctionCount, 17);
 });
 
-test("finished landing portion is excluded from the Office wall estimate", () => {
+test("retained landing wall is excluded from the Additions estimate", () => {
   assert.equal(
-    pocPlan.walls.find((wall) => wall.id === "finished-landing-office-jog-wall")?.framingStatus,
-    "framed",
+    pocPlan.walls.find((wall) => wall.id === "finished-landing-office-jog-wall")?.status,
+    "existing",
   );
   assert.deepEqual(
     pocPlan.walls.find((wall) => wall.id === "office-south-wall")?.from,
@@ -41,16 +41,10 @@ test("closet wall framing dimensions use the east face", () => {
   );
 });
 
-test("finished Furnace Room boundaries are excluded from the framing estimate", () => {
-  const framedIds = new Set(
-    pocPlan.walls
-      .filter((wall) => wall.framingStatus === "framed")
-      .map((wall) => wall.id),
-  );
-  assert.ok(framedIds.has("furnace-room-south-wall"));
-  assert.ok(framedIds.has("furnace-room-storage-wall"));
-  assert.equal(
-    pocPlan.walls.find((wall) => wall.id === "storage-north-wall")?.framingStatus,
-    "needs-framing",
-  );
+test("Utility Room demolition is excluded while its new walls are estimated", () => {
+  assert.equal(pocPlan.walls.find((wall) => wall.id === "furnace-room-south-wall")?.status, "existing");
+  assert.equal(pocPlan.walls.find((wall) => wall.id === "furnace-room-storage-wall")?.status, "remove");
+  assert.equal(pocPlan.walls.find((wall) => wall.id === "storage-north-wall")?.status, "proposed");
+  assert.ok(wallsToAdd(pocPlan).some((wall) => wall.id === "utility-room-east-wall"));
+  assert.ok(wallsToAdd(pocPlan).some((wall) => wall.id === "utility-room-north-wall-east-extension"));
 });

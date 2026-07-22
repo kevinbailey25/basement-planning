@@ -2,7 +2,7 @@ import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-wall-cabinet" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-wall-cabinet" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -11,6 +11,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
   return [
     ...plan.walls,
     ...plan.spaces,
+    ...plan.soffits,
     ...plan.doors,
     ...plan.slidingDoors,
     ...plan.windows,
@@ -53,6 +54,15 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
   const walls = new Map(plan.walls.map((item) => [item.id, item]));
   for (const item of plan.walls) {
     if (distance(item.from, item.to) === 0) issues.push({ code: "zero-length-wall", itemId: item.id, message: `Wall “${item.id}” has no length.` });
+  }
+  for (const item of plan.soffits) {
+    const twiceArea = Math.abs(item.polygon.reduce((sum, point, index) => {
+      const next = item.polygon[(index + 1) % item.polygon.length];
+      return sum + point[0] * next[1] - next[0] * point[1];
+    }, 0));
+    if (twiceArea === 0 || (item.bottomAboveFloor != null && item.bottomAboveFloor <= 0)) {
+      issues.push({ code: "invalid-soffit", itemId: item.id, message: `Soffit “${item.id}” requires a usable footprint and any known bottom elevation must be positive.` });
+    }
   }
   for (const item of plan.stairs) {
     const runLength = distance(item.from, item.to);

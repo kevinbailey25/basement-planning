@@ -14,6 +14,7 @@ import type {
   PlumbingDrain,
   PlumbingEquipment,
   SlidingDoor,
+  Soffit,
   Space,
   Stairs,
   Switch,
@@ -26,6 +27,7 @@ import type {
 
 export const wall = (value: Omit<Wall, "kind">): Wall => ({ kind: "wall", ...value });
 export const space = (value: Omit<Space, "kind">): Space => ({ kind: "space", ...value });
+export const soffit = (value: Omit<Soffit, "kind">): Soffit => ({ kind: "soffit", ...value });
 export const door = (value: Omit<Door, "kind">): Door => ({ kind: "door", ...value });
 export const slidingDoor = (
   value: Omit<SlidingDoor, "kind">,

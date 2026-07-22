@@ -2,7 +2,6 @@ export type Point = readonly [x: number, y: number];
 
 export type MeasurementConfidence = "exact" | "approximate" | "unknown";
 export type ConstructionStatus = "existing" | "proposed" | "remove";
-export type FramingStatus = "framed" | "needs-framing" | "unknown";
 export type WallSide = "left" | "right";
 export type AirflowRole = "supply" | "return" | "exhaust" | "unknown";
 
@@ -21,7 +20,6 @@ export interface Wall extends PlanItemBase {
   thickness: number;
   interiorSide: WallSide;
   dimensionSide?: WallSide;
-  framingStatus: FramingStatus;
 }
 
 export interface FramingPlan {
@@ -51,6 +49,13 @@ export interface Door extends WallOpeningBase {
   kind: "door";
   hinge: "start" | "end";
   swing: "inward" | "outward";
+  height?: number;
+}
+
+export interface Soffit extends PlanItemBase {
+  kind: "soffit";
+  polygon: readonly [Point, Point, Point, Point];
+  bottomAboveFloor?: number;
 }
 
 export interface SlidingDoor extends WallOpeningBase {
@@ -258,6 +263,7 @@ export interface Dimension extends PlanItemBase {
 export type SelectablePlanItem =
   | Wall
   | Space
+  | Soffit
   | Door
   | SlidingDoor
   | WindowOpening
@@ -289,6 +295,7 @@ export interface FloorPlan {
   framing: FramingPlan;
   walls: readonly Wall[];
   spaces: readonly Space[];
+  soffits: readonly Soffit[];
   doors: readonly Door[];
   slidingDoors: readonly SlidingDoor[];
   windows: readonly WindowOpening[];
