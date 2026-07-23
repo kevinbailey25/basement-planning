@@ -38,7 +38,7 @@ test("stores the new Utility door and relocated Storage door", () => {
     [utilityDoor.wallId, utilityDoor.offset, utilityDoor.width, utilityDoor.hinge, utilityDoor.swing, utilityDoor.height],
     ["utility-room-east-wall", 43, 36, "end", "outward", undefined],
   );
-  assert.deepEqual([storageDoor.wallId, storageDoor.offset, storageDoor.width], ["storage-north-wall", 124, 32]);
+  assert.deepEqual([storageDoor.wallId, storageDoor.offset, storageDoor.width], ["storage-north-wall", 120, 32]);
 });
 
 test("stores the optional combined-trunk soffit with unknown bottom elevation", () => {

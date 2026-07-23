@@ -114,14 +114,14 @@ export const pocPlan = {
     wall({ id: "utility-room-north-wall-east-extension", label: "Utility room north wall — east extension", from: [375, 222], to: [375, 186], thickness: interiorWall, interiorSide: "right", note: "Nominal 36-inch eastward extension; verify the final wall line on site.", ...proposed }),
     wall({ id: "utility-room-east-wall", label: "Utility room east wall", from: [375, 186], to: [556, 186], thickness: interiorWall, interiorSide: "right", note: "Proposed wall aligned with the east edge of the combined supply-and-return soffit.", ...proposed }),
     wall({ id: "furnace-room-east-wall", label: "Former Furnace Room east wall", from: [375, 222], to: [477, 222], thickness: interiorWall, interiorSide: "left", status: "remove", confidence: "approximate", note: "Remove the existing wall and its double-door opening when the Utility Room is expanded east." }),
-    wall({ id: "storage-north-wall", label: "Storage north wall", from: [477, 26], to: [477, 186], thickness: interiorWall, interiorSide: "right", note: "Proposed wall shortened at the new Utility Room east wall.", ...proposed }),
+    wall({ id: "storage-north-wall", label: "Storage north wall", from: [465, 26], to: [465, 186], thickness: interiorWall, interiorSide: "right", note: "Proposed wall shifted a nominal 12 inches north and shortened at the new Utility Room east wall; verify the final wall line on site.", ...proposed }),
     wall({ id: "furnace-room-storage-wall", label: "Former Furnace Room and Storage divider", from: [477, 222], to: [477, 267], thickness: interiorWall, interiorSide: "right", status: "remove", confidence: "approximate", note: "Remove this finished divider so the Utility Room can continue south to the exterior wall." }),
   ],
   spaces: [
     space({
       id: "main-open-area",
       label: "Main open area",
-      polygon: [[0, 0], [125, 0], [125, 26], [477, 26], [477, 186], [375, 186], [375, 267], [0, 267]],
+      polygon: [[0, 0], [125, 0], [125, 26], [465, 26], [465, 186], [375, 186], [375, 267], [0, 267]],
       labelAt: [230, 132],
       note: "Large open area on the east side of the house; room use has not been assigned.",
       ...existing,
@@ -129,7 +129,7 @@ export const pocPlan = {
     space({
       id: "storage",
       label: "Storage",
-      polygon: [[477, 26], [556, 26], [556, 186], [477, 186]],
+      polygon: [[465, 26], [556, 26], [556, 186], [465, 186]],
       labelAt: [517, 106],
       note: "Remaining Storage footprint after the Utility Room expands into its west side.",
       ...proposed,
@@ -202,7 +202,7 @@ export const pocPlan = {
     door({ id: "furnace-room-double-door-north-leaf", label: "Former Furnace Room double door — north leaf", wallId: "furnace-room-east-wall", offset: 21, width: 30, hinge: "start", swing: "inward", status: "remove", confidence: "approximate", note: "Remove with the former Furnace Room east wall." }),
     door({ id: "furnace-room-double-door-south-leaf", label: "Former Furnace Room double door — south leaf", wallId: "furnace-room-east-wall", offset: 51, width: 30, hinge: "end", swing: "inward", status: "remove", confidence: "approximate", note: "Remove with the former Furnace Room east wall." }),
     door({ id: "utility-room-door", label: "Utility Room door", wallId: "utility-room-east-wall", offset: 43, width: 36, hinge: "end", swing: "outward", status: "proposed", confidence: "approximate", note: "Nominal 36-inch single door aligned with the aisle between the furnace and water heater. Hinges are on the south side. Door and rough-opening height are unknown; verify the soffit relationship, equipment clearances, and code requirements on site." }),
-    door({ id: "storage-door", label: "Storage door", wallId: "storage-north-wall", offset: 124, width: 32, hinge: "end", swing: "inward", note: "Shifted approximately 12 inches toward the exterior wall to leave a nominal 4-inch wall segment at the new Utility Room corner; verify framing and trim clearance on site.", ...proposed }),
+    door({ id: "storage-door", label: "Storage door", wallId: "storage-north-wall", offset: 120, width: 32, hinge: "end", swing: "outward", note: "Shifted a nominal 4 inches east from its prior location, leaving an approximately 8-inch wall segment at the new Utility Room corner; verify framing and trim clearance on site.", ...proposed }),
   ],
   slidingDoors: [
     slidingDoor({

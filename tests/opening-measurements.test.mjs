@@ -20,7 +20,7 @@ test("measures the selected south window between the preceding opening and wall 
   assert.ok(measurement);
   assert.equal(measurement.beforeDistance, 162);
   assert.equal(measurement.openingWidth, 47);
-  assert.equal(measurement.afterDistance, 26);
+  assert.equal(measurement.afterDistance, 14);
 });
 
 test("combines adjoining double-door leaves into one opening", () => {
@@ -83,10 +83,10 @@ test("measures the relocated Storage door to the new Utility Room corner", () =>
   assert.ok(mainArea);
   assert.ok(storage);
   assert.equal(mainArea.sideLabel, "Main open area");
-  assert.equal(mainArea.afterDistance, 4);
+  assert.equal(mainArea.afterDistance, 8);
   assert.equal(storage.sideLabel, "Storage");
   assert.equal(storage.afterBoundary, 160);
-  assert.equal(storage.afterDistance, 4);
+  assert.equal(storage.afterDistance, 8);
   assert.equal(storage.afterDirection, "west");
 });
 
