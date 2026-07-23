@@ -2,7 +2,7 @@ import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-wall-cabinet" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-wall-cabinet" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -27,6 +27,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.hvacEquipment,
     ...plan.hvacDucts,
     ...plan.hvacJoistReturns,
+    ...plan.hvacReturnGrilles,
     ...plan.hvacWallCavityReturns,
     ...plan.hvacWallDuctedReturns,
     ...plan.hvacDuctTransitions,
@@ -124,6 +125,22 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     }
     for (const joistId of item.joistIds) {
       if (!joistIds.has(joistId)) issues.push({ code: "missing-joist", itemId: item.id, message: `Panned joist return “${item.id}” references missing joist “${joistId}”.` });
+    }
+  }
+  const joistReturns = new Map(plan.hvacJoistReturns.map((item) => [item.id, item]));
+  for (const item of plan.hvacReturnGrilles) {
+    const source = joistReturns.get(item.sourceReturnId);
+    if (!source) {
+      issues.push({ code: "missing-hvac-source", itemId: item.id, message: `Return grille “${item.id}” requires a panned-return source “${item.sourceReturnId}”.` });
+    }
+    if (
+      !Number.isFinite(item.center[0])
+      || !Number.isFinite(item.center[1])
+      || item.width <= 0
+      || item.length <= 0
+      || !Number.isFinite(item.rotation)
+    ) {
+      issues.push({ code: "invalid-hvac-return-grille", itemId: item.id, message: `Return grille “${item.id}” requires a finite center and rotation with positive face dimensions.` });
     }
   }
   const hvacDucts = new Map(plan.hvacDucts.map((item) => [item.id, item]));

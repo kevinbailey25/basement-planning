@@ -6,6 +6,7 @@ import {
   hvacDuctTransition,
   hvacEquipment,
   hvacJoistReturn,
+  hvacReturnGrille,
   hvacWallCavityReturn,
   hvacWallDuctedReturn,
   hvacRefrigerantLine,
@@ -694,7 +695,7 @@ export const pocPlan = {
     }),
     horizontalHvacDuct({
       id: "joists-04-05-office-closet-supply-08",
-      label: "Joists 4–5 office closet supply — 8 inch round",
+      label: "Joists 4–5 upper-floor supply through Office/Closet — 8 inch round",
       airflowRole: "supply",
       shape: "round",
       from: [55.5, 209.5],
@@ -703,7 +704,7 @@ export const pocPlan = {
       bendStyle: "round",
       diameter: 8,
       bottomAboveFloor: 93,
-      note: "Existing approximately 8-inch-diameter round supply branch taking off from the west side of main-supply-ceiling-trunk-20 between main ceiling joists 4 and 5. It immediately rises above the trunk and elbows west in that bay, passes through the bathroom, then uses two elbows near the office side of the bathroom to shift north into the bay between main positions 3 and 4. Bathroom joist position 4 is absent. The branch crosses into the Office between office ceiling joists 3 and 4 and continues through the proposed Closet to the interior face of office-west-wall. The bathroom dogleg, elevation, and endpoint connection are approximate; verify on site.",
+      note: "Existing approximately 8-inch-diameter round upper-floor supply branch taking off from the west side of main-supply-ceiling-trunk-20 between main ceiling joists 4 and 5. It immediately rises above the trunk and elbows west in that bay, passes through the Bathroom, then uses two elbows near the Office side of the Bathroom to shift north into the bay between main positions 3 and 4. Bathroom joist position 4 is absent. The branch passes through the Office between office ceiling joists 3 and 4 and continues through the proposed Closet to the interior face of office-west-wall before serving the upper floor. It does not supply the basement Office or Closet. The Bathroom dogleg, elevation, upper-floor rise, and terminal connection are approximate; verify on site.",
       ...existing,
     }),
     horizontalHvacDuct({
@@ -745,14 +746,14 @@ export const pocPlan = {
     }),
     horizontalHvacDuct({
       id: "joists-16-17-office-south-wall-supply-06",
-      label: "Joists 16–17 office south wall supply — 6 inch round",
+      label: "Joists 16–17 upper-floor supply through Office — 6 inch round",
       airflowRole: "supply",
       shape: "round",
       from: [188, 207.5],
       to: [188, 525],
       diameter: 6,
       bottomAboveFloor: 93,
-      note: "Existing approximately 6-inch-diameter round supply branch taking off from the west side of main-supply-ceiling-trunk-24 between main ceiling joists 16 and 17. It is separate from the 8-inch eastbound branch in the same bay. It immediately rises above the supply trunk, elbows west, crosses above main-return-ceiling-trunk, and continues over the Landing. In the Office it runs between office-ceiling-joist-14 and office-south-wall to the interior corner at office-west-jog-wall. Diameter, elevation, and endpoint connection are approximate; verify on site.",
+      note: "Existing approximately 6-inch-diameter round upper-floor supply branch taking off from the west side of main-supply-ceiling-trunk-24 between main ceiling joists 16 and 17. It is separate from the 8-inch eastbound branch in the same bay. It immediately rises above the supply trunk, elbows west, crosses above main-return-ceiling-trunk, and continues over the Landing. It passes through the Office between office-ceiling-joist-14 and office-south-wall to the interior corner at office-west-jog-wall before serving the upper floor. It does not supply the basement Office. Diameter, elevation, upper-floor rise, and terminal connection are approximate; verify on site.",
       ...existing,
     }),
     horizontalHvacDuct({
@@ -868,6 +869,20 @@ export const pocPlan = {
       joistIds: ["main-ceiling-joist-08", "main-ceiling-joist-09", "bathroom-ceiling-joist-08", "bathroom-ceiling-joist-11", "office-ceiling-joist-07", "office-ceiling-joist-08"],
       note: "Existing panned return beginning at the north end of main-return-ceiling-trunk in the approximate main joist 8–9 bay. It runs west through main-west-divider, widens across the Bathroom from joist position 8 to 11 because positions 9 and 10 are absent, then narrows to the aligned single bay between Office joists 7 and 8. The Office section extends approximately 90 inches west from office-east-divider to y=417, near the east edge of north-wall-office-window, where it appears to turn upward into the floor above. Joist assignment and concealed connections are approximate; verify on site.",
       ...existing,
+    }),
+  ],
+  hvacReturnGrilles: [
+    hvacReturnGrille({
+      id: "office-east-ceiling-return-grille-hvac-review",
+      label: "Office east ceiling return grille — HVAC review",
+      sourceReturnId: "north-trunk-bathroom-office-panned-return",
+      mounting: "ceiling",
+      center: [91, 349],
+      width: 8,
+      length: 12,
+      rotation: 0,
+      note: "Conditional proposed return grille for the basement Office, which has one planned supply register at north-wall-office-window. Center the approximately 8-by-12-inch ceiling grille between office-ceiling-joist-07 and office-ceiling-joist-08, approximately 22 inches west of office-east-divider, and connect it through a framed, sealed boot to north-trunk-bathroom-office-panned-return. Do not simply cut through the ceiling finish or joist panning, do not cut structural framing, and do not open or leak the return chase to the Bathroom. Before construction, have the HVAC contractor verify that the panned return is connected, clear, code-compliant, and adequately sealed; confirm the Office supply airflow, final grille free area and noise, closed-door pressure balance, and that return airflow taken from the Office does not exceed its supplied airflow.",
+      ...proposed,
     }),
   ],
   hvacWallCavityReturns: [

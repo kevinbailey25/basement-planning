@@ -335,6 +335,37 @@ test("stores the proposed two-bay low-wall return without disturbing the adjacen
   assert.match(item.note, /Manual D/);
 });
 
+test("stores the conditional Office ceiling grille on the existing panned return", () => {
+  const item = pocPlan.hvacReturnGrilles.find((grille) => grille.id === "office-east-ceiling-return-grille-hvac-review");
+  const source = pocPlan.hvacJoistReturns.find((returnItem) => returnItem.id === "north-trunk-bathroom-office-panned-return");
+  assert.ok(item && source);
+  assert.deepEqual(
+    [item.sourceReturnId, item.mounting, item.center, item.width, item.length, item.rotation],
+    ["north-trunk-bathroom-office-panned-return", "ceiling", [91, 349], 8, 12, 0],
+  );
+  assert.equal(item.center[1] - 327, 22);
+  assert.equal(item.status, "proposed");
+  assert.equal(item.confidence, "approximate");
+  assert.match(item.note, /one planned supply register/);
+  assert.match(item.note, /framed, sealed boot/);
+  assert.match(item.note, /does not exceed its supplied airflow/);
+});
+
+test("reports malformed or unanchored return grilles", () => {
+  const item = pocPlan.hvacReturnGrilles[0];
+  const malformed = {
+    ...pocPlan,
+    hvacReturnGrilles: [{
+      ...item,
+      sourceReturnId: "missing-panned-return",
+      width: 0,
+    }],
+  };
+  const issues = validatePlan(malformed);
+  assert.ok(issues.some((issue) => issue.code === "missing-hvac-source"));
+  assert.ok(issues.some((issue) => issue.code === "invalid-hvac-return-grille"));
+});
+
 test("reports malformed or unanchored wall-cavity returns", () => {
   const item = pocPlan.hvacWallCavityReturns[0];
   const malformed = {
@@ -549,9 +580,13 @@ test("stores the three westbound supply branches from the field survey", () => {
     [closet.from, closet.waypoints, closet.to, closet.diameter],
     [[55.5, 209.5], [[55.5, 312], [43.75, 312]], [43.75, 567], 8],
   );
+  assert.match(closet.label, /upper-floor supply through Office\/Closet/);
+  assert.match(closet.note, /does not supply the basement Office or Closet/);
   assert.deepEqual([flexible.from, flexible.to, flexible.diameter], [[66.25, 209.5], [66.25, 235], 8]);
   assert.match(flexible.note, /compressed to fit the approximately 7\.5-inch clear joist bay/);
   assert.deepEqual([officeWall.from, officeWall.to, officeWall.diameter], [[188, 207.5], [188, 525], 6]);
+  assert.match(officeWall.label, /upper-floor supply through Office/);
+  assert.match(officeWall.note, /does not supply the basement Office/);
 });
 
 test("reports a round HVAC duct without a usable diameter", () => {

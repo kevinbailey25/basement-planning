@@ -392,6 +392,25 @@ hvacJoistReturn({
 
 The polygon records only the observed or reasonably inferred plan projection. Describe uncertain wall, floor, or concealed continuations in `note`; do not invent an elevation or terminal grille. Every `joistIds` entry must reference an existing joist.
 
+A ceiling grille opening into a mapped panned return is a separate selectable object. Keep its proposed face dimensions and position independent from the existing chase so the drawing does not imply that cutting the opening has already been approved:
+
+```ts
+hvacReturnGrille({
+  id: "office-east-ceiling-return-grille-hvac-review",
+  label: "Office east ceiling return grille — HVAC review",
+  sourceReturnId: "north-trunk-bathroom-office-panned-return",
+  mounting: "ceiling",
+  center: [91, 349],
+  width: 8,
+  length: 12,
+  rotation: 0,
+  status: "proposed",
+  confidence: "approximate",
+})
+```
+
+The source must identify an existing panned-return object. Notes should require inspection of the chase connection, sealing, framing, prohibited-space isolation, available supply airflow, grille free area, noise, and closed-door pressure balance. A grille face is not authorization to cut a joist or simply open the ceiling finish and panning.
+
 Returns that intentionally use framed wall cavities require a separate wall-cavity return object. `cavitySpans` records nominal framing modules along the referenced wall; it does not claim that the entire module width is open. Keep intervening framing explicit with `preservedStudOffsets`. `connectionRoute` and `upperBootPolygon` show the known top-down topology while allowing the fitting size to remain undetermined:
 
 ```ts

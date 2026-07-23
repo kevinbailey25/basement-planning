@@ -217,6 +217,17 @@ export interface HvacJoistReturn extends PlanItemBase {
   joistIds: readonly string[];
 }
 
+export interface HvacReturnGrille extends PlanItemBase {
+  kind: "hvac-return-grille";
+  airflowRole: "return";
+  sourceReturnId: string;
+  mounting: "ceiling";
+  center: Point;
+  width: number;
+  length: number;
+  rotation: number;
+}
+
 export interface HvacWallCavityReturn extends PlanItemBase {
   kind: "hvac-wall-cavity-return";
   airflowRole: "return";
@@ -314,6 +325,7 @@ export type SelectablePlanItem =
   | HvacEquipment
   | HvacDuct
   | HvacJoistReturn
+  | HvacReturnGrille
   | HvacWallCavityReturn
   | HvacWallDuctedReturn
   | HvacDuctTransition
@@ -348,6 +360,7 @@ export interface FloorPlan {
   hvacEquipment: readonly HvacEquipment[];
   hvacDucts: readonly HvacDuct[];
   hvacJoistReturns: readonly HvacJoistReturn[];
+  hvacReturnGrilles: readonly HvacReturnGrille[];
   hvacWallCavityReturns: readonly HvacWallCavityReturn[];
   hvacWallDuctedReturns: readonly HvacWallDuctedReturn[];
   hvacDuctTransitions: readonly HvacDuctTransition[];

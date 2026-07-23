@@ -6,6 +6,7 @@ import type {
   HvacEquipment,
   GasLine,
   HvacJoistReturn,
+  HvacReturnGrille,
   HvacWallCavityReturn,
   HvacWallDuctedReturn,
   HvacRefrigerantLine,
@@ -72,6 +73,9 @@ export const hvacEquipment = (
 export const hvacJoistReturn = (
   value: Omit<HvacJoistReturn, "kind" | "airflowRole">,
 ): HvacJoistReturn => ({ kind: "hvac-joist-return", airflowRole: "return", ...value });
+export const hvacReturnGrille = (
+  value: Omit<HvacReturnGrille, "kind" | "airflowRole">,
+): HvacReturnGrille => ({ kind: "hvac-return-grille", airflowRole: "return", ...value });
 export const hvacWallCavityReturn = (
   value: Omit<HvacWallCavityReturn, "kind" | "airflowRole">,
 ): HvacWallCavityReturn => ({ kind: "hvac-wall-cavity-return", airflowRole: "return", ...value });
