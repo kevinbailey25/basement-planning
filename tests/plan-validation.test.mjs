@@ -314,6 +314,86 @@ test("stores the four newly surveyed return runs", () => {
   assert.match(office.note, /approximately 90 inches west/);
 });
 
+test("stores the proposed two-bay low-wall return without disturbing the adjacent panned return", () => {
+  const item = pocPlan.hvacWallCavityReturns.find((returnItem) => returnItem.id === "main-area-two-bay-low-wall-return");
+  const adjacent = pocPlan.hvacJoistReturns.find((returnItem) => returnItem.id === "north-trunk-bathroom-office-panned-return");
+  assert.ok(item && adjacent);
+  assert.deepEqual(
+    [item.sourceDuctId, item.wallId, item.cavitySpans, item.preservedStudOffsets],
+    ["main-return-ceiling-trunk", "main-west-divider", [[48, 64], [64, 80]], [64]],
+  );
+  assert.deepEqual(item.connectionRoute, [[84.5, 250], [82.5, 250], [82.5, 258]]);
+  assert.deepEqual(item.upperBootPolygon, [[48, 258], [84.5, 258], [84.5, 264.5], [48, 264.5]]);
+  assert.deepEqual(
+    [item.grilleSide, item.grilleCenterOffset, item.grilleWidth, item.grilleHeight, item.grilleBottomAboveFloor],
+    ["left", 64, 30, 8, 2],
+  );
+  assert.equal(item.status, "proposed");
+  assert.equal(item.confidence, "approximate");
+  assert.ok(Math.max(...item.cavitySpans.flat()) < Math.min(...adjacent.polygon.map(([x]) => x)));
+  assert.match(item.note, /center stud at offset 64/);
+  assert.match(item.note, /Manual D/);
+});
+
+test("reports malformed or unanchored wall-cavity returns", () => {
+  const item = pocPlan.hvacWallCavityReturns[0];
+  const malformed = {
+    ...pocPlan,
+    hvacWallCavityReturns: [{
+      ...item,
+      sourceDuctId: "missing-return-duct",
+      cavitySpans: [[80, 40]],
+      grilleWidth: 500,
+    }],
+  };
+  const issues = validatePlan(malformed);
+  assert.ok(issues.some((issue) => issue.code === "missing-hvac-source"));
+  assert.ok(issues.some((issue) => issue.code === "invalid-hvac-wall-cavity-return"));
+});
+
+test("stores the conditional sealed low-wall return near joists 29 and 30", () => {
+  const item = pocPlan.hvacWallDuctedReturns.find((returnItem) => returnItem.id === "main-area-east-low-wall-return-hvac-review");
+  const joist29 = pocPlan.joists.find((joist) => joist.id === "main-ceiling-joist-29");
+  const joist30 = pocPlan.joists.find((joist) => joist.id === "main-ceiling-joist-30");
+  assert.ok(item && joist29 && joist30);
+  assert.deepEqual(
+    [item.sourceDuctId, item.wallId, item.wallSpan],
+    ["main-return-ceiling-trunk", "furnace-room-north-wall", [30, 45]],
+  );
+  assert.deepEqual(item.connectionRoute, [[362, 238], [362, 228.5], [372.5, 228.5]]);
+  assert.deepEqual(item.upperBootPolygon, [[372.5, 222], [377.5, 222], [377.5, 237], [372.5, 237]]);
+  assert.deepEqual(
+    [item.grilleSide, item.grilleCenterOffset, item.grilleWidth, item.grilleHeight, item.grilleBottomAboveFloor],
+    ["left", 37.5, 14, 8, 2],
+  );
+  assert.equal(item.connectionRoute[0][1], 238);
+  assert.equal(item.connectionRoute[0][1] - item.connectionRoute[1][1], 9.5);
+  assert.equal(item.status, "proposed");
+  assert.equal(item.confidence, "approximate");
+  assert.match(item.note, /dedicated sealed sheet-metal drop/);
+  assert.match(item.note, /east face/);
+  assert.match(item.note, /between the return and supply trunks/);
+  assert.match(item.note, /rather than directly beneath the return trunk/);
+  assert.match(item.note, /atmospheric-draft water-heater/);
+  assert.match(item.note, /HVAC approval/);
+});
+
+test("reports malformed or unanchored sealed wall returns", () => {
+  const item = pocPlan.hvacWallDuctedReturns[0];
+  const malformed = {
+    ...pocPlan,
+    hvacWallDuctedReturns: [{
+      ...item,
+      sourceDuctId: "missing-return-duct",
+      wallSpan: [20, 10],
+      grilleWidth: 500,
+    }],
+  };
+  const issues = validatePlan(malformed);
+  assert.ok(issues.some((issue) => issue.code === "missing-hvac-source"));
+  assert.ok(issues.some((issue) => issue.code === "invalid-hvac-wall-ducted-return"));
+});
+
 test("stores the joist-bay HVAC exhaust route", () => {
   const exhaust = pocPlan.hvacDucts.find((item) => item.id === "joists-33-34-east-wall-exhaust-10");
   assert.ok(exhaust && exhaust.orientation === "horizontal" && exhaust.shape === "round");

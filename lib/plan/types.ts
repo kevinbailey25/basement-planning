@@ -217,6 +217,41 @@ export interface HvacJoistReturn extends PlanItemBase {
   joistIds: readonly string[];
 }
 
+export interface HvacWallCavityReturn extends PlanItemBase {
+  kind: "hvac-wall-cavity-return";
+  airflowRole: "return";
+  sourceDuctId: string;
+  wallId: string;
+  cavitySpans: readonly (readonly [fromOffset: number, toOffset: number])[];
+  preservedStudOffsets: readonly number[];
+  connectionRoute: readonly Point[];
+  upperBootPolygon: readonly Point[];
+  chaseBottomAboveFloor: number;
+  chaseTopAboveFloor: number;
+  grilleSide: WallSide;
+  grilleCenterOffset: number;
+  grilleWidth: number;
+  grilleHeight: number;
+  grilleBottomAboveFloor: number;
+}
+
+export interface HvacWallDuctedReturn extends PlanItemBase {
+  kind: "hvac-wall-ducted-return";
+  airflowRole: "return";
+  sourceDuctId: string;
+  wallId: string;
+  wallSpan: readonly [fromOffset: number, toOffset: number];
+  connectionRoute: readonly Point[];
+  upperBootPolygon: readonly Point[];
+  chaseBottomAboveFloor: number;
+  chaseTopAboveFloor: number;
+  grilleSide: WallSide;
+  grilleCenterOffset: number;
+  grilleWidth: number;
+  grilleHeight: number;
+  grilleBottomAboveFloor: number;
+}
+
 export interface HvacDuctTransition extends PlanItemBase {
   kind: "hvac-duct-transition";
   airflowRole: AirflowRole;
@@ -279,6 +314,8 @@ export type SelectablePlanItem =
   | HvacEquipment
   | HvacDuct
   | HvacJoistReturn
+  | HvacWallCavityReturn
+  | HvacWallDuctedReturn
   | HvacDuctTransition
   | HvacRefrigerantLine
   | Circuit
@@ -311,6 +348,8 @@ export interface FloorPlan {
   hvacEquipment: readonly HvacEquipment[];
   hvacDucts: readonly HvacDuct[];
   hvacJoistReturns: readonly HvacJoistReturn[];
+  hvacWallCavityReturns: readonly HvacWallCavityReturn[];
+  hvacWallDuctedReturns: readonly HvacWallDuctedReturn[];
   hvacDuctTransitions: readonly HvacDuctTransition[];
   hvacRefrigerantLines: readonly HvacRefrigerantLine[];
   circuits: readonly Circuit[];

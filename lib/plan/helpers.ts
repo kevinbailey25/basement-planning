@@ -6,6 +6,8 @@ import type {
   HvacEquipment,
   GasLine,
   HvacJoistReturn,
+  HvacWallCavityReturn,
+  HvacWallDuctedReturn,
   HvacRefrigerantLine,
   HorizontalHvacDuct,
   HvacDuctTransition,
@@ -70,6 +72,12 @@ export const hvacEquipment = (
 export const hvacJoistReturn = (
   value: Omit<HvacJoistReturn, "kind" | "airflowRole">,
 ): HvacJoistReturn => ({ kind: "hvac-joist-return", airflowRole: "return", ...value });
+export const hvacWallCavityReturn = (
+  value: Omit<HvacWallCavityReturn, "kind" | "airflowRole">,
+): HvacWallCavityReturn => ({ kind: "hvac-wall-cavity-return", airflowRole: "return", ...value });
+export const hvacWallDuctedReturn = (
+  value: Omit<HvacWallDuctedReturn, "kind" | "airflowRole">,
+): HvacWallDuctedReturn => ({ kind: "hvac-wall-ducted-return", airflowRole: "return", ...value });
 type HorizontalHvacDuctInput = HorizontalHvacDuct extends infer Duct
   ? Duct extends HorizontalHvacDuct
     ? Omit<Duct, "kind" | "orientation">

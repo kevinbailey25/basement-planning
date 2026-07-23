@@ -392,6 +392,57 @@ hvacJoistReturn({
 
 The polygon records only the observed or reasonably inferred plan projection. Describe uncertain wall, floor, or concealed continuations in `note`; do not invent an elevation or terminal grille. Every `joistIds` entry must reference an existing joist.
 
+Returns that intentionally use framed wall cavities require a separate wall-cavity return object. `cavitySpans` records nominal framing modules along the referenced wall; it does not claim that the entire module width is open. Keep intervening framing explicit with `preservedStudOffsets`. `connectionRoute` and `upperBootPolygon` show the known top-down topology while allowing the fitting size to remain undetermined:
+
+```ts
+hvacWallCavityReturn({
+  id: "main-area-two-bay-low-wall-return",
+  label: "Main area two-bay low-wall return",
+  sourceDuctId: "main-return-ceiling-trunk",
+  wallId: "main-west-divider",
+  cavitySpans: [[48, 64], [64, 80]],
+  preservedStudOffsets: [64],
+  connectionRoute: [[84.5, 250], [82.5, 250], [82.5, 258]],
+  upperBootPolygon: [[48, 258], [84.5, 258], [84.5, 264.5], [48, 264.5]],
+  chaseBottomAboveFloor: 0,
+  chaseTopAboveFloor: 96,
+  grilleSide: "left",
+  grilleCenterOffset: 64,
+  grilleWidth: 30,
+  grilleHeight: 8,
+  grilleBottomAboveFloor: 2,
+  status: "proposed",
+  confidence: "approximate",
+})
+```
+
+The grille dimensions describe its visible face. A continuous surface grille may cover multiple backing openings while a stud remains behind it, so its nominal face area is not the same as its effective free area. Wall-cavity returns must identify a return-air source duct, remain within their parent wall, and carry notes requiring verification of airflow sizing, cavity preparation and sealing, top-plate penetrations, fireblocking, structural framing, and grille compatibility. Do not present nominal framing modules as finished duct dimensions.
+
+Use a ducted wall return when the drop must remain isolated from the surrounding wall or mechanical room. `wallSpan` is the nominal planning allocation, while `connectionRoute` and `upperBootPolygon` describe the conceptual overhead connection:
+
+```ts
+hvacWallDuctedReturn({
+  id: "main-area-east-low-wall-return-hvac-review",
+  label: "Main area east low-wall return — HVAC review",
+  sourceDuctId: "main-return-ceiling-trunk",
+  wallId: "furnace-room-north-wall",
+  wallSpan: [30, 45],
+  connectionRoute: [[362, 238], [362, 228.5], [372.5, 228.5]],
+  upperBootPolygon: [[372.5, 222], [377.5, 222], [377.5, 237], [372.5, 237]],
+  chaseBottomAboveFloor: 0,
+  chaseTopAboveFloor: 96,
+  grilleSide: "left",
+  grilleCenterOffset: 37.5,
+  grilleWidth: 14,
+  grilleHeight: 8,
+  grilleBottomAboveFloor: 2,
+  status: "proposed",
+  confidence: "approximate",
+})
+```
+
+The drop is dedicated sealed sheet metal; the stud cavity is not the airway. A mechanical-room-facing side must have no opening or leakage path. Treat the wall allocation, boot, duct, and grille dimensions as diagrammatic until the HVAC designer confirms airflow, static pressure, equipment instructions, return-opening restrictions, room separation, and worst-case combustion safety on site.
+
 A constant-size horizontal duct may include intentional waypoints. Set `bendStyle: "round"` when a measured elbow has a curved outside corner:
 
 ```ts

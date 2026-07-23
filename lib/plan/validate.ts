@@ -2,7 +2,7 @@ import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-wall-cabinet" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-wall-cabinet" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -27,6 +27,8 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.hvacEquipment,
     ...plan.hvacDucts,
     ...plan.hvacJoistReturns,
+    ...plan.hvacWallCavityReturns,
+    ...plan.hvacWallDuctedReturns,
     ...plan.hvacDuctTransitions,
     ...plan.hvacRefrigerantLines,
     ...plan.circuits,
@@ -122,6 +124,85 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     }
     for (const joistId of item.joistIds) {
       if (!joistIds.has(joistId)) issues.push({ code: "missing-joist", itemId: item.id, message: `Panned joist return “${item.id}” references missing joist “${joistId}”.` });
+    }
+  }
+  const hvacDucts = new Map(plan.hvacDucts.map((item) => [item.id, item]));
+  for (const item of plan.hvacWallCavityReturns) {
+    const wall = walls.get(item.wallId);
+    const source = hvacDucts.get(item.sourceDuctId);
+    if (!wall) {
+      issues.push({ code: "missing-wall", itemId: item.id, message: `Wall-cavity return “${item.id}” references missing wall “${item.wallId}”.` });
+      continue;
+    }
+    if (!source || source.airflowRole !== "return") {
+      issues.push({ code: "missing-hvac-source", itemId: item.id, message: `Wall-cavity return “${item.id}” requires a return-air source duct “${item.sourceDuctId}”.` });
+    }
+    const wallLength = distance(wall.from, wall.to);
+    const hasInvalidCavity = item.cavitySpans.length < 1 || item.cavitySpans.some(([from, to]) => from < 0 || to <= from || to > wallLength);
+    const hasInvalidStud = item.preservedStudOffsets.some((offset) => offset <= 0 || offset >= wallLength);
+    const hasInvalidRoute = item.connectionRoute.length < 3
+      || item.connectionRoute.slice(1).some((point, index) => distance(item.connectionRoute[index], point) === 0);
+    const twiceBootArea = Math.abs(item.upperBootPolygon.reduce((sum, point, index) => {
+      const next = item.upperBootPolygon[(index + 1) % item.upperBootPolygon.length];
+      return sum + point[0] * next[1] - next[0] * point[1];
+    }, 0));
+    const grilleFrom = item.grilleCenterOffset - item.grilleWidth / 2;
+    const grilleTo = item.grilleCenterOffset + item.grilleWidth / 2;
+    if (
+      hasInvalidCavity
+      || hasInvalidStud
+      || hasInvalidRoute
+      || item.upperBootPolygon.length < 3
+      || twiceBootArea === 0
+      || item.chaseBottomAboveFloor < 0
+      || item.chaseTopAboveFloor <= item.chaseBottomAboveFloor
+      || item.grilleWidth <= 0
+      || item.grilleHeight <= 0
+      || item.grilleBottomAboveFloor < item.chaseBottomAboveFloor
+      || item.grilleBottomAboveFloor + item.grilleHeight > item.chaseTopAboveFloor
+      || grilleFrom < 0
+      || grilleTo > wallLength
+    ) {
+      issues.push({ code: "invalid-hvac-wall-cavity-return", itemId: item.id, message: `Wall-cavity return “${item.id}” requires valid wall modules, preserved studs, connector geometry, chase elevations, and a grille within its parent wall.` });
+    }
+  }
+  for (const item of plan.hvacWallDuctedReturns) {
+    const wall = walls.get(item.wallId);
+    const source = hvacDucts.get(item.sourceDuctId);
+    if (!wall) {
+      issues.push({ code: "missing-wall", itemId: item.id, message: `Ducted wall return “${item.id}” references missing wall “${item.wallId}”.` });
+      continue;
+    }
+    if (!source || source.airflowRole !== "return") {
+      issues.push({ code: "missing-hvac-source", itemId: item.id, message: `Ducted wall return “${item.id}” requires a return-air source duct “${item.sourceDuctId}”.` });
+    }
+    const wallLength = distance(wall.from, wall.to);
+    const [spanFrom, spanTo] = item.wallSpan;
+    const hasInvalidRoute = item.connectionRoute.length < 3
+      || item.connectionRoute.slice(1).some((point, index) => distance(item.connectionRoute[index], point) === 0);
+    const twiceBootArea = Math.abs(item.upperBootPolygon.reduce((sum, point, index) => {
+      const next = item.upperBootPolygon[(index + 1) % item.upperBootPolygon.length];
+      return sum + point[0] * next[1] - next[0] * point[1];
+    }, 0));
+    const grilleFrom = item.grilleCenterOffset - item.grilleWidth / 2;
+    const grilleTo = item.grilleCenterOffset + item.grilleWidth / 2;
+    if (
+      spanFrom < 0
+      || spanTo <= spanFrom
+      || spanTo > wallLength
+      || hasInvalidRoute
+      || item.upperBootPolygon.length < 3
+      || twiceBootArea === 0
+      || item.chaseBottomAboveFloor < 0
+      || item.chaseTopAboveFloor <= item.chaseBottomAboveFloor
+      || item.grilleWidth <= 0
+      || item.grilleHeight <= 0
+      || item.grilleBottomAboveFloor < item.chaseBottomAboveFloor
+      || item.grilleBottomAboveFloor + item.grilleHeight > item.chaseTopAboveFloor
+      || grilleFrom < spanFrom
+      || grilleTo > spanTo
+    ) {
+      issues.push({ code: "invalid-hvac-wall-ducted-return", itemId: item.id, message: `Ducted wall return “${item.id}” requires a valid wall span, connector geometry, chase elevations, and a grille within its planned wall module.` });
     }
   }
   for (const item of plan.hvacDuctTransitions) {
