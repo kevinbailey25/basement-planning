@@ -221,6 +221,30 @@ test("stores the approximate Furnace Room water heater", () => {
   assert.match(heater.note, /deliberately approximate symbol footprint/);
 });
 
+test("stores the measured and conceptual radon pipe route", () => {
+  const pipe = pocPlan.radonPipes.find((item) => item.id === "utility-room-floor-to-south-exterior-radon-pipe");
+  assert.ok(pipe);
+  assert.deepEqual(
+    [pipe.from, pipe.waypoints, pipe.to],
+    [[467.5, 229.5], [[472.5, 229.5], [472.5, 257.5], [548, 257.5], [552, 261.5]], [560, 269.5]],
+  );
+  assert.deepEqual(
+    [pipe.diameter, pipe.verticalRiseAboveFloor, pipe.diagonalEndAboveFloor, pipe.westRunBottomAboveFloor, pipe.offsetBelowJoists, pipe.exteriorTurn],
+    [5, 33, 45, 61, 13, "up"],
+  );
+  assert.match(pipe.note, /5 inches clear.*7 inches clear/);
+  assert.equal(pipe.confidence, "approximate");
+});
+
+test("reports malformed radon pipe routes", () => {
+  const pipe = pocPlan.radonPipes[0];
+  const malformed = {
+    ...pocPlan,
+    radonPipes: [{ ...pipe, diagonalEndAboveFloor: pipe.verticalRiseAboveFloor }],
+  };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-radon-pipe"));
+});
+
 test("reports plumbing equipment without a usable footprint", () => {
   const malformed = {
     ...pocPlan,

@@ -17,6 +17,7 @@ import type {
   Point,
   PlumbingDrain,
   PlumbingEquipment,
+  RadonPipe,
   SlidingDoor,
   Soffit,
   Space,
@@ -59,6 +60,9 @@ export const plumbingDrain = (
 export const plumbingEquipment = (
   value: Omit<PlumbingEquipment, "kind">,
 ): PlumbingEquipment => ({ kind: "plumbing-equipment", ...value });
+export const radonPipe = (
+  value: Omit<RadonPipe, "kind">,
+): RadonPipe => ({ kind: "radon-pipe", ...value });
 export const gasLine = (value: Omit<GasLine, "kind">): GasLine => ({
   kind: "gas-line",
   ...value,

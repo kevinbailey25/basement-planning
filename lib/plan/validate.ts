@@ -2,7 +2,7 @@ import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -22,6 +22,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.waterValves,
     ...plan.plumbingDrains,
     ...plan.plumbingEquipment,
+    ...plan.radonPipes,
     ...plan.gasLines,
     ...plan.stairs,
     ...plan.joists,
@@ -347,6 +348,22 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
       || item.height <= 0
     ) {
       issues.push({ code: "invalid-plumbing-equipment", itemId: item.id, message: `Plumbing equipment “${item.id}” requires a finite position, positive footprint, and positive height.` });
+    }
+  }
+  for (const item of plan.radonPipes) {
+    const points = [item.from, ...item.waypoints, item.to];
+    const hasInvalidPoint = points.some((point) => !Number.isFinite(point[0]) || !Number.isFinite(point[1]));
+    const hasZeroSegment = points.slice(1).some((point, index) => distance(points[index], point) === 0);
+    if (
+      hasInvalidPoint
+      || hasZeroSegment
+      || item.diameter <= 0
+      || item.verticalRiseAboveFloor < 0
+      || item.diagonalEndAboveFloor <= item.verticalRiseAboveFloor
+      || item.westRunBottomAboveFloor < item.diagonalEndAboveFloor
+      || item.offsetBelowJoists < 0
+    ) {
+      issues.push({ code: "invalid-radon-pipe", itemId: item.id, message: `Radon pipe “${item.id}” requires usable plan geometry, a positive diameter, ordered measured elevations, and a non-negative joist offset.` });
     }
   }
   for (const item of plan.gasLines) {

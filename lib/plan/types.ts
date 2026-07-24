@@ -144,6 +144,19 @@ export interface PlumbingEquipment extends PlanItemBase {
   height: number;
 }
 
+export interface RadonPipe extends PlanItemBase {
+  kind: "radon-pipe";
+  from: Point;
+  to: Point;
+  waypoints: readonly Point[];
+  diameter: number;
+  verticalRiseAboveFloor: number;
+  diagonalEndAboveFloor: number;
+  westRunBottomAboveFloor: number;
+  offsetBelowJoists: number;
+  exteriorTurn: "up" | "down" | "unknown";
+}
+
 export type GasEndpoint = "none" | "service-entry" | "wall-termination" | "rise" | "drop" | "appliance";
 
 export interface GasLine extends PlanItemBase {
@@ -335,6 +348,7 @@ export type SelectablePlanItem =
   | WaterValve
   | PlumbingDrain
   | PlumbingEquipment
+  | RadonPipe
   | GasLine
   | Stairs
   | Joist
@@ -371,6 +385,7 @@ export interface FloorPlan {
   waterValves: readonly WaterValve[];
   plumbingDrains: readonly PlumbingDrain[];
   plumbingEquipment: readonly PlumbingEquipment[];
+  radonPipes: readonly RadonPipe[];
   gasLines: readonly GasLine[];
   stairs: readonly Stairs[];
   joists: readonly Joist[];

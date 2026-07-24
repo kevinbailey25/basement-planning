@@ -58,6 +58,7 @@ button { cursor: pointer; }
 .layer-dot.slate { background: #b9c1bd; }
 .layer-dot.blue { background: #83b8c2; }
 .layer-dot.gas { background: #b07a45; }
+.layer-dot.green { background: #779784; }
 .layer-dot.plum { background: #8c779d; }
 .layer-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .layer-copy strong { font-size: 13px; font-weight: 650; }
@@ -99,6 +100,7 @@ button { cursor: pointer; }
 .legend-exhaust-duct { height: 11px !important; border: 1px solid #aeb6d2; background: rgb(105 111 137 / 18%); }
 .legend-refrigerant-line::before { content: ""; width: 19px; border-top: 3px double #c0c7c4; }
 .legend-gas-line::before { content: ""; width: 19px; border-top: 3px double #b07a45; }
+.legend-radon-pipe::before { content: ""; width: 19px; border-top: 5px solid #779784; outline: 1px solid #425c4c; }
 .legend-water-heater { color: #8bc4d3; border: 1px solid #5d98a8; border-radius: 50%; font: 800 7px/1 ui-monospace, monospace; }
 .legend-electrical-panel { color: #7c5317; border: 1px solid #a87524; background: rgb(185 111 13 / 15%); font: 800 9px/1 ui-monospace, monospace; }
 .legend-network-cabinet { color: #476b62; border: 1px solid #668d83; background: rgb(86 126 116 / 13%); font: 800 5px/1 ui-monospace, monospace; }
@@ -317,6 +319,16 @@ button { cursor: pointer; }
 .gas-line-symbol.proposed .gas-line-casing { stroke: #b87518; stroke-dasharray: 5 3; }
 .gas-line-symbol.selected .gas-line-casing, .gas-line-symbol.selected .gas-endpoint circle { stroke: #c54e18; stroke-width: 2; }
 .gas-line-symbol.selected .gas-line-label, .gas-line-symbol.selected .gas-endpoint text { fill: #a53e12; }
+.radon-pipe-symbol { cursor: pointer; }
+.radon-pipe-hit { fill: none; stroke: transparent; stroke-width: 15; }
+.radon-pipe-outline { fill: none; stroke: #425c4c; stroke-linecap: round; stroke-linejoin: round; }
+.radon-pipe-body { fill: none; stroke: #779784; stroke-linecap: round; stroke-linejoin: round; }
+.radon-pipe-centerline { fill: none; stroke: var(--paper); stroke-width: 1; stroke-dasharray: 3 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.radon-pipe-floor, .radon-pipe-rise, .radon-pipe-exit { fill: var(--paper); stroke: #425c4c; stroke-width: 1.2; }
+.radon-pipe-floor { stroke-dasharray: 1.5 1; }
+.radon-pipe-label { fill: #425c4c; stroke: var(--paper); stroke-width: 2.6; paint-order: stroke; font: 800 4px/1 ui-monospace, monospace; text-anchor: middle; pointer-events: none; }
+.radon-pipe-symbol.selected .radon-pipe-outline, .radon-pipe-symbol.selected .radon-pipe-floor, .radon-pipe-symbol.selected .radon-pipe-rise, .radon-pipe-symbol.selected .radon-pipe-exit { stroke: #c54e18; stroke-width: 2; }
+.radon-pipe-symbol.selected .radon-pipe-label { fill: #a53e12; }
 .door-hit { stroke: transparent; stroke-width: 14; }
 .door-leaf { stroke-width: 1.3; }
 .door-swing { stroke-width: .7; stroke-dasharray: 2 1.5; }
@@ -384,7 +396,7 @@ button { cursor: pointer; }
   .wall-line { stroke: #000; }
   .joist-board { stroke: #777; opacity: .7; }
   .joist-symbol.selected .joist-board { stroke: #111; }
-  .window-symbol, .door-symbol, .sliding-door-symbol, .soffit-outline, .cabinet-countertop-footprint, .cabinet-base-footprint, .cabinet-upper-footprint, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .plumbing-drain-footprint, .plumbing-drain-cap, .plumbing-drain-leader, .plumbing-equipment-footprint, .plumbing-equipment-tank, .wall-cabinet-footprint, .wall-cabinet-face, .gas-line-casing, .gas-line-centerline, .gas-endpoint circle, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-return-grille-face, .hvac-return-grille-slat, .hvac-wall-return-route, .hvac-wall-return-boot, .hvac-wall-return-preserved-stud, .hvac-wall-return-grille-outline, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
+  .window-symbol, .door-symbol, .sliding-door-symbol, .soffit-outline, .cabinet-countertop-footprint, .cabinet-base-footprint, .cabinet-upper-footprint, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .plumbing-drain-footprint, .plumbing-drain-cap, .plumbing-drain-leader, .plumbing-equipment-footprint, .plumbing-equipment-tank, .wall-cabinet-footprint, .wall-cabinet-face, .gas-line-casing, .gas-line-centerline, .gas-endpoint circle, .radon-pipe-outline, .radon-pipe-body, .radon-pipe-centerline, .radon-pipe-floor, .radon-pipe-rise, .radon-pipe-exit, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-return-grille-face, .hvac-return-grille-slat, .hvac-wall-return-route, .hvac-wall-return-boot, .hvac-wall-return-preserved-stud, .hvac-wall-return-grille-outline, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
   .scope-wall.addition { stroke: #111; stroke-width: 2; }
   .scope-wall.demolition, .door-symbol.scope-demolition { stroke: #111; stroke-dasharray: 10 5; }
   .soffit-outline { fill: #f3f3f3; }
@@ -397,7 +409,7 @@ button { cursor: pointer; }
   .hvac-wall-return-boot { fill: #eee; stroke-dasharray: 2 1; }
   .hvac-wall-return-cavity, .hvac-wall-return-duct { stroke: #aaa; }
   .hvac-wall-return-grille { stroke: #fff; }
-  .hvac-equipment-label, .hvac-duct-label, .hvac-refrigerant-label, .gas-line-label, .gas-endpoint text { fill: #111; stroke: #fff; }
+  .hvac-equipment-label, .hvac-duct-label, .hvac-refrigerant-label, .gas-line-label, .gas-endpoint text, .radon-pipe-label { fill: #111; stroke: #fff; }
   .water-valve-symbol .valve-label, .plumbing-drain-label, .plumbing-equipment-label, .wall-cabinet-label, .cabinet-run-label { fill: #111; stroke: #fff; }
   .north-arrow { stroke: #111; }
   .north-arrow text { fill: #111; }

@@ -548,6 +548,30 @@ stairs({
 
 Keep the run and riser count approximate when they were inferred from a sketch. Verify them on site before using the plan for construction decisions.
 
+## Radon pipes
+
+Radon mitigation pipes are independent routed services. Store the top-down route as a floor penetration, ordered waypoints, and an exterior endpoint. The route may contain projected vertical and diagonal transitions; document measured elevations separately instead of implying that every polyline segment lies at one height:
+
+```ts
+radonPipe({
+  id: "utility-room-floor-to-south-exterior-radon-pipe",
+  label: "Utility Room radon pipe to south exterior",
+  from: [467.5, 229.5],
+  waypoints: [[472.5, 229.5], [472.5, 257.5], [548, 257.5], [552, 261.5]],
+  to: [560, 269.5],
+  diameter: 5,
+  verticalRiseAboveFloor: 33,
+  diagonalEndAboveFloor: 45,
+  westRunBottomAboveFloor: 61,
+  offsetBelowJoists: 13,
+  exteriorTurn: "up",
+  status: "existing",
+  confidence: "approximate",
+});
+```
+
+Relative field measurements are edge-to-edge. Convert them to nominal centerline coordinates by adding half the pipe diameter. Use `offsetBelowJoists` for the measured clearance from the pipe top to the joist bottoms. Keep approximate concealed bends and the exterior termination in `note`, and verify the route on site.
+
 ## Ceiling joists
 
 Ceiling joists use a centerline run and measured board width. Keep each joist independent so irregular clear gaps and doubled joists remain visible. Compass direction comes from plan metadata; in the current plan, an east-west joist appears vertical on screen.
