@@ -217,16 +217,15 @@ gasLine({
 
 Pipe diameter is intentionally absent from this proof-of-concept schema. The rendered line is a planning symbol, not a claim about pipe size, capacity, materials, pressure, code compliance, or installation requirements. Preserve uncertain concealed routing and inaccessible elevations in `note` and use `approximate` or `unknown` confidence.
 
-## Lighting and circuits
+## Lighting groups
 
-Ceiling fixtures use absolute plan coordinates. Circuits reference stable fixture/device IDs and represent connectivity rather than an exact cable route.
+Recessed ceiling fixtures use absolute plan coordinates. Lighting connections reference stable fixture and switch IDs. They show which lights form a control group and which switch operates that group; they never represent cable routing or fixture wiring order.
 
 ```ts
 light({
   id: "light-ne",
   at: [108, 30],
   fixture: "recessed",
-  diameter: 6,
   status: "proposed",
   confidence: "approximate",
 })
@@ -247,7 +246,25 @@ circuit({
 })
 ```
 
-Omit `waypoints` for a direct conceptual run. Add them only when the route itself is meaningful.
+Omit `waypoints` for a direct schematic connection. Add them only to keep the control diagram legible. The viewer renders these connections whenever the Lighting sublayer is active.
+
+## Receptacles
+
+Receptacles are wall-relative objects. `offset` measures to the device center from the wall's `from` point, and the symbol appears on the wall's stored interior side:
+
+```ts
+receptacle({
+  id: "office-east-wall-receptacle",
+  label: "Office east wall receptacle",
+  wallId: "office-east-divider",
+  offset: 42,
+  receptacleType: "standard",
+  status: "proposed",
+  confidence: "approximate",
+})
+```
+
+Use `standard` for an ordinary duplex receptacle and `gfci` only when the GFCI device and its reset controls are located at that receptacle. The Receptacles sublayer records device locations, not branch-circuit grouping, cable routing, load calculations, or code approval.
 
 ## Cabinet runs
 

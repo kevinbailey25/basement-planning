@@ -73,8 +73,6 @@ export interface Light extends PlanItemBase {
   kind: "light";
   at: Point;
   fixture: "recessed";
-  diameter: number;
-  heightAboveFloor?: number;
 }
 
 export interface Switch extends PlanItemBase {
@@ -82,6 +80,13 @@ export interface Switch extends PlanItemBase {
   wallId: string;
   offset: number;
   heightAboveFloor?: number;
+}
+
+export interface Receptacle extends PlanItemBase {
+  kind: "receptacle";
+  wallId: string;
+  offset: number;
+  receptacleType: "standard" | "gfci";
 }
 
 export interface WallCabinet extends PlanItemBase {
@@ -343,6 +348,7 @@ export type SelectablePlanItem =
   | WindowOpening
   | Light
   | Switch
+  | Receptacle
   | WallCabinet
   | CabinetRun
   | WaterValve
@@ -380,6 +386,7 @@ export interface FloorPlan {
   windows: readonly WindowOpening[];
   lights: readonly Light[];
   switches: readonly Switch[];
+  receptacles: readonly Receptacle[];
   wallCabinets: readonly WallCabinet[];
   cabinetRuns: readonly CabinetRun[];
   waterValves: readonly WaterValve[];

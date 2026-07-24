@@ -18,6 +18,7 @@ import type {
   PlumbingDrain,
   PlumbingEquipment,
   RadonPipe,
+  Receptacle,
   SlidingDoor,
   Soffit,
   Space,
@@ -45,6 +46,9 @@ export const wallSwitch = (value: Omit<Switch, "kind">): Switch => ({
   kind: "switch",
   ...value,
 });
+export const receptacle = (
+  value: Omit<Receptacle, "kind">,
+): Receptacle => ({ kind: "receptacle", ...value });
 export const wallCabinet = (
   value: Omit<WallCabinet, "kind">,
 ): WallCabinet => ({ kind: "wall-cabinet", ...value });

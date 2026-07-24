@@ -41,6 +41,52 @@ test("stores the new Utility door and relocated Storage door", () => {
   assert.deepEqual([storageDoor.wallId, storageDoor.offset, storageDoor.width], ["storage-north-wall", 120, 32]);
 });
 
+test("stores the Office recessed-light group in clear joist bays", () => {
+  const switchItem = pocPlan.switches.find((item) => item.id === "office-entry-light-switch");
+  const group = pocPlan.circuits.find((item) => item.id === "office-lighting-group");
+  assert.ok(switchItem && group);
+  assert.deepEqual(pocPlan.lights.map((item) => item.at), [
+    [55.5, 378],
+    [135, 378],
+    [55.5, 478],
+    [135, 478],
+  ]);
+  assert.deepEqual([switchItem.wallId, switchItem.offset], ["office-east-divider", 141]);
+  assert.deepEqual(group.connections, [
+    { fromId: "office-entry-light-switch", toId: "office-light-southeast" },
+    { fromId: "office-light-southeast", toId: "office-light-northeast" },
+    { fromId: "office-light-northeast", toId: "office-light-northwest" },
+    { fromId: "office-light-northwest", toId: "office-light-southwest" },
+  ]);
+  assert.match(group.note, /do not represent cable routing/);
+});
+
+test("stores eight standard Office receptacles around the room perimeter", () => {
+  assert.equal(pocPlan.receptacles.length, 8);
+  assert.equal(pocPlan.receptacles.every((item) => item.receptacleType === "standard"), true);
+  assert.deepEqual(
+    pocPlan.receptacles.map((item) => [item.wallId, item.offset]),
+    [
+      ["north-exterior-wall", 201.5],
+      ["north-exterior-wall", 95],
+      ["office-east-divider", 42],
+      ["office-east-divider", 111],
+      ["office-south-wall", 48],
+      ["office-south-wall", 154],
+      ["office-west-jog-wall", 37],
+      ["office-closet-divider-wall", 111],
+    ],
+  );
+});
+
+test("reports a receptacle outside its parent wall", () => {
+  const malformed = {
+    ...pocPlan,
+    receptacles: [{ ...pocPlan.receptacles[0], offset: 999 }],
+  };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-receptacle"));
+});
+
 test("stores the conceptual Main open area cabinet run", () => {
   const run = pocPlan.cabinetRuns.find((item) => item.id === "main-open-area-east-wall-cabinet-run");
   assert.ok(run);

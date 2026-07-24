@@ -2,7 +2,7 @@ import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-receptacle" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -17,6 +17,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.windows,
     ...plan.lights,
     ...plan.switches,
+    ...plan.receptacles,
     ...plan.wallCabinets,
     ...plan.cabinetRuns,
     ...plan.waterValves,
@@ -276,6 +277,16 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
       || span[1] > distance(parent.from, parent.to)
     ) {
       issues.push({ code: "invalid-wall-cabinet", itemId: item.id, message: `Wall cabinet “${item.id}” requires a connected reference wall, positive dimensions, and a span within its parent wall.` });
+    }
+  }
+  for (const item of plan.receptacles) {
+    const parent = walls.get(item.wallId);
+    if (!parent) {
+      issues.push({ code: "missing-wall", itemId: item.id, message: `Receptacle “${item.id}” references missing wall “${item.wallId}”.` });
+      continue;
+    }
+    if (item.offset < 0 || item.offset > distance(parent.from, parent.to)) {
+      issues.push({ code: "invalid-receptacle", itemId: item.id, message: `Receptacle “${item.id}” falls outside wall “${item.wallId}”.` });
     }
   }
   for (const item of plan.cabinetRuns) {
