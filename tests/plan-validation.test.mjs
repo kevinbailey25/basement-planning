@@ -36,7 +36,7 @@ test("stores the new Utility door and relocated Storage door", () => {
   assert.ok(utilityDoor && storageDoor);
   assert.deepEqual(
     [utilityDoor.wallId, utilityDoor.offset, utilityDoor.width, utilityDoor.hinge, utilityDoor.swing, utilityDoor.height],
-    ["utility-room-east-wall", 43, 36, "end", "outward", undefined],
+    ["utility-room-east-wall", 43, 36, "start", "inward", undefined],
   );
   assert.deepEqual([storageDoor.wallId, storageDoor.offset, storageDoor.width], ["storage-north-wall", 120, 32]);
 });
