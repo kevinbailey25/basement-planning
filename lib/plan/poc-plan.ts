@@ -1,4 +1,5 @@
 import {
+  cabinetRun,
   dimension,
   door,
   gasLine,
@@ -232,6 +233,25 @@ export const pocPlan = {
   ],
   switches: [
     // Wall devices will be added when the electrical layout is mapped.
+  ],
+  cabinetRuns: [
+    cabinetRun({
+      id: "main-open-area-east-wall-cabinet-run",
+      label: "Main open area dry-storage cabinets",
+      wallId: "east-wall-north-cap",
+      offset: 2.5,
+      width: 120,
+      baseDepth: 24,
+      countertopOffset: 0,
+      countertopWidth: 125,
+      countertopDepth: 25.5,
+      countertopHeight: 36,
+      upperDepth: 12,
+      upperBottomAboveFloor: 54,
+      upperHeight: 36,
+      note: "Conceptual dry-storage cabinetry for serving and snack staging in the Main open area. Lower and upper cabinet banks are centered on the wall; the countertop spans the full wall. No sink, appliances, backsplash, finishes, hardware, or utilities are specified.",
+      ...proposed,
+    }),
   ],
   wallCabinets: [
     wallCabinet({

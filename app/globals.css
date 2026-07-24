@@ -58,6 +58,7 @@ button { cursor: pointer; }
 .layer-dot.slate { background: #b9c1bd; }
 .layer-dot.blue { background: #83b8c2; }
 .layer-dot.gas { background: #b07a45; }
+.layer-dot.plum { background: #8c779d; }
 .layer-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .layer-copy strong { font-size: 13px; font-weight: 650; }
 .layer-copy small { color: #7f8d89; font-size: 10px; }
@@ -77,6 +78,7 @@ button { cursor: pointer; }
 .legend-addition::before { content: ""; width: 20px; border-top: 3px dashed var(--amber-bright); }
 .legend-demolition::before { content: ""; width: 20px; border-top: 4px dashed #d47467; }
 .legend-soffit::before { content: ""; width: 18px; height: 11px; border: 1px dashed #8d9994; background: rgb(115 127 122 / 8%); }
+.legend-cabinetry { width: 18px !important; height: 11px !important; border: 1px solid #766287; background: rgb(118 98 135 / 14%); box-shadow: inset 0 4px 0 rgb(255 255 255 / 58%); }
 .legend-north { color: #c7cfcc; font-weight: 800; }
 .legend-stairs { color: #c7cfcc; border-bottom: 1px solid #8c9994; font-weight: 800; }
 .legend-window::before { content: ""; width: 18px; height: 5px; border-top: 2px solid #83b8c2; border-bottom: 2px solid #83b8c2; }
@@ -295,6 +297,14 @@ button { cursor: pointer; }
 .wall-cabinet-symbol.networking .wall-cabinet-label { fill: #365f56; font-size: 3.2px; }
 .wall-cabinet-symbol.selected .wall-cabinet-footprint, .wall-cabinet-symbol.selected .wall-cabinet-face { stroke: #c66e12; stroke-width: 1.7; }
 .wall-cabinet-symbol.selected .wall-cabinet-label { fill: #a75b0a; }
+.cabinet-run-symbol { cursor: pointer; }
+.cabinet-run-hit { fill: transparent; stroke: transparent; stroke-width: 10; }
+.cabinet-countertop-footprint { fill: rgb(118 98 135 / 9%); stroke: #766287; stroke-width: 1.2; stroke-dasharray: 5 2.5; }
+.cabinet-base-footprint { fill: rgb(118 98 135 / 15%); stroke: #665374; stroke-width: 1; stroke-dasharray: 4 2; }
+.cabinet-upper-footprint { fill: rgb(255 255 255 / 48%); stroke: #594766; stroke-width: 1; stroke-dasharray: 2 2; }
+.cabinet-run-label { fill: #594766; stroke: var(--paper); stroke-width: 2.5; paint-order: stroke; font: 700 4px/1 ui-monospace, monospace; text-anchor: middle; pointer-events: none; }
+.cabinet-run-symbol.selected .cabinet-countertop-footprint, .cabinet-run-symbol.selected .cabinet-base-footprint, .cabinet-run-symbol.selected .cabinet-upper-footprint { stroke: #c66e12; stroke-width: 1.8; }
+.cabinet-run-symbol.selected .cabinet-run-label { fill: #a75b0a; }
 .gas-line-symbol { cursor: pointer; }
 .gas-line-hit { fill: none; stroke: transparent; stroke-width: 13; }
 .gas-line-casing { fill: none; stroke: #70451c; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
@@ -374,7 +384,7 @@ button { cursor: pointer; }
   .wall-line { stroke: #000; }
   .joist-board { stroke: #777; opacity: .7; }
   .joist-symbol.selected .joist-board { stroke: #111; }
-  .window-symbol, .door-symbol, .sliding-door-symbol, .soffit-outline, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .plumbing-drain-footprint, .plumbing-drain-cap, .plumbing-drain-leader, .plumbing-equipment-footprint, .plumbing-equipment-tank, .wall-cabinet-footprint, .wall-cabinet-face, .gas-line-casing, .gas-line-centerline, .gas-endpoint circle, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-return-grille-face, .hvac-return-grille-slat, .hvac-wall-return-route, .hvac-wall-return-boot, .hvac-wall-return-preserved-stud, .hvac-wall-return-grille-outline, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
+  .window-symbol, .door-symbol, .sliding-door-symbol, .soffit-outline, .cabinet-countertop-footprint, .cabinet-base-footprint, .cabinet-upper-footprint, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .plumbing-drain-footprint, .plumbing-drain-cap, .plumbing-drain-leader, .plumbing-equipment-footprint, .plumbing-equipment-tank, .wall-cabinet-footprint, .wall-cabinet-face, .gas-line-casing, .gas-line-centerline, .gas-endpoint circle, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-return-grille-face, .hvac-return-grille-slat, .hvac-wall-return-route, .hvac-wall-return-boot, .hvac-wall-return-preserved-stud, .hvac-wall-return-grille-outline, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
   .scope-wall.addition { stroke: #111; stroke-width: 2; }
   .scope-wall.demolition, .door-symbol.scope-demolition { stroke: #111; stroke-dasharray: 10 5; }
   .soffit-outline { fill: #f3f3f3; }
@@ -388,7 +398,7 @@ button { cursor: pointer; }
   .hvac-wall-return-cavity, .hvac-wall-return-duct { stroke: #aaa; }
   .hvac-wall-return-grille { stroke: #fff; }
   .hvac-equipment-label, .hvac-duct-label, .hvac-refrigerant-label, .gas-line-label, .gas-endpoint text { fill: #111; stroke: #fff; }
-  .water-valve-symbol .valve-label, .plumbing-drain-label, .plumbing-equipment-label, .wall-cabinet-label { fill: #111; stroke: #fff; }
+  .water-valve-symbol .valve-label, .plumbing-drain-label, .plumbing-equipment-label, .wall-cabinet-label, .cabinet-run-label { fill: #111; stroke: #fff; }
   .north-arrow { stroke: #111; }
   .north-arrow text { fill: #111; }
   .dimension-mark text, .space-label, .space-area { fill: #111; }

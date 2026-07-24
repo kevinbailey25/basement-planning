@@ -249,6 +249,32 @@ circuit({
 
 Omit `waypoints` for a direct conceptual run. Add them only when the route itself is meaningful.
 
+## Cabinet runs
+
+Use `cabinetRun` for a conceptual wall-relative bank of lower cabinets, a countertop, and upper cabinets. It intentionally records the architectural footprint and useful elevations without implying individual modules, door styles, finishes, hardware, appliances, plumbing, or electrical work:
+
+```ts
+cabinetRun({
+  id: "main-open-area-east-wall-cabinet-run",
+  label: "Main open area dry-storage cabinets",
+  wallId: "east-wall-north-cap",
+  offset: 2.5,
+  width: 120,
+  baseDepth: 24,
+  countertopOffset: 0,
+  countertopWidth: 125,
+  countertopDepth: 25.5,
+  countertopHeight: 36,
+  upperDepth: 12,
+  upperBottomAboveFloor: 54,
+  upperHeight: 36,
+  status: "proposed",
+  confidence: "approximate",
+})
+```
+
+`offset` and `width` locate both cabinet banks along the stored wall direction. The countertop has its own offset and width because it may span end fillers or extend beyond the cabinet boxes. Depths project from the wall's interior face. Elevations remain nominal planning data and must be verified on site.
+
 ## Electrical and low-voltage cabinets
 
 Recessed breaker panels and networking cabinets are wall-mounted cabinets. `offset` is the distance from the junction with `referenceWallId` to the cabinet's nearer edge, so field measurements remain readable even when the parent wall's stored direction is reversed:

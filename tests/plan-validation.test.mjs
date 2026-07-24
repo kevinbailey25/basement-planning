@@ -41,6 +41,31 @@ test("stores the new Utility door and relocated Storage door", () => {
   assert.deepEqual([storageDoor.wallId, storageDoor.offset, storageDoor.width], ["storage-north-wall", 120, 32]);
 });
 
+test("stores the conceptual Main open area cabinet run", () => {
+  const run = pocPlan.cabinetRuns.find((item) => item.id === "main-open-area-east-wall-cabinet-run");
+  assert.ok(run);
+  assert.deepEqual(
+    [run.wallId, run.offset, run.width, run.baseDepth],
+    ["east-wall-north-cap", 2.5, 120, 24],
+  );
+  assert.deepEqual(
+    [run.countertopOffset, run.countertopWidth, run.countertopDepth, run.countertopHeight],
+    [0, 125, 25.5, 36],
+  );
+  assert.deepEqual(
+    [run.upperDepth, run.upperBottomAboveFloor, run.upperHeight, run.status, run.confidence],
+    [12, 54, 36, "proposed", "approximate"],
+  );
+});
+
+test("reports a cabinet run outside its parent wall", () => {
+  const malformed = {
+    ...pocPlan,
+    cabinetRuns: [{ ...pocPlan.cabinetRuns[0], width: 126 }],
+  };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-cabinet-run"));
+});
+
 test("stores the optional combined-trunk soffit with unknown bottom elevation", () => {
   const item = pocPlan.soffits.find((soffit) => soffit.id === "main-supply-return-soffit");
   assert.ok(item);

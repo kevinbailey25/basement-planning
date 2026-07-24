@@ -95,6 +95,21 @@ export interface WallCabinet extends PlanItemBase {
   height: number;
 }
 
+export interface CabinetRun extends PlanItemBase {
+  kind: "cabinet-run";
+  wallId: string;
+  offset: number;
+  width: number;
+  baseDepth: number;
+  countertopOffset: number;
+  countertopWidth: number;
+  countertopDepth: number;
+  countertopHeight: number;
+  upperDepth: number;
+  upperBottomAboveFloor: number;
+  upperHeight: number;
+}
+
 export interface WaterValve extends PlanItemBase {
   kind: "water-valve";
   wallId: string;
@@ -316,6 +331,7 @@ export type SelectablePlanItem =
   | Light
   | Switch
   | WallCabinet
+  | CabinetRun
   | WaterValve
   | PlumbingDrain
   | PlumbingEquipment
@@ -351,6 +367,7 @@ export interface FloorPlan {
   lights: readonly Light[];
   switches: readonly Switch[];
   wallCabinets: readonly WallCabinet[];
+  cabinetRuns: readonly CabinetRun[];
   waterValves: readonly WaterValve[];
   plumbingDrains: readonly PlumbingDrain[];
   plumbingEquipment: readonly PlumbingEquipment[];

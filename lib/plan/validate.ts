@@ -2,7 +2,7 @@ import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-wall-cabinet" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -18,6 +18,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.lights,
     ...plan.switches,
     ...plan.wallCabinets,
+    ...plan.cabinetRuns,
     ...plan.waterValves,
     ...plan.plumbingDrains,
     ...plan.plumbingEquipment,
@@ -274,6 +275,30 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
       || span[1] > distance(parent.from, parent.to)
     ) {
       issues.push({ code: "invalid-wall-cabinet", itemId: item.id, message: `Wall cabinet “${item.id}” requires a connected reference wall, positive dimensions, and a span within its parent wall.` });
+    }
+  }
+  for (const item of plan.cabinetRuns) {
+    const parent = walls.get(item.wallId);
+    if (!parent) {
+      issues.push({ code: "missing-wall", itemId: item.id, message: `Cabinet run “${item.id}” references missing wall “${item.wallId}”.` });
+      continue;
+    }
+    const wallLength = distance(parent.from, parent.to);
+    if (
+      item.offset < 0
+      || item.width <= 0
+      || item.offset + item.width > wallLength
+      || item.baseDepth <= 0
+      || item.countertopOffset < 0
+      || item.countertopWidth <= 0
+      || item.countertopOffset + item.countertopWidth > wallLength
+      || item.countertopDepth < item.baseDepth
+      || item.countertopHeight <= 0
+      || item.upperDepth <= 0
+      || item.upperBottomAboveFloor < item.countertopHeight
+      || item.upperHeight <= 0
+    ) {
+      issues.push({ code: "invalid-cabinet-run", itemId: item.id, message: `Cabinet run “${item.id}” requires positive dimensions, usable elevations, and cabinet and countertop spans within its parent wall.` });
     }
   }
   for (const item of plan.waterValves) {
