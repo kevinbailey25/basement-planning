@@ -45,7 +45,7 @@ test("stores the Office recessed-light group in clear joist bays", () => {
   const switchItem = pocPlan.switches.find((item) => item.id === "office-entry-light-switch");
   const group = pocPlan.circuits.find((item) => item.id === "office-lighting-group");
   assert.ok(switchItem && group);
-  assert.deepEqual(pocPlan.lights.map((item) => item.at), [
+  assert.deepEqual(pocPlan.lights.filter((item) => item.id.startsWith("office-")).map((item) => item.at), [
     [55.5, 378],
     [135, 378],
     [55.5, 478],
@@ -62,10 +62,11 @@ test("stores the Office recessed-light group in clear joist bays", () => {
 });
 
 test("stores eight standard Office receptacles around the room perimeter", () => {
-  assert.equal(pocPlan.receptacles.length, 8);
-  assert.equal(pocPlan.receptacles.every((item) => item.receptacleType === "standard"), true);
+  const officeReceptacles = pocPlan.receptacles.filter((item) => item.id.startsWith("office-"));
+  assert.equal(officeReceptacles.length, 8);
+  assert.equal(officeReceptacles.every((item) => item.receptacleType === "standard"), true);
   assert.deepEqual(
-    pocPlan.receptacles.map((item) => [item.wallId, item.offset]),
+    officeReceptacles.map((item) => [item.wallId, item.offset]),
     [
       ["north-exterior-wall", 201.5],
       ["north-exterior-wall", 95],
@@ -75,6 +76,54 @@ test("stores eight standard Office receptacles around the room perimeter", () =>
       ["office-south-wall", 154],
       ["office-west-jog-wall", 37],
       ["office-closet-divider-wall", 111],
+    ],
+  );
+});
+
+test("stores the Storage lighting group and wall-facing receptacles", () => {
+  const switchItem = pocPlan.switches.find((item) => item.id === "storage-entry-light-switch");
+  const group = pocPlan.circuits.find((item) => item.id === "storage-lighting-group");
+  const storageLights = pocPlan.lights.filter((item) => item.id.startsWith("storage-light-"));
+  const storageReceptacles = pocPlan.receptacles.filter((item) => item.id.startsWith("storage-"));
+  assert.ok(switchItem && group);
+  assert.deepEqual(storageLights.map((item) => item.at), [[507.5, 79], [507.5, 133]]);
+  assert.deepEqual([switchItem.wallId, switchItem.offset, switchItem.wallSide], ["storage-north-wall", 114, "left"]);
+  assert.deepEqual(group.connections, [
+    { fromId: "storage-entry-light-switch", toId: "storage-light-east" },
+    { fromId: "storage-light-east", toId: "storage-light-west" },
+  ]);
+  assert.deepEqual(
+    storageReceptacles.map((item) => [item.wallId, item.offset, item.wallSide]),
+    [
+      ["storage-north-wall", 60, "left"],
+      ["south-exterior-wall", 45, undefined],
+      ["south-exterior-wall", 115, undefined],
+      ["east-exterior-wall", 385.5, undefined],
+      ["utility-room-east-wall", 135.5, "left"],
+    ],
+  );
+});
+
+test("stores the Utility Room surface lighting and general-purpose receptacles", () => {
+  const switchItem = pocPlan.switches.find((item) => item.id === "utility-room-entry-light-switch");
+  const group = pocPlan.circuits.find((item) => item.id === "utility-room-lighting-group");
+  const utilityLights = pocPlan.lights.filter((item) => item.id.startsWith("utility-room-light-"));
+  const utilityReceptacles = pocPlan.receptacles.filter((item) => item.id.startsWith("utility-room-east-wall-"));
+  assert.ok(switchItem && group);
+  assert.deepEqual(
+    utilityLights.map((item) => [item.at, item.fixture]),
+    [[[445, 220], "surface"], [[510, 220], "surface"]],
+  );
+  assert.deepEqual([switchItem.wallId, switchItem.offset], ["utility-room-east-wall", 85]);
+  assert.deepEqual(group.connections, [
+    { fromId: "utility-room-entry-light-switch", toId: "utility-room-light-north" },
+    { fromId: "utility-room-light-north", toId: "utility-room-light-south" },
+  ]);
+  assert.deepEqual(
+    utilityReceptacles.map((item) => [item.wallId, item.offset, item.receptacleType]),
+    [
+      ["utility-room-east-wall", 24, "standard"],
+      ["utility-room-east-wall", 110, "standard"],
     ],
   );
 });

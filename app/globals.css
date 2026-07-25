@@ -118,6 +118,7 @@ button { cursor: pointer; }
 .legend-water-heater { color: var(--plumbing); border: 1px solid var(--plumbing-dark); border-radius: 50%; font: 800 7px/1 ui-monospace, monospace; }
 .legend-electrical-panel { color: var(--electrical-dark); border: 1px solid var(--electrical); background: rgb(196 122 10 / 15%); font: 800 9px/1 ui-monospace, monospace; }
 .legend-light { color: var(--electrical-dark); border: 1px solid var(--electrical); border-radius: 50%; background: rgb(196 122 10 / 10%); font: 800 9px/1 ui-monospace, monospace; }
+.legend-surface-light { width: 19px; height: 10px; color: var(--electrical-dark); border: 1px solid var(--electrical); border-radius: 2px; background: rgb(196 122 10 / 10%); font: 800 8px/1 ui-monospace, monospace; }
 .legend-receptacle { color: var(--electrical-dark); border: 1px solid var(--electrical); border-radius: 50%; background: rgb(196 122 10 / 10%); font: 800 7px/1 ui-monospace, monospace; }
 .legend-network-cabinet { color: var(--electrical-dark); border: 1px solid var(--electrical); background: rgb(196 122 10 / 13%); font: 800 5px/1 ui-monospace, monospace; }
 .legend-joist::before { content: ""; height: 19px; border-left: 3px solid #8fa49d; }
@@ -320,11 +321,11 @@ button { cursor: pointer; }
 .lighting-group-symbol.selected .lighting-control-line { stroke: #c54e18; stroke-width: 2; }
 .light-symbol, .switch-symbol { cursor: pointer; }
 .light-hit, .switch-hit { fill: transparent; stroke: transparent; }
-.light-ring, .switch-ring { fill: var(--paper); stroke: var(--electrical); stroke-width: 1.4; }
+.light-ring, .light-surface, .switch-ring { fill: var(--paper); stroke: var(--electrical); stroke-width: 1.4; }
 .light-cross { fill: none; stroke: var(--electrical); stroke-width: 1; }
 .switch-label { fill: var(--electrical-dark); font: 800 5px/1 ui-monospace, monospace; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
-.light-symbol.proposed .light-ring, .switch-symbol.proposed .switch-ring { stroke-dasharray: 2 1.5; }
-.light-symbol.selected .light-ring, .light-symbol.selected .light-cross, .switch-symbol.selected .switch-ring { stroke: #c54e18; stroke-width: 2; }
+.light-symbol.proposed .light-ring, .light-symbol.proposed .light-surface, .switch-symbol.proposed .switch-ring { stroke-dasharray: 2 1.5; }
+.light-symbol.selected .light-ring, .light-symbol.selected .light-surface, .light-symbol.selected .light-cross, .switch-symbol.selected .switch-ring { stroke: #c54e18; stroke-width: 2; }
 .switch-symbol.selected .switch-label { fill: #a53e12; }
 .receptacle-symbol { cursor: pointer; }
 .receptacle-hit { fill: transparent; stroke: transparent; }
@@ -431,7 +432,7 @@ button { cursor: pointer; }
   .wall-line { stroke: #000; }
   .joist-board { stroke: #777; opacity: .7; }
   .joist-symbol.selected .joist-board { stroke: #111; }
-  .window-symbol, .door-symbol, .sliding-door-symbol, .soffit-outline, .cabinet-countertop-footprint, .cabinet-base-footprint, .cabinet-upper-footprint, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .plumbing-drain-footprint, .plumbing-drain-cap, .plumbing-drain-leader, .plumbing-equipment-footprint, .plumbing-equipment-tank, .wall-cabinet-footprint, .wall-cabinet-face, .lighting-control-line, .light-ring, .light-cross, .switch-ring, .receptacle-stem, .receptacle-ring, .receptacle-slot, .gas-line-casing, .gas-line-centerline, .gas-endpoint circle, .radon-pipe-outline, .radon-pipe-body, .radon-pipe-centerline, .radon-pipe-floor, .radon-pipe-rise, .radon-pipe-exit, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-return-grille-face, .hvac-return-grille-slat, .hvac-wall-return-route, .hvac-wall-return-boot, .hvac-wall-return-preserved-stud, .hvac-wall-return-grille-outline, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
+  .window-symbol, .door-symbol, .sliding-door-symbol, .soffit-outline, .cabinet-countertop-footprint, .cabinet-base-footprint, .cabinet-upper-footprint, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .plumbing-drain-footprint, .plumbing-drain-cap, .plumbing-drain-leader, .plumbing-equipment-footprint, .plumbing-equipment-tank, .wall-cabinet-footprint, .wall-cabinet-face, .lighting-control-line, .light-ring, .light-surface, .light-cross, .switch-ring, .receptacle-stem, .receptacle-ring, .receptacle-slot, .gas-line-casing, .gas-line-centerline, .gas-endpoint circle, .radon-pipe-outline, .radon-pipe-body, .radon-pipe-centerline, .radon-pipe-floor, .radon-pipe-rise, .radon-pipe-exit, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-return-grille-face, .hvac-return-grille-slat, .hvac-wall-return-route, .hvac-wall-return-boot, .hvac-wall-return-preserved-stud, .hvac-wall-return-grille-outline, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
   .scope-wall.addition { stroke: #111; stroke-width: 2; }
   .scope-wall.demolition, .door-symbol.scope-demolition { stroke: #111; stroke-dasharray: 10 5; }
   .soffit-outline { fill: #f3f3f3; }

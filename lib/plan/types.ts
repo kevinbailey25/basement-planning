@@ -72,13 +72,14 @@ export interface WindowOpening extends WallOpeningBase {
 export interface Light extends PlanItemBase {
   kind: "light";
   at: Point;
-  fixture: "recessed";
+  fixture: "recessed" | "surface";
 }
 
 export interface Switch extends PlanItemBase {
   kind: "switch";
   wallId: string;
   offset: number;
+  wallSide?: WallSide;
   heightAboveFloor?: number;
 }
 
@@ -86,6 +87,7 @@ export interface Receptacle extends PlanItemBase {
   kind: "receptacle";
   wallId: string;
   offset: number;
+  wallSide?: WallSide;
   receptacleType: "standard" | "gfci";
 }
 
