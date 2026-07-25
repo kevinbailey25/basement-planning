@@ -264,7 +264,7 @@ receptacle({
 })
 ```
 
-Use `standard` for an ordinary duplex receptacle and `gfci` only when the GFCI device and its reset controls are located at that receptacle. The Receptacles sublayer records device locations, not branch-circuit grouping, cable routing, load calculations, or code approval.
+Use `standard` for an ordinary duplex receptacle and `gfci` only when the GFCI device and its reset controls are located at that receptacle. Store `heightAboveFloor` when a vertical relationship is intentional, such as a counter-height device; omit it when the mounting height remains undecided. The Receptacles sublayer records device locations, not branch-circuit grouping, cable routing, load calculations, or code approval.
 
 ## Cabinet runs
 

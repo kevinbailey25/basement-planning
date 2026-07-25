@@ -285,8 +285,12 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
       issues.push({ code: "missing-wall", itemId: item.id, message: `Receptacle “${item.id}” references missing wall “${item.wallId}”.` });
       continue;
     }
-    if (item.offset < 0 || item.offset > distance(parent.from, parent.to)) {
-      issues.push({ code: "invalid-receptacle", itemId: item.id, message: `Receptacle “${item.id}” falls outside wall “${item.wallId}”.` });
+    if (
+      item.offset < 0
+      || item.offset > distance(parent.from, parent.to)
+      || (item.heightAboveFloor != null && item.heightAboveFloor < 0)
+    ) {
+      issues.push({ code: "invalid-receptacle", itemId: item.id, message: `Receptacle “${item.id}” requires an offset within wall “${item.wallId}” and a non-negative mounting height when specified.` });
     }
   }
   for (const item of plan.cabinetRuns) {

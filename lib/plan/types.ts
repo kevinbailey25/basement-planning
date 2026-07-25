@@ -88,6 +88,7 @@ export interface Receptacle extends PlanItemBase {
   wallId: string;
   offset: number;
   wallSide?: WallSide;
+  heightAboveFloor?: number;
   receptacleType: "standard" | "gfci";
 }
 

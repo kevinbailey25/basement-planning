@@ -128,10 +128,47 @@ test("stores the Utility Room surface lighting and general-purpose receptacles",
   );
 });
 
+test("stores the Main open area perimeter and counter receptacles", () => {
+  const mainReceptacles = pocPlan.receptacles.filter((item) => item.id.startsWith("main-open-area-"));
+  const counterReceptacles = mainReceptacles.filter((item) => item.id.startsWith("main-open-area-counter-"));
+  assert.equal(mainReceptacles.length, 16);
+  assert.equal(counterReceptacles.length, 4);
+  assert.equal(counterReceptacles.every((item) => item.heightAboveFloor === 43), true);
+  assert.deepEqual(
+    mainReceptacles.map((item) => [item.wallId, item.offset, item.wallSide]),
+    [
+      ["north-exterior-wall", 335, undefined],
+      ["north-exterior-wall", 455, undefined],
+      ["north-exterior-wall", 530, undefined],
+      ["east-exterior-wall", 35, undefined],
+      ["east-exterior-wall", 170, undefined],
+      ["east-exterior-wall", 245, undefined],
+      ["storage-north-wall", 35, undefined],
+      ["storage-north-wall", 95, undefined],
+      ["main-west-divider", 48, "left"],
+      ["main-west-divider", 220, "left"],
+      ["main-west-divider", 300, "left"],
+      ["east-wall-north-cap", 18, undefined],
+      ["east-wall-north-cap", 48, undefined],
+      ["east-wall-north-cap", 78, undefined],
+      ["east-wall-north-cap", 108, undefined],
+      ["utility-room-north-wall-east-extension", 18, "left"],
+    ],
+  );
+});
+
 test("reports a receptacle outside its parent wall", () => {
   const malformed = {
     ...pocPlan,
     receptacles: [{ ...pocPlan.receptacles[0], offset: 999 }],
+  };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-receptacle"));
+});
+
+test("reports a receptacle with a negative mounting height", () => {
+  const malformed = {
+    ...pocPlan,
+    receptacles: [{ ...pocPlan.receptacles[0], heightAboveFloor: -1 }],
   };
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-receptacle"));
 });
