@@ -61,6 +61,22 @@ test("stores the Office recessed-light group in clear joist bays", () => {
   assert.match(group.note, /do not represent cable routing/);
 });
 
+test("stores the unconnected Main open area lights in aligned joist-bay columns", () => {
+  const mainAreaLights = pocPlan.lights.filter((item) => item.id.startsWith("main-area-"));
+  const connectedIds = new Set(pocPlan.circuits.flatMap((item) => item.connections.flatMap((connection) => [connection.fromId, connection.toId])));
+  assert.equal(mainAreaLights.length, 17);
+  assert.deepEqual(
+    mainAreaLights.map((item) => item.at),
+    [
+      [43.75, 66], [126.25, 66], [203.625, 66], [267, 66], [343, 66], [408.375, 66],
+      [43.75, 146], [126.25, 146], [203.625, 146], [267, 146], [343, 146], [408.375, 146],
+      [43.75, 228.75], [126.25, 228.75], [203.625, 228.75], [267, 228.75], [343, 228.75],
+    ],
+  );
+  assert.equal(mainAreaLights.every((item) => item.fixture === "recessed" && !connectedIds.has(item.id)), true);
+  assert.equal(mainAreaLights.filter((item) => item.id.includes("soffit-row")).every((item) => /soffit bottom/.test(item.note)), true);
+});
+
 test("stores eight standard Office receptacles around the room perimeter", () => {
   const officeReceptacles = pocPlan.receptacles.filter((item) => item.id.startsWith("office-"));
   assert.equal(officeReceptacles.length, 8);
