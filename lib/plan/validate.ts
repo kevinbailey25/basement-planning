@@ -2,7 +2,7 @@ import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-switch" | "invalid-receptacle" | "invalid-exhaust-fan" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-bathroom-fixture" | "missing-plumbing-drain" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-light" | "invalid-switch" | "invalid-receptacle" | "invalid-exhaust-fan" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-bathroom-fixture" | "missing-plumbing-drain" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -256,6 +256,14 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
       issues.push({ code: "opening-out-of-bounds", itemId: item.id, message: `Opening “${item.id}” falls outside wall “${item.wallId}”.` });
     }
   }
+  for (const item of plan.lights) {
+    if (
+      (item.fixture === "under-cabinet" && (!item.to || distance(item.at, item.to) === 0))
+      || (item.fixture !== "under-cabinet" && item.to != null)
+    ) {
+      issues.push({ code: "invalid-light", itemId: item.id, message: `Light “${item.id}” requires a non-zero end point only when its fixture is an under-cabinet run.` });
+    }
+  }
   for (const item of plan.switches) {
     const parent = walls.get(item.wallId);
     if (!parent) {
@@ -264,6 +272,8 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     }
     const hasGangIndex = item.gangIndex != null;
     const hasGangCount = item.gangCount != null;
+    const hasControlIndex = item.controlIndex != null;
+    const hasControlCount = item.controlCount != null;
     if (
       item.offset < 0
       || item.offset > distance(parent.from, parent.to)
@@ -276,8 +286,17 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
         || item.gangCount! < 1
         || item.gangIndex! > item.gangCount!
       ))
+      || hasControlIndex !== hasControlCount
+      || (hasControlIndex && (
+        !hasGangIndex
+        || !Number.isInteger(item.controlIndex)
+        || !Number.isInteger(item.controlCount)
+        || item.controlIndex! < 1
+        || item.controlCount! < 2
+        || item.controlIndex! > item.controlCount!
+      ))
     ) {
-      issues.push({ code: "invalid-switch", itemId: item.id, message: `Switch “${item.id}” requires an offset within wall “${item.wallId}”, a non-negative mounting height, and complete one-based gang metadata when specified.` });
+      issues.push({ code: "invalid-switch", itemId: item.id, message: `Switch “${item.id}” requires an offset within wall “${item.wallId}”, a non-negative mounting height, complete one-based gang metadata, and complete one-based within-gang control metadata when specified.` });
     }
   }
   for (const item of plan.wallCabinets) {

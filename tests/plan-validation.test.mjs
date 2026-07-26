@@ -161,8 +161,8 @@ test("stores one Bathroom GFCI receptacle beside the vanity", () => {
   assert.match(bathroomReceptacles[0].note, /beyond the fully open bathroom-door leaf/);
 });
 
-test("stores the unconnected Main open area lights in aligned joist-bay columns", () => {
-  const mainAreaLights = pocPlan.lights.filter((item) => item.id.startsWith("main-area-"));
+test("stores the grouped Main open area lights in aligned joist-bay columns", () => {
+  const mainAreaLights = pocPlan.lights.filter((item) => item.id.startsWith("main-area-") && item.fixture === "recessed");
   const connectedIds = new Set(pocPlan.circuits.flatMap((item) => item.connections.flatMap((connection) => [connection.fromId, connection.toId])));
   assert.equal(mainAreaLights.length, 17);
   assert.deepEqual(
@@ -173,8 +173,92 @@ test("stores the unconnected Main open area lights in aligned joist-bay columns"
       [43.75, 228.75], [126.25, 228.75], [203.625, 228.75], [267, 228.75], [343, 228.75],
     ],
   );
-  assert.equal(mainAreaLights.every((item) => item.fixture === "recessed" && !connectedIds.has(item.id)), true);
+  assert.equal(mainAreaLights.every((item) => connectedIds.has(item.id)), true);
   assert.equal(mainAreaLights.filter((item) => item.id.includes("soffit-row")).every((item) => /soffit bottom/.test(item.note)), true);
+});
+
+test("stores the Main open area dimmer banks and three agreed lighting groups", () => {
+  const switchIds = [
+    "main-area-cabinet-dimmer",
+    "main-area-north-group-dimmer",
+    "main-area-center-group-dimmer",
+    "main-area-west-group-dimmer",
+    "main-area-center-group-entry-three-way-switch",
+    "main-area-north-group-entry-three-way-switch",
+    "main-area-west-group-entry-three-way-switch",
+  ];
+  const switches = switchIds.map((id) => pocPlan.switches.find((item) => item.id === id));
+  assert.equal(switches.every(Boolean), true);
+  assert.deepEqual(
+    switches.slice(0, 4).map((item) => [item.wallId, item.offset, item.controlType, item.gangIndex, item.gangCount]),
+    [
+      ["east-exterior-wall", 30, "dimmer", 1, 4],
+      ["east-exterior-wall", 30, "dimmer", 2, 4],
+      ["east-exterior-wall", 30, "dimmer", 3, 4],
+      ["east-exterior-wall", 30, "dimmer", 4, 4],
+    ],
+  );
+  assert.deepEqual(
+    switches.slice(4).map((item) => [item.wallId, item.offset, item.wallSide, item.gangIndex, item.gangCount, item.controlIndex, item.controlCount]),
+    [
+      ["main-west-divider", 136, "left", 1, 2, undefined, undefined],
+      ["main-west-divider", 136, "left", 2, 2, 1, 2],
+      ["main-west-divider", 136, "left", 2, 2, 2, 2],
+    ],
+  );
+
+  const groupFixtureIds = (groupId) => {
+    const group = pocPlan.circuits.find((item) => item.id === groupId);
+    assert.ok(group);
+    const endpointIds = new Set(group.connections.flatMap((connection) => [connection.fromId, connection.toId]));
+    return pocPlan.lights.filter((item) => endpointIds.has(item.id)).map((item) => item.id).sort();
+  };
+  assert.deepEqual(groupFixtureIds("main-area-north-lighting-group"), [
+    "main-area-east-row-light-01",
+    "main-area-middle-row-light-01",
+    "main-area-soffit-row-light-01",
+  ]);
+  assert.deepEqual(groupFixtureIds("main-area-center-lighting-group"), [
+    "main-area-east-row-light-02",
+    "main-area-east-row-light-03",
+    "main-area-east-row-light-04",
+    "main-area-east-row-light-05",
+    "main-area-east-row-light-06",
+    "main-area-middle-row-light-02",
+    "main-area-middle-row-light-03",
+    "main-area-middle-row-light-04",
+    "main-area-middle-row-light-05",
+    "main-area-middle-row-light-06",
+  ]);
+  assert.deepEqual(groupFixtureIds("main-area-west-lighting-group"), [
+    "main-area-soffit-row-light-02",
+    "main-area-soffit-row-light-03",
+    "main-area-soffit-row-light-04",
+    "main-area-soffit-row-light-05",
+  ]);
+});
+
+test("stores the separately dimmed Main open area under-cabinet light", () => {
+  const item = pocPlan.lights.find((lightItem) => lightItem.id === "main-area-cabinet-under-cabinet-light");
+  const group = pocPlan.circuits.find((circuitItem) => circuitItem.id === "main-area-cabinet-lighting-group");
+  assert.ok(item && group);
+  assert.deepEqual([item.fixture, item.at, item.to], ["under-cabinet", [2.5, 10], [122.5, 10]]);
+  assert.deepEqual(group.connections, [
+    { fromId: "main-area-cabinet-dimmer", toId: "main-area-cabinet-under-cabinet-light" },
+  ]);
+});
+
+test("reports malformed linear lights and incomplete within-gang switch controls", () => {
+  const invalidLightPlan = {
+    ...pocPlan,
+    lights: pocPlan.lights.map((item) => item.id === "main-area-cabinet-under-cabinet-light" ? { ...item, to: undefined } : item),
+  };
+  const invalidSwitchPlan = {
+    ...pocPlan,
+    switches: pocPlan.switches.map((item) => item.id === "main-area-north-group-entry-three-way-switch" ? { ...item, controlCount: undefined } : item),
+  };
+  assert.ok(validatePlan(invalidLightPlan).some((issue) => issue.code === "invalid-light"));
+  assert.ok(validatePlan(invalidSwitchPlan).some((issue) => issue.code === "invalid-switch"));
 });
 
 test("stores eight standard Office receptacles around the room perimeter", () => {

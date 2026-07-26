@@ -119,7 +119,7 @@ slidingDoor({
 
 Use `slidingDoor` for a two-panel bypass opening. It renders two overlapping parallel leaves and does not imply an accordion or bifold assembly. Swing-door `height` is optional; omit it when the door or rough-opening height is unknown and preserve the verification requirement in `note`.
 
-Switches use the same wall-relative convention. `heightAboveFloor` is metadata; the primary viewer remains top-down. Switches and receptacles normally render on the parent wall's `interiorSide`; set `wallSide` to `left` or `right` only when the device belongs on the opposite face of a shared partition. Use `controlType` to distinguish a standard switch, timer, or humidity sensor. When multiple controls share one physical box, give each the same wall and offset plus one-based `gangIndex` and matching `gangCount`; the renderer separates their symbols without pretending they are different boxes.
+Switches use the same wall-relative convention. `heightAboveFloor` is metadata; the primary viewer remains top-down. Switches and receptacles normally render on the parent wall's `interiorSide`; set `wallSide` to `left` or `right` only when the device belongs on the opposite face of a shared partition. Use `controlType` to distinguish a standard switch, dimmer, timer, or humidity sensor. When multiple controls share one physical box, give each the same wall and offset plus one-based `gangIndex` and matching `gangCount`; the renderer separates their symbols without pretending they are different boxes. For a combination device containing multiple controls in one gang, also set one-based `controlIndex` and matching `controlCount` on those controls.
 
 Selecting a window, swing door, or sliding door derives a temporary dimension chain from this wall-relative data. The viewer shows the clear wall to the nearest opening, intersecting wall, or wall endpoint on each side plus the selected opening width. Contiguous swing-door leaves are treated as one combined opening. These selection measurements are not stored as separate `Dimension` objects and remain visible in the current-view printout.
 
@@ -219,7 +219,7 @@ Pipe diameter is intentionally absent from this proof-of-concept schema. The ren
 
 ## Electrical control groups
 
-Ceiling fixtures use absolute plan coordinates. Use `fixture: "recessed"` for an in-ceiling fixture and `fixture: "surface"` for a surface-mounted fixture below the ceiling plane. Lighting connections reference stable fixture and switch IDs. They show which lights form a control group and which switch operates that group; they never represent cable routing or fixture wiring order.
+Ceiling fixtures use absolute plan coordinates. Use `fixture: "recessed"` for an in-ceiling fixture and `fixture: "surface"` for a surface-mounted fixture below the ceiling plane. Use `fixture: "under-cabinet"` with `at` and `to` endpoints for a conceptual linear run beneath upper cabinets; point fixtures must omit `to`. Lighting connections reference stable fixture and switch IDs. They show which lights form a control group and which switch operates that group; they never represent cable routing or fixture wiring order.
 
 ```ts
 light({

@@ -72,7 +72,8 @@ export interface WindowOpening extends WallOpeningBase {
 export interface Light extends PlanItemBase {
   kind: "light";
   at: Point;
-  fixture: "recessed" | "surface";
+  to?: Point;
+  fixture: "recessed" | "surface" | "under-cabinet";
 }
 
 export interface ExhaustFan extends PlanItemBase {
@@ -88,9 +89,11 @@ export interface Switch extends PlanItemBase {
   offset: number;
   wallSide?: WallSide;
   heightAboveFloor?: number;
-  controlType?: "standard" | "timer" | "humidity-sensor";
+  controlType?: "standard" | "dimmer" | "timer" | "humidity-sensor";
   gangIndex?: number;
   gangCount?: number;
+  controlIndex?: number;
+  controlCount?: number;
 }
 
 export interface Receptacle extends PlanItemBase {
