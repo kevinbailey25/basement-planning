@@ -260,8 +260,41 @@ export const pocPlan = {
     light({ id: "storage-light-west", label: "Storage west recessed light", at: [507.5, 133], fixture: "recessed", note: "Conceptual fixture shifted 3 inches north so its center falls in the clear bay between main-ceiling-joist-38 and main-ceiling-joist-39, approximately 53 inches from the west wall. Verify the actual fixture diameter, joist clearance, and shelving clearance on site.", ...proposed }),
     light({ id: "utility-room-light-north", label: "Utility Room north surface light", at: [445, 220], fixture: "surface", note: "Conceptual low-profile surface-mounted LED fixture over the north portion of the open service aisle. Aligned east-to-west with utility-room-light-south and shifted approximately 10 inches north and west from the initial concept. Verify joist, duct, pipe, wiring, equipment-service, and door clearances on site.", ...proposed }),
     light({ id: "utility-room-light-south", label: "Utility Room south surface light", at: [510, 220], fixture: "surface", note: "Conceptual low-profile surface-mounted LED fixture over the south portion of the open service aisle to illuminate the water heater, panels, and networking cabinet. Verify joist, duct, pipe, wiring, and equipment-service clearances on site.", ...proposed }),
+    light({
+      id: "bathroom-tub-shower-recessed-light",
+      label: "Bathroom tub/shower recessed light",
+      at: [30, 297],
+      fixture: "recessed",
+      note: "Conceptual wet-location recessed light centered east-to-west over the tub/shower, approximately 30 inches south of north-exterior-wall. It occupies the clear portion of the bay between bathroom-ceiling-joist-01 and bathroom-ceiling-joist-03, south of joists-01-02-north-wall-office-window-supply-06. Verify the listed fixture diameter, wet-location suitability, framing, supply-duct, exhaust-fan, insulation, wiring, and shower-clearance requirements on site.",
+      ...proposed,
+    }),
+    light({
+      id: "bathroom-central-recessed-light",
+      label: "Bathroom central recessed light",
+      at: [73.5, 297],
+      fixture: "recessed",
+      note: "Conceptual general recessed light centered east-to-west in the clear bay between bathroom-ceiling-joist-05 and bathroom-ceiling-joist-08, approximately 73.5 inches south of north-exterior-wall. The position avoids the mapped upper-floor supply dogleg and the panned return. Verify the listed fixture diameter, framing, duct, pipe, insulation, and wiring clearances on site.",
+      ...proposed,
+    }),
+    light({
+      id: "bathroom-vanity-south-recessed-light",
+      label: "Bathroom vanity-side recessed light",
+      at: [114.5, 309],
+      fixture: "recessed",
+      note: "Conceptual recessed light in the final joist bay between bathroom-ceiling-joist-11 and bathroom-south-wall, with its center approximately 4 inches south of the joist's south face and shifted toward the west vanity wall to illuminate the south end of the vanity without entering north-trunk-bathroom-office-panned-return. Coordinate the final position and beam spread with the proposed Bathroom supply register at joists-11-12-bathroom-south-supply-05; verify the listed fixture diameter, register face, framing, duct, pipe, insulation, and wiring clearances on site.",
+      ...proposed,
+    }),
   ],
   switches: [
+    wallSwitch({
+      id: "bathroom-entry-light-switch",
+      label: "Bathroom entry light switch",
+      wallId: "main-west-divider",
+      offset: 90,
+      wallSide: "right",
+      note: "Proposed on the Bathroom side of main-west-divider, approximately 6 inches north of the latch-side jamb of bathroom-door. Keep the box and wiring clear of the adjacent return-air work and do not penetrate or compromise the overhead panned-return chase; verify the final box position, mounting height, door-trim, framing, and HVAC clearances on site.",
+      ...proposed,
+    }),
     wallSwitch({
       id: "office-entry-light-switch",
       label: "Office entry light switch",
@@ -289,6 +322,17 @@ export const pocPlan = {
     }),
   ],
   receptacles: [
+    receptacle({
+      id: "bathroom-south-wall-vanity-gfci-receptacle",
+      label: "Bathroom vanity GFCI receptacle",
+      wallId: "bathroom-south-wall",
+      offset: 48,
+      wallSide: "right",
+      heightAboveFloor: 44,
+      receptacleType: "gfci",
+      note: "Conceptual GFCI receptacle on the Bathroom side of bathroom-south-wall, approximately 12 inches east of the west vanity wall and 8 inches above a nominal 36-inch vanity countertop. This places it beside the basin, beyond the fully open bathroom-door leaf, and outside the tub/shower area. Verify the finished countertop, backsplash, mirror, basin edge, door clearance, mounting height, required GFCI protection, bathroom branch circuit, permits, and all code requirements on site.",
+      ...proposed,
+    }),
     receptacle({
       id: "office-north-wall-east-of-window-receptacle",
       label: "Office north wall receptacle east of window",
@@ -1435,6 +1479,18 @@ export const pocPlan = {
     }),
   ],
   circuits: [
+    circuit({
+      id: "bathroom-lighting-group",
+      label: "Bathroom recessed-light group",
+      layer: "lighting",
+      connections: [
+        { fromId: "bathroom-entry-light-switch", toId: "bathroom-vanity-south-recessed-light" },
+        { fromId: "bathroom-vanity-south-recessed-light", toId: "bathroom-central-recessed-light" },
+        { fromId: "bathroom-central-recessed-light", toId: "bathroom-tub-shower-recessed-light" },
+      ],
+      note: "Dashed connections show the control group only; they do not represent cable routing, fixture wiring order, or permission to route wiring through an HVAC chase.",
+      ...proposed,
+    }),
     circuit({
       id: "office-lighting-group",
       label: "Office recessed-light group",

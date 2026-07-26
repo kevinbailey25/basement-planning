@@ -61,6 +61,46 @@ test("stores the Office recessed-light group in clear joist bays", () => {
   assert.match(group.note, /do not represent cable routing/);
 });
 
+test("stores the Bathroom recessed-light group and entry switch", () => {
+  const switchItem = pocPlan.switches.find((item) => item.id === "bathroom-entry-light-switch");
+  const group = pocPlan.circuits.find((item) => item.id === "bathroom-lighting-group");
+  const bathroomLights = pocPlan.lights.filter((item) => item.id.startsWith("bathroom-"));
+  assert.ok(switchItem && group);
+  assert.deepEqual(
+    bathroomLights.map((item) => [item.at, item.fixture]),
+    [
+      [[30, 297], "recessed"],
+      [[73.5, 297], "recessed"],
+      [[114.5, 309], "recessed"],
+    ],
+  );
+  assert.deepEqual(
+    [switchItem.wallId, switchItem.offset, switchItem.wallSide],
+    ["main-west-divider", 90, "right"],
+  );
+  assert.deepEqual(group.connections, [
+    { fromId: "bathroom-entry-light-switch", toId: "bathroom-vanity-south-recessed-light" },
+    { fromId: "bathroom-vanity-south-recessed-light", toId: "bathroom-central-recessed-light" },
+    { fromId: "bathroom-central-recessed-light", toId: "bathroom-tub-shower-recessed-light" },
+  ]);
+  assert.match(group.note, /do not represent cable routing/);
+});
+
+test("stores one Bathroom GFCI receptacle beside the vanity", () => {
+  const bathroomReceptacles = pocPlan.receptacles.filter((item) => item.id.startsWith("bathroom-"));
+  assert.deepEqual(
+    bathroomReceptacles.map((item) => [
+      item.wallId,
+      item.offset,
+      item.wallSide,
+      item.heightAboveFloor,
+      item.receptacleType,
+    ]),
+    [["bathroom-south-wall", 48, "right", 44, "gfci"]],
+  );
+  assert.match(bathroomReceptacles[0].note, /beyond the fully open bathroom-door leaf/);
+});
+
 test("stores the unconnected Main open area lights in aligned joist-bay columns", () => {
   const mainAreaLights = pocPlan.lights.filter((item) => item.id.startsWith("main-area-"));
   const connectedIds = new Set(pocPlan.circuits.flatMap((item) => item.connections.flatMap((connection) => [connection.fromId, connection.toId])));
