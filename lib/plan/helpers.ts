@@ -4,6 +4,7 @@ import type {
   Circuit,
   Dimension,
   Door,
+  ExhaustFan,
   Light,
   HvacEquipment,
   GasLine,
@@ -43,6 +44,9 @@ export const windowOpening = (
   value: Omit<WindowOpening, "kind">,
 ): WindowOpening => ({ kind: "window", ...value });
 export const light = (value: Omit<Light, "kind">): Light => ({ kind: "light", ...value });
+export const exhaustFan = (
+  value: Omit<ExhaustFan, "kind">,
+): ExhaustFan => ({ kind: "exhaust-fan", ...value });
 export const wallSwitch = (value: Omit<Switch, "kind">): Switch => ({
   kind: "switch",
   ...value,

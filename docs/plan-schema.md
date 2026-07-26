@@ -119,7 +119,7 @@ slidingDoor({
 
 Use `slidingDoor` for a two-panel bypass opening. It renders two overlapping parallel leaves and does not imply an accordion or bifold assembly. Swing-door `height` is optional; omit it when the door or rough-opening height is unknown and preserve the verification requirement in `note`.
 
-Switches use the same wall-relative convention. `heightAboveFloor` is metadata; the primary viewer remains top-down. Switches and receptacles normally render on the parent wall's `interiorSide`; set `wallSide` to `left` or `right` only when the device belongs on the opposite face of a shared partition.
+Switches use the same wall-relative convention. `heightAboveFloor` is metadata; the primary viewer remains top-down. Switches and receptacles normally render on the parent wall's `interiorSide`; set `wallSide` to `left` or `right` only when the device belongs on the opposite face of a shared partition. Use `controlType` to distinguish a standard switch, timer, or humidity sensor. When multiple controls share one physical box, give each the same wall and offset plus one-based `gangIndex` and matching `gangCount`; the renderer separates their symbols without pretending they are different boxes.
 
 Selecting a window, swing door, or sliding door derives a temporary dimension chain from this wall-relative data. The viewer shows the clear wall to the nearest opening, intersecting wall, or wall endpoint on each side plus the selected opening width. Contiguous swing-door leaves are treated as one combined opening. These selection measurements are not stored as separate `Dimension` objects and remain visible in the current-view printout.
 
@@ -217,7 +217,7 @@ gasLine({
 
 Pipe diameter is intentionally absent from this proof-of-concept schema. The rendered line is a planning symbol, not a claim about pipe size, capacity, materials, pressure, code compliance, or installation requirements. Preserve uncertain concealed routing and inaccessible elevations in `note` and use `approximate` or `unknown` confidence.
 
-## Lighting groups
+## Electrical control groups
 
 Ceiling fixtures use absolute plan coordinates. Use `fixture: "recessed"` for an in-ceiling fixture and `fixture: "surface"` for a surface-mounted fixture below the ceiling plane. Lighting connections reference stable fixture and switch IDs. They show which lights form a control group and which switch operates that group; they never represent cable routing or fixture wiring order.
 
@@ -246,7 +246,41 @@ circuit({
 })
 ```
 
-Omit `waypoints` for a direct schematic connection. Add them only to keep the control diagram legible. The viewer renders these connections whenever the Lighting sublayer is active.
+An electrically controlled exhaust fan is a separate endpoint from its HVAC duct. Place it at the indoor fan housing, reference the mapped exhaust duct, and connect a timer or humidity-sensor control with a `ventilation-control` circuit:
+
+```ts
+exhaustFan({
+  id: "bathroom-ceiling-exhaust-fan",
+  at: [10.75, 312],
+  mounting: "ceiling",
+  hvacDuctId: "bathroom-north-wall-exhaust-fan-04",
+  status: "proposed",
+  confidence: "approximate",
+})
+
+wallSwitch({
+  id: "bathroom-entry-exhaust-fan-timer",
+  wallId: "bathroom-entry-wall",
+  offset: 90,
+  controlType: "timer",
+  gangIndex: 2,
+  gangCount: 2,
+  status: "proposed",
+  confidence: "approximate",
+})
+
+circuit({
+  id: "bathroom-exhaust-fan-control-group",
+  layer: "ventilation-control",
+  connections: [
+    { fromId: "bathroom-entry-exhaust-fan-timer", toId: "bathroom-ceiling-exhaust-fan" },
+  ],
+  status: "proposed",
+  confidence: "approximate",
+})
+```
+
+The fan coordinate must match an endpoint of its referenced exhaust-air duct. The electrical symbol identifies the controlled fan housing; it does not duplicate the duct, exterior cap, airflow design, or mechanical approval. Omit `waypoints` for a direct schematic connection. Add them only to keep the control diagram legible. The viewer renders lighting and ventilation-control connections whenever the Lighting & fans sublayer is active.
 
 ## Receptacles
 

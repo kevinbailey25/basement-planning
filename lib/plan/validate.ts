@@ -2,7 +2,7 @@ import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-receptacle" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-bathroom-fixture" | "missing-plumbing-drain" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-switch" | "invalid-receptacle" | "invalid-exhaust-fan" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-bathroom-fixture" | "missing-plumbing-drain" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -16,6 +16,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.slidingDoors,
     ...plan.windows,
     ...plan.lights,
+    ...plan.exhaustFans,
     ...plan.switches,
     ...plan.receptacles,
     ...plan.wallCabinets,
@@ -257,7 +258,27 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
   }
   for (const item of plan.switches) {
     const parent = walls.get(item.wallId);
-    if (!parent) issues.push({ code: "missing-wall", itemId: item.id, message: `Switch “${item.id}” references missing wall “${item.wallId}”.` });
+    if (!parent) {
+      issues.push({ code: "missing-wall", itemId: item.id, message: `Switch “${item.id}” references missing wall “${item.wallId}”.` });
+      continue;
+    }
+    const hasGangIndex = item.gangIndex != null;
+    const hasGangCount = item.gangCount != null;
+    if (
+      item.offset < 0
+      || item.offset > distance(parent.from, parent.to)
+      || (item.heightAboveFloor != null && item.heightAboveFloor < 0)
+      || hasGangIndex !== hasGangCount
+      || (hasGangIndex && (
+        !Number.isInteger(item.gangIndex)
+        || !Number.isInteger(item.gangCount)
+        || item.gangIndex! < 1
+        || item.gangCount! < 1
+        || item.gangIndex! > item.gangCount!
+      ))
+    ) {
+      issues.push({ code: "invalid-switch", itemId: item.id, message: `Switch “${item.id}” requires an offset within wall “${item.wallId}”, a non-negative mounting height, and complete one-based gang metadata when specified.` });
+    }
   }
   for (const item of plan.wallCabinets) {
     const parent = walls.get(item.wallId);
@@ -414,7 +435,20 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     }
   }
 
-  const endpointIds = new Set([...plan.lights, ...plan.switches].map((item) => item.id));
+  for (const item of plan.exhaustFans) {
+    const source = hvacDucts.get(item.hvacDuctId);
+    const isFinitePoint = Number.isFinite(item.at[0]) && Number.isFinite(item.at[1]);
+    const isSourceEndpoint = source?.orientation === "horizontal"
+      && (distance(item.at, source.from) < 0.001 || distance(item.at, source.to) < 0.001);
+    if (!source || source.airflowRole !== "exhaust") {
+      issues.push({ code: "missing-hvac-source", itemId: item.id, message: `Exhaust fan “${item.id}” requires an exhaust-air duct “${item.hvacDuctId}”.` });
+    }
+    if (!isFinitePoint || !isSourceEndpoint) {
+      issues.push({ code: "invalid-exhaust-fan", itemId: item.id, message: `Exhaust fan “${item.id}” requires a finite position at an endpoint of its mapped HVAC duct.` });
+    }
+  }
+
+  const endpointIds = new Set([...plan.lights, ...plan.exhaustFans, ...plan.switches].map((item) => item.id));
   for (const item of plan.circuits) {
     for (const connection of item.connections) {
       for (const endpoint of [connection.fromId, connection.toId]) {

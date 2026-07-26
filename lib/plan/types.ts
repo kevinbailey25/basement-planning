@@ -75,12 +75,22 @@ export interface Light extends PlanItemBase {
   fixture: "recessed" | "surface";
 }
 
+export interface ExhaustFan extends PlanItemBase {
+  kind: "exhaust-fan";
+  at: Point;
+  mounting: "ceiling";
+  hvacDuctId: string;
+}
+
 export interface Switch extends PlanItemBase {
   kind: "switch";
   wallId: string;
   offset: number;
   wallSide?: WallSide;
   heightAboveFloor?: number;
+  controlType?: "standard" | "timer" | "humidity-sensor";
+  gangIndex?: number;
+  gangCount?: number;
 }
 
 export interface Receptacle extends PlanItemBase {
@@ -340,7 +350,7 @@ export interface CircuitConnection {
 
 export interface Circuit extends PlanItemBase {
   kind: "circuit";
-  layer: "lighting";
+  layer: "lighting" | "ventilation-control";
   connections: readonly CircuitConnection[];
 }
 
@@ -361,6 +371,7 @@ export type SelectablePlanItem =
   | SlidingDoor
   | WindowOpening
   | Light
+  | ExhaustFan
   | Switch
   | Receptacle
   | WallCabinet
@@ -400,6 +411,7 @@ export interface FloorPlan {
   slidingDoors: readonly SlidingDoor[];
   windows: readonly WindowOpening[];
   lights: readonly Light[];
+  exhaustFans: readonly ExhaustFan[];
   switches: readonly Switch[];
   receptacles: readonly Receptacle[];
   wallCabinets: readonly WallCabinet[];

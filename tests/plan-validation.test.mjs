@@ -75,8 +75,8 @@ test("stores the Bathroom recessed-light group and entry switch", () => {
     ],
   );
   assert.deepEqual(
-    [switchItem.wallId, switchItem.offset, switchItem.wallSide],
-    ["main-west-divider", 90, "right"],
+    [switchItem.wallId, switchItem.offset, switchItem.wallSide, switchItem.controlType, switchItem.gangIndex, switchItem.gangCount],
+    ["main-west-divider", 90, "right", "standard", 2, 2],
   );
   assert.deepEqual(group.connections, [
     { fromId: "bathroom-entry-light-switch", toId: "bathroom-vanity-south-recessed-light" },
@@ -84,6 +84,39 @@ test("stores the Bathroom recessed-light group and entry switch", () => {
     { fromId: "bathroom-central-recessed-light", toId: "bathroom-tub-shower-recessed-light" },
   ]);
   assert.match(group.note, /do not represent cable routing/);
+});
+
+test("stores the Bathroom exhaust fan endpoint and timer control separately from its HVAC duct", () => {
+  const fan = pocPlan.exhaustFans.find((item) => item.id === "bathroom-ceiling-exhaust-fan");
+  const timer = pocPlan.switches.find((item) => item.id === "bathroom-entry-exhaust-fan-timer");
+  const group = pocPlan.circuits.find((item) => item.id === "bathroom-exhaust-fan-control-group");
+  const duct = pocPlan.hvacDucts.find((item) => item.id === fan?.hvacDuctId);
+  assert.ok(fan && timer && group && duct?.orientation === "horizontal");
+  assert.deepEqual([fan.at, fan.mounting, fan.hvacDuctId], [[10.75, 312], "ceiling", "bathroom-north-wall-exhaust-fan-04"]);
+  assert.deepEqual(fan.at, duct.from);
+  assert.deepEqual(
+    [timer.wallId, timer.offset, timer.wallSide, timer.controlType, timer.gangIndex, timer.gangCount],
+    ["main-west-divider", 90, "right", "timer", 1, 2],
+  );
+  assert.equal(group.layer, "ventilation-control");
+  assert.deepEqual(group.connections, [
+    { fromId: "bathroom-entry-exhaust-fan-timer", toId: "bathroom-ceiling-exhaust-fan" },
+  ]);
+  assert.match(group.note, /does not represent cable routing/);
+});
+
+test("reports invalid exhaust-fan sources and incomplete switch gang metadata", () => {
+  const invalidFanPlan = {
+    ...pocPlan,
+    exhaustFans: [{ ...pocPlan.exhaustFans[0], hvacDuctId: "main-return-ceiling-trunk" }],
+  };
+  const invalidSwitchPlan = {
+    ...pocPlan,
+    switches: [{ ...pocPlan.switches[0], gangCount: undefined }],
+  };
+  assert.ok(validatePlan(invalidFanPlan).some((issue) => issue.code === "missing-hvac-source"));
+  assert.ok(validatePlan(invalidFanPlan).some((issue) => issue.code === "invalid-exhaust-fan"));
+  assert.ok(validatePlan(invalidSwitchPlan).some((issue) => issue.code === "invalid-switch"));
 });
 
 test("stores one Bathroom GFCI receptacle beside the vanity", () => {

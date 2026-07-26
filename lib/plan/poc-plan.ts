@@ -4,6 +4,7 @@ import {
   circuit,
   dimension,
   door,
+  exhaustFan,
   gasLine,
   horizontalHvacDuct,
   hvacDuctTransition,
@@ -285,6 +286,17 @@ export const pocPlan = {
       ...proposed,
     }),
   ],
+  exhaustFans: [
+    exhaustFan({
+      id: "bathroom-ceiling-exhaust-fan",
+      label: "Bathroom ceiling exhaust fan",
+      at: [10.75, 312],
+      mounting: "ceiling",
+      hvacDuctId: "bathroom-north-wall-exhaust-fan-04",
+      note: "Conceptual electrical endpoint at the indoor fan housing and pickup for bathroom-north-wall-exhaust-fan-04. This symbol identifies the controlled fan equipment only; the separate HVAC object records the exhaust-air route to the exterior. Select a listed bathroom exhaust fan suitable for the available framing and wet-location conditions, and verify power, controls, duct connection, clearances, airflow, noise, and all code requirements on site.",
+      ...proposed,
+    }),
+  ],
   switches: [
     wallSwitch({
       id: "bathroom-entry-light-switch",
@@ -292,7 +304,22 @@ export const pocPlan = {
       wallId: "main-west-divider",
       offset: 90,
       wallSide: "right",
-      note: "Proposed on the Bathroom side of main-west-divider, approximately 6 inches north of the latch-side jamb of bathroom-door. Keep the box and wiring clear of the adjacent return-air work and do not penetrate or compromise the overhead panned-return chase; verify the final box position, mounting height, door-trim, framing, and HVAC clearances on site.",
+      controlType: "standard",
+      gangIndex: 2,
+      gangCount: 2,
+      note: "Proposed lighting control in the second position of a two-gang box on the Bathroom side of main-west-divider, approximately 6 inches north of the latch-side jamb of bathroom-door. Keep the box and wiring clear of the adjacent return-air work and do not penetrate or compromise the overhead panned-return chase; verify the final box position, mounting height, door-trim, framing, and HVAC clearances on site.",
+      ...proposed,
+    }),
+    wallSwitch({
+      id: "bathroom-entry-exhaust-fan-timer",
+      label: "Bathroom entry exhaust-fan timer",
+      wallId: "main-west-divider",
+      offset: 90,
+      wallSide: "right",
+      controlType: "timer",
+      gangIndex: 1,
+      gangCount: 2,
+      note: "Conceptual timer control in the first position of the same two-gang Bathroom entry box as bathroom-entry-light-switch. The timer controls only bathroom-ceiling-exhaust-fan; it does not show cable routing or authorize wiring through the adjacent return-air work. Verify the control type, fan compatibility, box fill, mounting height, door-trim, framing, and HVAC clearances on site.",
       ...proposed,
     }),
     wallSwitch({
@@ -1479,6 +1506,16 @@ export const pocPlan = {
     }),
   ],
   circuits: [
+    circuit({
+      id: "bathroom-exhaust-fan-control-group",
+      label: "Bathroom exhaust-fan control group",
+      layer: "ventilation-control",
+      connections: [
+        { fromId: "bathroom-entry-exhaust-fan-timer", toId: "bathroom-ceiling-exhaust-fan" },
+      ],
+      note: "Dashed connection shows the timer-to-fan control relationship only. It terminates at the indoor fan housing and does not represent cable routing, the exhaust-air duct, or the exterior termination.",
+      ...proposed,
+    }),
     circuit({
       id: "bathroom-lighting-group",
       label: "Bathroom recessed-light group",
