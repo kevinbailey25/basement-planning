@@ -86,6 +86,33 @@ test("stores the Bathroom recessed-light group and entry switch", () => {
   assert.match(group.note, /do not represent cable routing/);
 });
 
+test("stores the existing stair light and proposed Landing light on the shared stair control group", () => {
+  const switchItem = pocPlan.switches.find((item) => item.id === "stair-landing-three-way-switch");
+  const existingLight = pocPlan.lights.find((item) => item.id === "main-stair-existing-recessed-light");
+  const landingLight = pocPlan.lights.find((item) => item.id === "stair-landing-recessed-light");
+  const group = pocPlan.circuits.find((item) => item.id === "stair-landing-lighting-group");
+  assert.ok(switchItem && existingLight && landingLight && group);
+  assert.deepEqual(
+    [switchItem.wallId, switchItem.offset, switchItem.wallSide, switchItem.controlType, switchItem.gangIndex, switchItem.gangCount, switchItem.status],
+    ["main-west-divider", 181.5, "right", "standard", 2, 2, "existing"],
+  );
+  assert.deepEqual(
+    [existingLight.at, existingLight.fixture, existingLight.status],
+    [[256, 285], "recessed", "existing"],
+  );
+  assert.deepEqual(
+    [landingLight.at, landingLight.fixture, landingLight.status],
+    [[160, 298], "recessed", "proposed"],
+  );
+  assert.equal(group.status, "proposed");
+  assert.deepEqual(group.connections, [
+    { fromId: "stair-landing-three-way-switch", toId: "main-stair-existing-recessed-light" },
+    { fromId: "main-stair-existing-recessed-light", toId: "stair-landing-recessed-light" },
+  ]);
+  assert.match(group.note, /companion switch at the top of the stairs is intentionally not shown/);
+  assert.match(group.note, /do not represent cable routing/);
+});
+
 test("stores the Bathroom exhaust fan endpoint and timer control separately from its HVAC duct", () => {
   const fan = pocPlan.exhaustFans.find((item) => item.id === "bathroom-ceiling-exhaust-fan");
   const timer = pocPlan.switches.find((item) => item.id === "bathroom-entry-exhaust-fan-timer");

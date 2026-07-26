@@ -183,7 +183,7 @@ export const pocPlan = {
       id: "stair-landing",
       label: "Landing",
       polygon: [[129, 267], [187, 267], [187, 303], [196, 303], [196, 327], [129, 327]],
-      labelAt: [160, 300],
+      labelAt: [160, 318],
       note: "Irregular landing geometry inferred from the sketch.",
       ...existing,
     }),
@@ -285,6 +285,22 @@ export const pocPlan = {
       note: "Conceptual recessed light in the final joist bay between bathroom-ceiling-joist-11 and bathroom-south-wall, with its center approximately 4 inches south of the joist's south face and shifted toward the west vanity wall to illuminate the south end of the vanity without entering north-trunk-bathroom-office-panned-return. Coordinate the final position and beam spread with the proposed Bathroom supply register at joists-11-12-bathroom-south-supply-05; verify the listed fixture diameter, register face, framing, duct, pipe, insulation, and wiring clearances on site.",
       ...proposed,
     }),
+    light({
+      id: "main-stair-existing-recessed-light",
+      label: "Existing stair recessed light",
+      at: [256, 285],
+      fixture: "recessed",
+      note: "Existing recessed light approximately centered across the stair run and shown just south of the stair arrow. Its exact location, fixture, framing, and wiring have not been measured; verify on site.",
+      ...existing,
+    }),
+    light({
+      id: "stair-landing-recessed-light",
+      label: "Landing recessed light",
+      at: [160, 298],
+      fixture: "recessed",
+      note: "Proposed recessed light approximately centered in the irregular Landing footprint and added to the existing stair three-way control group. Verify the final fixture position, framing, overhead-service clearances, wiring, and code requirements on site.",
+      ...proposed,
+    }),
   ],
   exhaustFans: [
     exhaustFan({
@@ -298,6 +314,18 @@ export const pocPlan = {
     }),
   ],
   switches: [
+    wallSwitch({
+      id: "stair-landing-three-way-switch",
+      label: "Landing stair three-way switch",
+      wallId: "main-west-divider",
+      offset: 181.5,
+      wallSide: "right",
+      controlType: "standard",
+      gangIndex: 2,
+      gangCount: 2,
+      note: "Existing stair three-way control in the right-hand position when facing the two-gang box from the Landing. The box is approximately centered in the short wall section between main-stair-door and the stair run. The companion three-way switch at the top of the stairs and the unidentified other control in this box are intentionally not shown. Verify the box position, mounting height, wiring, and code requirements on site.",
+      ...existing,
+    }),
     wallSwitch({
       id: "bathroom-entry-light-switch",
       label: "Bathroom entry light switch",
@@ -1506,6 +1534,17 @@ export const pocPlan = {
     }),
   ],
   circuits: [
+    circuit({
+      id: "stair-landing-lighting-group",
+      label: "Stair and Landing lighting group",
+      layer: "lighting",
+      connections: [
+        { fromId: "stair-landing-three-way-switch", toId: "main-stair-existing-recessed-light" },
+        { fromId: "main-stair-existing-recessed-light", toId: "stair-landing-recessed-light" },
+      ],
+      note: "Conceptual control group showing the proposed Landing light added to the existing stair three-way system. The companion switch at the top of the stairs is intentionally not shown. Dashed connections indicate the shared control relationship only; they do not represent cable routing or fixture wiring order.",
+      ...proposed,
+    }),
     circuit({
       id: "bathroom-exhaust-fan-control-group",
       label: "Bathroom exhaust-fan control group",
