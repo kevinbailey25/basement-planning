@@ -667,6 +667,21 @@ test("stores the joist-bay HVAC exhaust route", () => {
   assert.equal(exhaust.confidence, "approximate");
 });
 
+test("stores the proposed Bathroom exhaust route beside joist 01", () => {
+  const exhaust = pocPlan.hvacDucts.find((item) => item.id === "bathroom-north-wall-exhaust-fan-04");
+  assert.ok(exhaust && exhaust.orientation === "horizontal" && exhaust.shape === "round");
+  assert.deepEqual(
+    [exhaust.from, exhaust.to, exhaust.diameter, exhaust.bottomAboveFloor, exhaust.airflowRole],
+    [[10.75, 312], [-8, 312], 4, 93, "exhaust"],
+  );
+  assert.equal(13.25 - (exhaust.from[0] + exhaust.diameter / 2), 0.5);
+  assert.equal(-4 - exhaust.to[0], 4);
+  assert.match(exhaust.note, /outdoor discharge explicit/);
+  assert.match(exhaust.note, /avoids all three short north-bay joists/);
+  assert.equal(exhaust.status, "proposed");
+  assert.equal(exhaust.confidence, "approximate");
+});
+
 test("stores the approximate refrigerant route through Storage", () => {
   const line = pocPlan.hvacRefrigerantLines.find((item) => item.id === "furnace-to-south-exterior-refrigerant-line");
   assert.ok(line);

@@ -952,6 +952,36 @@ export const pocPlan = {
         ...existing,
       });
     }),
+    joist({
+      id: "bathroom-north-bay-short-joist-01",
+      label: "Bathroom north bay short joist 1",
+      number: 1,
+      from: [exteriorWall / 2, 274.375],
+      to: [joistNorthEdges[0], 274.375],
+      width: joistWidth,
+      note: "Runs north-to-south across the clear bay between north-exterior-wall and bathroom-ceiling-joist-01. Its east edge is 3.75 inches from the Bathroom-facing edge of main-west-divider.",
+      ...existing,
+    }),
+    joist({
+      id: "bathroom-north-bay-short-joist-02",
+      label: "Bathroom north bay short joist 2",
+      number: 2,
+      from: [exteriorWall / 2, 279.625],
+      to: [joistNorthEdges[0], 279.625],
+      width: joistWidth,
+      note: "Runs north-to-south across the clear bay between north-exterior-wall and bathroom-ceiling-joist-01, with a 3-inch clear gap east of this joist.",
+      ...existing,
+    }),
+    joist({
+      id: "bathroom-north-bay-short-joist-03",
+      label: "Bathroom north bay short joist 3",
+      number: 3,
+      from: [exteriorWall / 2, 298.375],
+      to: [joistNorthEdges[0], 298.375],
+      width: joistWidth,
+      note: "Runs north-to-south across the clear bay between north-exterior-wall and bathroom-ceiling-joist-01, with a 16.5-inch clear gap east and 25 inches remaining to the Bathroom-facing edge of office-east-divider.",
+      ...existing,
+    }),
     ...officeJoistNorthEdges.map((northEdge, index) => {
       const number = index + 1;
       const centerX = northEdge + joistWidth / 2;
@@ -1033,6 +1063,19 @@ export const pocPlan = {
       bottomAboveFloor: 91,
       note: "Existing approximately 10-inch-diameter round HVAC vent contained in the clear bay between main-ceiling-joist-33 and main-ceiling-joist-34. Its open Utility Room end is approximately 8 inches east of the interior face of the retained furnace-room-south-wall segment. It runs east above the Utility Room, passes close to the centerline of east-wall-window-south, and exits through east-exterior-wall. The 91-inch underside uses the measured joist-bottom elevation to record that the vent stays within the bay; verify its exact vertical position and function on site.",
       ...existing,
+    }),
+    horizontalHvacDuct({
+      id: "bathroom-north-wall-exhaust-fan-04",
+      label: "Bathroom north-wall exhaust fan — conceptual 4 inch round",
+      airflowRole: "exhaust",
+      shape: "round",
+      from: [10.75, 312],
+      to: [-8, 312],
+      diameter: 4,
+      bottomAboveFloor: 93,
+      note: "Conceptual short rigid-round exhaust route from a ceiling pickup in the 25-inch clear pocket west of bathroom-north-bay-short-joist-03, through north-exterior-wall, to a visibly diagrammed exterior termination cap. The cap endpoint is shown a nominal 4 inches beyond the wall's exterior face only to make the outdoor discharge explicit; its final projection and product are unknown. The 4-inch duct centerline is offset toward bathroom-ceiling-joist-01, leaving a nominal 0.5-inch clear gap to the joist edge, and avoids all three short north-bay joists. Select a listed bathroom exhaust assembly that fits the available framing and wet-location requirements; verify the fan housing, pickup grille, final duct diameter and elevation, exterior grade, wall penetration, termination cap, clearances from openings and air intakes, electrical protection, airflow, noise, insulation, backdraft damper, and all manufacturer and local-code requirements on site.",
+      status: "proposed",
+      confidence: "approximate",
     }),
     verticalHvacDuct({
       id: "furnace-supply-vertical-plenum",

@@ -27,9 +27,23 @@ test("doubled joists retain zero clear gap", () => {
 });
 
 test("bathroom joists retain only the observed main alignments", () => {
-  const bathroom = pocPlan.joists.filter((item) => item.id.startsWith("bathroom-"));
+  const bathroom = pocPlan.joists.filter((item) => item.id.startsWith("bathroom-ceiling-joist-"));
   assert.deepEqual(bathroom.map((item) => item.number), [1, 3, 5, 8, 11]);
   assert.ok(bathroom.every((item) => item.from[1] === 269.5 && item.to[1] === 324.5));
+});
+
+test("bathroom north bay retains the three measured short joists", () => {
+  const shortJoists = pocPlan.joists.filter((item) => item.id.startsWith("bathroom-north-bay-short-joist-"));
+  assert.equal(shortJoists.length, 3);
+  assert.ok(shortJoists.every((item) => item.width === joistWidthForTest));
+  assert.ok(shortJoists.every((item) => item.from[0] === 4 && item.to[0] === 13.25));
+
+  const centers = shortJoists.map((item) => item.from[1]);
+  assert.deepEqual(centers, [274.375, 279.625, 298.375]);
+  assert.equal(centers[0] - joistWidthForTest / 2 - 269.5, 3.75);
+  assert.equal(centers[1] - centers[0] - joistWidthForTest, 3);
+  assert.equal(centers[2] - centers[1] - joistWidthForTest, 16.5);
+  assert.equal(324.5 - (centers[2] + joistWidthForTest / 2), 25);
 });
 
 test("office joists preserve aligned starts and measured gaps", () => {
