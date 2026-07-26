@@ -389,6 +389,16 @@ export const pocPlan = {
       ...proposed,
     }),
     receptacle({
+      id: "stair-landing-bathroom-wall-receptacle",
+      label: "Stair Landing receptacle",
+      wallId: "bathroom-south-wall",
+      offset: 18,
+      wallSide: "left",
+      receptacleType: "standard",
+      note: "Conceptual general-purpose duplex on the Landing side of bathroom-south-wall, approximately 18 inches from main-west-divider and separated from the bathroom vanity GFCI device on the opposite face. Provide required basement GFCI and AFCI protection, which may be upstream, and verify the final box position, door and trim clearances, mounting height, circuit, permits, and all code requirements on site.",
+      ...proposed,
+    }),
+    receptacle({
       id: "office-north-wall-east-of-window-receptacle",
       label: "Office north wall receptacle east of window",
       wallId: "north-exterior-wall",
