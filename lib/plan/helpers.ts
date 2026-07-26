@@ -1,4 +1,5 @@
 import type {
+  BathroomFixture,
   CabinetRun,
   Circuit,
   Dimension,
@@ -55,6 +56,9 @@ export const wallCabinet = (
 export const cabinetRun = (
   value: Omit<CabinetRun, "kind">,
 ): CabinetRun => ({ kind: "cabinet-run", ...value });
+export const bathroomFixture = (
+  value: Omit<BathroomFixture, "kind">,
+): BathroomFixture => ({ kind: "bathroom-fixture", ...value });
 export const waterValve = (
   value: Omit<WaterValve, "kind">,
 ): WaterValve => ({ kind: "water-valve", ...value });

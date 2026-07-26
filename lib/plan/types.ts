@@ -118,6 +118,17 @@ export interface CabinetRun extends PlanItemBase {
   upperHeight: number;
 }
 
+export interface BathroomFixture extends PlanItemBase {
+  kind: "bathroom-fixture";
+  fixtureType: "tub-shower" | "toilet" | "vanity";
+  center: Point;
+  width: number;
+  depth: number;
+  rotation: number;
+  drainId: string;
+  sinkCenter?: Point;
+}
+
 export interface WaterValve extends PlanItemBase {
   kind: "water-valve";
   wallId: string;
@@ -354,6 +365,7 @@ export type SelectablePlanItem =
   | Receptacle
   | WallCabinet
   | CabinetRun
+  | BathroomFixture
   | WaterValve
   | PlumbingDrain
   | PlumbingEquipment
@@ -392,6 +404,7 @@ export interface FloorPlan {
   receptacles: readonly Receptacle[];
   wallCabinets: readonly WallCabinet[];
   cabinetRuns: readonly CabinetRun[];
+  bathroomFixtures: readonly BathroomFixture[];
   waterValves: readonly WaterValve[];
   plumbingDrains: readonly PlumbingDrain[];
   plumbingEquipment: readonly PlumbingEquipment[];

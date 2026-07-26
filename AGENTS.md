@@ -40,7 +40,7 @@ The current artifact is a proof of concept. Implement only requested plan object
 ## Visual rules
 
 - Base plan: warm-white paper with charcoal architectural geometry.
-- All optional layer and sublayer toggles are off by default. Users opt in to each overlay.
+- All optional parent layer toggles are off by default. Every subcategory toggle is checked by default, so enabling a parent layer immediately reveals all of its sublayers; users may then opt out of individual subcategories.
 - Lighting: amber fixtures and dashed conceptual wiring.
 - Proposed work: a dashed amber overlay or another pattern that remains legible without color.
 - Print: high contrast, active layers only, controls hidden, warning and legend visible.

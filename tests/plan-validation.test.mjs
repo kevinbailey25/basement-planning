@@ -214,6 +214,40 @@ test("reports a cabinet run outside its parent wall", () => {
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-cabinet-run"));
 });
 
+test("stores the three proposed Bathroom fixture footprints against mapped drains", () => {
+  const tub = pocPlan.bathroomFixtures.find((item) => item.id === "bathroom-north-alcove-tub-shower");
+  const toilet = pocPlan.bathroomFixtures.find((item) => item.id === "bathroom-toilet");
+  const vanity = pocPlan.bathroomFixtures.find((item) => item.id === "bathroom-west-wall-vanity");
+  assert.ok(tub && toilet && vanity);
+  assert.deepEqual(
+    [tub.fixtureType, tub.center, tub.width, tub.depth, tub.drainId],
+    ["tub-shower", [20, 297], 30, 60, "bathroom-tub-shower-drain-rough-in"],
+  );
+  assert.deepEqual(
+    [toilet.fixtureType, toilet.center, toilet.width, toilet.depth, toilet.drainId],
+    ["toilet", [53, 311], 20, 28, "bathroom-toilet-drain-rough-in"],
+  );
+  assert.deepEqual(
+    [vanity.fixtureType, vanity.center, vanity.width, vanity.depth, vanity.drainId, vanity.sinkCenter],
+    ["vanity", [101.5, 316], 50, 22, "bathroom-sink-drain-rough-in", [94.5, 315]],
+  );
+  assert.equal(pocPlan.bathroomFixtures.every((item) => item.status === "proposed" && item.confidence === "approximate"), true);
+});
+
+test("reports malformed Bathroom fixture footprints and missing drain references", () => {
+  const malformed = {
+    ...pocPlan,
+    bathroomFixtures: [{
+      ...pocPlan.bathroomFixtures[0],
+      width: 0,
+      drainId: "missing-drain",
+    }],
+  };
+  const issues = validatePlan(malformed);
+  assert.ok(issues.some((issue) => issue.code === "invalid-bathroom-fixture"));
+  assert.ok(issues.some((issue) => issue.code === "missing-plumbing-drain"));
+});
+
 test("stores the optional combined-trunk soffit with unknown bottom elevation", () => {
   const item = pocPlan.soffits.find((soffit) => soffit.id === "main-supply-return-soffit");
   assert.ok(item);

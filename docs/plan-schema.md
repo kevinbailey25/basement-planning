@@ -292,6 +292,28 @@ cabinetRun({
 
 `offset` and `width` locate both cabinet banks along the stored wall direction. The countertop has its own offset and width because it may span end fillers or extend beyond the cabinet boxes. Depths project from the wall's interior face. Elevations remain nominal planning data and must be verified on site.
 
+## Bathroom fixtures
+
+Use `bathroomFixture` for a proposed tub/shower, toilet, or composite vanity footprint. These objects describe what occupies the finished room and appear under **Built-ins & fixtures → Bathroom fixtures**. Their measured or inferred floor penetrations remain independent objects under **Plumbing → Drains**:
+
+```ts
+bathroomFixture({
+  id: "bathroom-west-wall-vanity",
+  label: "Bathroom west-wall vanity",
+  fixtureType: "vanity",
+  center: [101.5, 316],
+  width: 50,
+  depth: 22,
+  rotation: 0,
+  drainId: "bathroom-sink-drain-rough-in",
+  sinkCenter: [94.5, 315],
+  status: "proposed",
+  confidence: "approximate",
+})
+```
+
+`center`, `width`, `depth`, and `rotation` define only the nominal top-down footprint. A `vanity` is one composite object containing the base cabinet, countertop, and sink symbol; do not duplicate it as a cabinet run. Its required `sinkCenter` preserves the basin location when the surrounding countertop footprint changes. `drainId` preserves the evidence behind the placement without claiming that the selected fixture will connect without adjustment. Do not use these rough footprints as clearance, waterproofing, accessibility, product-selection, or code-compliance documentation.
+
 ## Electrical and low-voltage cabinets
 
 Recessed breaker panels and networking cabinets are wall-mounted cabinets. `offset` is the distance from the junction with `referenceWallId` to the cabinet's nearer edge, so field measurements remain readable even when the parent wall's stored direction is reversed:
@@ -648,4 +670,4 @@ Openings and wall junctions are counted but their extra king studs, trimmers, he
 
 ## Validation
 
-`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, soffit footprints and known elevations, water-valve enclosure bounds and reference junctions, plumbing equipment footprints, usable gas-line geometry and placement measurements, missing circuit endpoints, zero-length walls, invalid stairs, and invalid framing assumptions. Run `npm test` before handing off a change.
+`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, soffit footprints and known elevations, bathroom-fixture footprints and drain references, water-valve enclosure bounds and reference junctions, plumbing equipment footprints, usable gas-line geometry and placement measurements, missing circuit endpoints, zero-length walls, invalid stairs, and invalid framing assumptions. Run `npm test` before handing off a change.

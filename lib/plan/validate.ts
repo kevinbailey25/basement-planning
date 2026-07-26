@@ -2,7 +2,7 @@ import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-receptacle" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-receptacle" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-bathroom-fixture" | "missing-plumbing-drain" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -20,6 +20,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.receptacles,
     ...plan.wallCabinets,
     ...plan.cabinetRuns,
+    ...plan.bathroomFixtures,
     ...plan.waterValves,
     ...plan.plumbingDrains,
     ...plan.plumbingEquipment,
@@ -315,6 +316,24 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
       || item.upperHeight <= 0
     ) {
       issues.push({ code: "invalid-cabinet-run", itemId: item.id, message: `Cabinet run “${item.id}” requires positive dimensions, usable elevations, and cabinet and countertop spans within its parent wall.` });
+    }
+  }
+  const plumbingDrains = new Map(plan.plumbingDrains.map((item) => [item.id, item]));
+  for (const item of plan.bathroomFixtures) {
+    if (!plumbingDrains.has(item.drainId)) {
+      issues.push({ code: "missing-plumbing-drain", itemId: item.id, message: `Bathroom fixture “${item.id}” references missing drain “${item.drainId}”.` });
+    }
+    if (
+      !Number.isFinite(item.center[0])
+      || !Number.isFinite(item.center[1])
+      || item.width <= 0
+      || item.depth <= 0
+      || !Number.isFinite(item.rotation)
+      || (item.sinkCenter != null && (!Number.isFinite(item.sinkCenter[0]) || !Number.isFinite(item.sinkCenter[1])))
+      || (item.fixtureType === "vanity" && item.sinkCenter == null)
+      || (item.fixtureType !== "vanity" && item.sinkCenter != null)
+    ) {
+      issues.push({ code: "invalid-bathroom-fixture", itemId: item.id, message: `Bathroom fixture “${item.id}” requires a finite center and rotation with positive footprint dimensions; vanities also require a finite sink center.` });
     }
   }
   for (const item of plan.waterValves) {
