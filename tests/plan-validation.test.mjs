@@ -36,7 +36,7 @@ test("stores the new Utility door and relocated Storage door", () => {
   assert.ok(utilityDoor && storageDoor);
   assert.deepEqual(
     [utilityDoor.wallId, utilityDoor.offset, utilityDoor.width, utilityDoor.hinge, utilityDoor.swing, utilityDoor.height],
-    ["utility-room-east-wall", 43, 36, "start", "inward", undefined],
+    ["utility-room-east-wall", 6, 36, "start", "inward", undefined],
   );
   assert.deepEqual([storageDoor.wallId, storageDoor.offset, storageDoor.width], ["storage-north-wall", 120, 32]);
 });
@@ -314,7 +314,7 @@ test("stores the Utility Room surface lighting and general-purpose receptacles",
     utilityLights.map((item) => [item.at, item.fixture]),
     [[[445, 220], "surface"], [[510, 220], "surface"]],
   );
-  assert.deepEqual([switchItem.wallId, switchItem.offset], ["utility-room-east-wall", 85]);
+  assert.deepEqual([switchItem.wallId, switchItem.offset], ["utility-room-east-wall", 48]);
   assert.deepEqual(group.connections, [
     { fromId: "utility-room-entry-light-switch", toId: "utility-room-light-north" },
     { fromId: "utility-room-light-north", toId: "utility-room-light-south" },
@@ -322,8 +322,8 @@ test("stores the Utility Room surface lighting and general-purpose receptacles",
   assert.deepEqual(
     utilityReceptacles.map((item) => [item.wallId, item.offset, item.receptacleType]),
     [
-      ["utility-room-east-wall", 24, "standard"],
-      ["utility-room-east-wall", 110, "standard"],
+      ["utility-room-east-wall", 66, "standard"],
+      ["utility-room-east-wall", 146, "standard"],
     ],
   );
 });
