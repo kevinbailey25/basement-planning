@@ -70,9 +70,8 @@ test("stores the Bathroom recessed-light group and entry switch", () => {
   assert.deepEqual(
     bathroomLights.map((item) => [item.at, item.fixture]),
     [
-      [[30, 297], "recessed"],
-      [[73.5, 297], "recessed"],
-      [[114.5, 309], "recessed"],
+      [[53, 297], "recessed"],
+      [[94.5, 309], "recessed"],
     ],
   );
   assert.deepEqual(
@@ -82,7 +81,6 @@ test("stores the Bathroom recessed-light group and entry switch", () => {
   assert.deepEqual(group.connections, [
     { fromId: "bathroom-entry-light-switch", toId: "bathroom-vanity-south-recessed-light" },
     { fromId: "bathroom-vanity-south-recessed-light", toId: "bathroom-central-recessed-light" },
-    { fromId: "bathroom-central-recessed-light", toId: "bathroom-tub-shower-recessed-light" },
   ]);
   assert.match(group.note, /do not represent cable routing/);
 });
