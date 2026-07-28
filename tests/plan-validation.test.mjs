@@ -120,7 +120,7 @@ test("stores the Bathroom exhaust fan endpoint and timer control separately from
   const group = pocPlan.circuits.find((item) => item.id === "bathroom-exhaust-fan-control-group");
   const duct = pocPlan.hvacDucts.find((item) => item.id === fan?.hvacDuctId);
   assert.ok(fan && timer && group && duct?.orientation === "horizontal");
-  assert.deepEqual([fan.at, fan.mounting, fan.hvacDuctId], [[10.75, 312], "ceiling", "bathroom-north-wall-exhaust-fan-04"]);
+  assert.deepEqual([fan.at, fan.mounting, fan.hvacDuctId], [[53, 311], "ceiling", "bathroom-north-wall-exhaust-fan-04"]);
   assert.deepEqual(fan.at, duct.from);
   assert.deepEqual(
     [timer.wallId, timer.offset, timer.wallSide, timer.controlType, timer.gangIndex, timer.gangCount],
@@ -443,6 +443,15 @@ test("stores the optional combined-trunk soffit with unknown bottom elevation", 
   assert.deepEqual(item.polygon, [[0, 186], [375, 186], [375, 267], [0, 267]]);
   assert.equal(item.bottomAboveFloor, undefined);
   assert.equal(item.status, "proposed");
+});
+
+test("stores the full-room Bathroom lowered ceiling with unknown bottom elevation", () => {
+  const item = pocPlan.soffits.find((soffit) => soffit.id === "bathroom-lowered-ceiling");
+  assert.ok(item);
+  assert.deepEqual(item.polygon, [[0, 267], [129, 267], [129, 327], [0, 327]]);
+  assert.equal(item.bottomAboveFloor, undefined);
+  assert.equal(item.status, "proposed");
+  assert.match(item.note, /bathroom-north-wall-exhaust-fan-04/);
 });
 
 test("reports a soffit without a usable footprint", () => {
@@ -855,17 +864,17 @@ test("stores the joist-bay HVAC exhaust route", () => {
   assert.equal(exhaust.confidence, "approximate");
 });
 
-test("stores the proposed Bathroom exhaust route beside joist 01", () => {
+test("stores the proposed Bathroom exhaust route beneath the joists", () => {
   const exhaust = pocPlan.hvacDucts.find((item) => item.id === "bathroom-north-wall-exhaust-fan-04");
   assert.ok(exhaust && exhaust.orientation === "horizontal" && exhaust.shape === "round");
   assert.deepEqual(
     [exhaust.from, exhaust.to, exhaust.diameter, exhaust.bottomAboveFloor, exhaust.airflowRole],
-    [[10.75, 312], [-8, 312], 4, 93, "exhaust"],
+    [[53, 311], [-8, 311], 4, 86, "exhaust"],
   );
-  assert.equal(13.25 - (exhaust.from[0] + exhaust.diameter / 2), 0.5);
   assert.equal(-4 - exhaust.to[0], 4);
+  assert.match(exhaust.note, /centered above the toilet/);
+  assert.match(exhaust.note, /nominal 1-inch planning gap below/);
   assert.match(exhaust.note, /outdoor discharge explicit/);
-  assert.match(exhaust.note, /avoids all three short north-bay joists/);
   assert.equal(exhaust.status, "proposed");
   assert.equal(exhaust.confidence, "approximate");
 });
