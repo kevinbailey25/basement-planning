@@ -514,10 +514,10 @@ Returns that intentionally use framed wall cavities require a separate wall-cavi
 
 ```ts
 hvacWallCavityReturn({
-  id: "main-area-two-bay-low-wall-return",
-  label: "Main area two-bay low-wall return",
-  sourceDuctId: "main-return-ceiling-trunk",
-  wallId: "main-west-divider",
+  id: "example-two-bay-low-wall-return",
+  label: "Example two-bay low-wall return",
+  sourceDuctId: "example-return-ceiling-trunk",
+  wallId: "example-divider-wall",
   cavitySpans: [[48, 64], [64, 80]],
   preservedStudOffsets: [64],
   connectionRoute: [[84.5, 250], [82.5, 250], [82.5, 258]],
@@ -540,10 +540,10 @@ Use a ducted wall return when the drop must remain isolated from the surrounding
 
 ```ts
 hvacWallDuctedReturn({
-  id: "main-area-east-low-wall-return-hvac-review",
-  label: "Main area east low-wall return — HVAC review",
-  sourceDuctId: "main-return-ceiling-trunk",
-  wallId: "furnace-room-north-wall",
+  id: "example-sealed-low-wall-return",
+  label: "Example sealed low-wall return",
+  sourceDuctId: "example-return-ceiling-trunk",
+  wallId: "example-mechanical-room-wall",
   wallSpan: [30, 45],
   connectionRoute: [[362, 238], [362, 228.5], [372.5, 228.5]],
   upperBootPolygon: [[372.5, 222], [377.5, 222], [377.5, 237], [372.5, 237]],

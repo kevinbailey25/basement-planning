@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { hvacWallCavityReturn, hvacWallDuctedReturn } from "../lib/plan/helpers.ts";
 import { pocPlan } from "../lib/plan/poc-plan.ts";
 import { validatePlan } from "../lib/plan/validate.ts";
 
@@ -168,11 +169,15 @@ test("stores the grouped Main open area lights in aligned joist-bay columns", ()
   assert.deepEqual(
     mainAreaLights.map((item) => item.at),
     [
-      [43.75, 66], [126.25, 66], [203.625, 66], [267, 66], [343, 66], [408.375, 66],
-      [43.75, 146], [126.25, 146], [203.625, 146], [267, 146], [343, 146], [408.375, 146],
+      [43.75, 66], [126.25, 66], [203.625, 66], [282.75, 66], [355, 66], [440.25, 66],
+      [43.75, 146], [126.25, 146], [203.625, 146], [282.75, 146], [355, 146], [440.25, 146],
       [43.75, 228.75], [126.25, 228.75], [203.625, 228.75], [267, 228.75], [343, 228.75],
     ],
   );
+  const shiftedE5 = mainAreaLights.find((item) => item.id === "main-area-east-row-light-05");
+  const shiftedM5 = mainAreaLights.find((item) => item.id === "main-area-middle-row-light-05");
+  assert.match(shiftedE5.note, /8-inch clear strip/);
+  assert.match(shiftedM5.note, /joists-29-30-short-supply-06/);
   assert.equal(mainAreaLights.every((item) => connectedIds.has(item.id)), true);
   assert.equal(mainAreaLights.filter((item) => item.id.includes("soffit-row")).every((item) => /soffit bottom/.test(item.note)), true);
 });
@@ -729,25 +734,11 @@ test("stores the four newly surveyed return runs", () => {
   assert.match(office.note, /approximately 90 inches west/);
 });
 
-test("stores the proposed two-bay low-wall return without disturbing the adjacent panned return", () => {
+test("omits the rejected proposed two-bay low-wall return without disturbing the adjacent panned return", () => {
   const item = pocPlan.hvacWallCavityReturns.find((returnItem) => returnItem.id === "main-area-two-bay-low-wall-return");
   const adjacent = pocPlan.hvacJoistReturns.find((returnItem) => returnItem.id === "north-trunk-bathroom-office-panned-return");
-  assert.ok(item && adjacent);
-  assert.deepEqual(
-    [item.sourceDuctId, item.wallId, item.cavitySpans, item.preservedStudOffsets],
-    ["main-return-ceiling-trunk", "main-west-divider", [[48, 64], [64, 80]], [64]],
-  );
-  assert.deepEqual(item.connectionRoute, [[84.5, 250], [82.5, 250], [82.5, 258]]);
-  assert.deepEqual(item.upperBootPolygon, [[48, 258], [84.5, 258], [84.5, 264.5], [48, 264.5]]);
-  assert.deepEqual(
-    [item.grilleSide, item.grilleCenterOffset, item.grilleWidth, item.grilleHeight, item.grilleBottomAboveFloor],
-    ["left", 64, 30, 8, 2],
-  );
-  assert.equal(item.status, "proposed");
-  assert.equal(item.confidence, "approximate");
-  assert.ok(Math.max(...item.cavitySpans.flat()) < Math.min(...adjacent.polygon.map(([x]) => x)));
-  assert.match(item.note, /center stud at offset 64/);
-  assert.match(item.note, /Manual D/);
+  assert.equal(item, undefined);
+  assert.ok(adjacent);
 });
 
 test("stores the conditional Office ceiling grille on the existing panned return", () => {
@@ -782,7 +773,25 @@ test("reports malformed or unanchored return grilles", () => {
 });
 
 test("reports malformed or unanchored wall-cavity returns", () => {
-  const item = pocPlan.hvacWallCavityReturns[0];
+  const item = hvacWallCavityReturn({
+    id: "malformed-wall-cavity-return",
+    label: "Malformed wall-cavity return",
+    sourceDuctId: "main-return-ceiling-trunk",
+    wallId: "main-west-divider",
+    cavitySpans: [[48, 64]],
+    preservedStudOffsets: [],
+    connectionRoute: [[84.5, 250], [82.5, 258]],
+    upperBootPolygon: [[48, 258], [84.5, 258], [84.5, 264.5], [48, 264.5]],
+    chaseBottomAboveFloor: 0,
+    chaseTopAboveFloor: 96,
+    grilleSide: "left",
+    grilleCenterOffset: 56,
+    grilleWidth: 14,
+    grilleHeight: 8,
+    grilleBottomAboveFloor: 2,
+    status: "proposed",
+    confidence: "approximate",
+  });
   const malformed = {
     ...pocPlan,
     hvacWallCavityReturns: [{
@@ -797,35 +806,30 @@ test("reports malformed or unanchored wall-cavity returns", () => {
   assert.ok(issues.some((issue) => issue.code === "invalid-hvac-wall-cavity-return"));
 });
 
-test("stores the conditional sealed low-wall return near joists 29 and 30", () => {
+test("omits the rejected conditional sealed low-wall return near joists 29 and 30", () => {
   const item = pocPlan.hvacWallDuctedReturns.find((returnItem) => returnItem.id === "main-area-east-low-wall-return-hvac-review");
-  const joist29 = pocPlan.joists.find((joist) => joist.id === "main-ceiling-joist-29");
-  const joist30 = pocPlan.joists.find((joist) => joist.id === "main-ceiling-joist-30");
-  assert.ok(item && joist29 && joist30);
-  assert.deepEqual(
-    [item.sourceDuctId, item.wallId, item.wallSpan],
-    ["main-return-ceiling-trunk", "furnace-room-north-wall", [30, 45]],
-  );
-  assert.deepEqual(item.connectionRoute, [[362, 238], [362, 228.5], [372.5, 228.5]]);
-  assert.deepEqual(item.upperBootPolygon, [[372.5, 222], [377.5, 222], [377.5, 237], [372.5, 237]]);
-  assert.deepEqual(
-    [item.grilleSide, item.grilleCenterOffset, item.grilleWidth, item.grilleHeight, item.grilleBottomAboveFloor],
-    ["left", 37.5, 14, 8, 2],
-  );
-  assert.equal(item.connectionRoute[0][1], 238);
-  assert.equal(item.connectionRoute[0][1] - item.connectionRoute[1][1], 9.5);
-  assert.equal(item.status, "proposed");
-  assert.equal(item.confidence, "approximate");
-  assert.match(item.note, /dedicated sealed sheet-metal drop/);
-  assert.match(item.note, /east face/);
-  assert.match(item.note, /between the return and supply trunks/);
-  assert.match(item.note, /rather than directly beneath the return trunk/);
-  assert.match(item.note, /atmospheric-draft water-heater/);
-  assert.match(item.note, /HVAC approval/);
+  assert.equal(item, undefined);
 });
 
 test("reports malformed or unanchored sealed wall returns", () => {
-  const item = pocPlan.hvacWallDuctedReturns[0];
+  const item = hvacWallDuctedReturn({
+    id: "malformed-wall-ducted-return",
+    label: "Malformed wall-ducted return",
+    sourceDuctId: "main-return-ceiling-trunk",
+    wallId: "furnace-room-north-wall",
+    wallSpan: [30, 45],
+    connectionRoute: [[362, 238], [372.5, 228.5]],
+    upperBootPolygon: [[372.5, 222], [377.5, 222], [377.5, 237], [372.5, 237]],
+    chaseBottomAboveFloor: 0,
+    chaseTopAboveFloor: 96,
+    grilleSide: "left",
+    grilleCenterOffset: 37.5,
+    grilleWidth: 14,
+    grilleHeight: 8,
+    grilleBottomAboveFloor: 2,
+    status: "proposed",
+    confidence: "approximate",
+  });
   const malformed = {
     ...pocPlan,
     hvacWallDuctedReturns: [{
@@ -934,12 +938,13 @@ test("stores the proposed supply from joists 1–2 to the north-wall Office wind
   assert.ok(branch && branch.orientation === "horizontal" && branch.shape === "round");
   assert.deepEqual(
     [branch.from, branch.to, branch.diameter, branch.bottomAboveFloor, branch.airflowRole],
-    [[20.25, 209.5], [20.25, 435.5], 6, 93, "supply"],
+    [[20.25, 209.5], [20.25, 435.5], 8, 93, "supply"],
   );
   assert.equal(branch.status, "proposed");
   assert.equal(branch.confidence, "approximate");
   assert.match(branch.note, /gas-service-entry-office-closet-to-main-room/);
   assert.match(branch.note, /approximately 8 inches minimum clear/);
+  assert.match(branch.note, /0\.75 inch nominal clearance/);
   assert.match(branch.note, /midpoint of north-wall-office-window/);
 });
 
@@ -986,17 +991,23 @@ test("stores the proposed supply from joists 18–19 to the east-wall north wind
   assert.match(branch.note, /1\.25 inches south of the midpoint of east-wall-window-north/);
 });
 
-test("stores the proposed supply from joists 34–35 to the east-wall south window", () => {
+test("stores the relocated proposed supply from joists 32–33 to the east-wall south window", () => {
   const branch = pocPlan.hvacDucts.find((item) => item.id === "joists-34-35-east-wall-window-south-supply-06");
+  const eastLight = pocPlan.lights.find((item) => item.id === "main-area-east-row-light-06");
+  const middleLight = pocPlan.lights.find((item) => item.id === "main-area-middle-row-light-06");
   assert.ok(branch && branch.orientation === "horizontal" && branch.shape === "round");
   assert.deepEqual(
     [branch.from, branch.to, branch.diameter, branch.bottomAboveFloor, branch.airflowRole],
-    [[440.25, 199.5], [440.25, 38.125], 6, 93, "supply"],
+    [[408.375, 207.5], [408.375, 38.125], 6, 93, "supply"],
   );
   assert.equal(branch.status, "proposed");
   assert.equal(branch.confidence, "approximate");
-  assert.match(branch.note, /supply-elbow-to-joist-37-under-joist-run-08/);
+  assert.match(branch.note, /main-supply-ceiling-trunk-24/);
+  assert.match(branch.note, /joist-32-short-side-takeoff-supply-06/);
   assert.match(branch.note, /accessible balancing damper/);
+  assert.deepEqual([eastLight.at, middleLight.at], [[440.25, 66], [440.25, 146]]);
+  assert.match(eastLight.note, /34 and main-ceiling-joist-35/);
+  assert.match(middleLight.note, /34 and main-ceiling-joist-35/);
 });
 
 test("stores the three westbound supply branches from the field survey", () => {
