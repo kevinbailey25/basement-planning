@@ -22,6 +22,14 @@ function getWallPoint(wallId: string, offset: number): Point {
   return wall ? pointAlong(wall.from, wall.to, offset) : [0, 0];
 }
 
+function formatNominalArea(polygon: readonly Point[]) {
+  const squareInches = Math.abs(polygon.reduce((sum, point, index) => {
+    const next = polygon[(index + 1) % polygon.length];
+    return sum + point[0] * next[1] - next[0] * point[1];
+  }, 0)) / 2;
+  return `≈ ${Math.round(squareInches / 144)} sq ft`;
+}
+
 function wallSegments(wall: Wall) {
   const openings = [...pocPlan.doors, ...pocPlan.slidingDoors, ...pocPlan.windows]
     .filter((item) => item.wallId === wall.id)
@@ -1295,7 +1303,7 @@ export function BasementPlanner() {
             {pocPlan.spaces.map((item) => <g key={item.id} data-selectable onClick={(event) => { event.stopPropagation(); selectItem(item.id); }} className={selectedId === item.id ? "selected" : ""}><polygon className="space-fill" points={item.polygon.map((point) => point.join(",")).join(" ")} /></g>)}
             {toggles.soffits && <g className="soffit-layer">{pocPlan.soffits.map((item) => <SoffitMark key={item.id} item={item} selected={selectedId === item.id} highlightAddition={toggles.construction && toggles.constructionAdditions && item.status === "proposed"} onSelect={() => selectItem(item.id)} />)}</g>}
             {toggles.joists && <g className="joist-layer">{pocPlan.joists.map((item) => <JoistMark key={item.id} item={item} selected={selectedId === item.id} onSelect={() => selectItem(item.id)} />)}</g>}
-            <g className="space-label-layer">{pocPlan.spaces.map((item) => <g key={item.id}><text className="space-label" x={item.labelAt[0]} y={item.labelAt[1] - 3}>{item.label}</text><text className="space-area" x={item.labelAt[0]} y={item.labelAt[1] + 7}>{item.confidence}</text></g>)}</g>
+            <g className="space-label-layer">{pocPlan.spaces.map((item) => <g key={item.id}><text className="space-label" x={item.labelAt[0]} y={item.labelAt[1] - 3}>{item.label}</text><text className="space-area" x={item.labelAt[0]} y={item.labelAt[1] + 7}>{formatNominalArea(item.polygon)}</text></g>)}</g>
             {pocPlan.walls.filter((item) => item.status !== "remove").map((item) => <g key={item.id} data-selectable className={selectedId === item.id ? "selected" : ""} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="wall-hit" x1={item.from[0]} y1={item.from[1]} x2={item.to[0]} y2={item.to[1]} />{wallSegments(item).map(([from, to]) => { const start = pointAlong(item.from, item.to, from); const end = pointAlong(item.from, item.to, to); return <line key={`${from}-${to}`} className="wall-line" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />; })}</g>)}
             {toggles.construction && toggles.constructionAdditions && <g className="construction-additions-layer">{additionWalls.map((item) => <g key={item.id} data-selectable className={selectedId === item.id ? "selected" : ""} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}>{wallSegments(item).map(([from, to]) => { const start = pointAlong(item.from, item.to, from); const end = pointAlong(item.from, item.to, to); return <line key={`${from}-${to}`} className="scope-wall addition" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />; })}</g>)}</g>}
             {toggles.construction && toggles.constructionDemolition && <g className="construction-demolition-layer">{pocPlan.walls.filter((item) => item.status === "remove").map((item) => <g key={item.id} data-selectable className={selectedId === item.id ? "selected" : ""} onClick={(event) => { event.stopPropagation(); selectItem(item.id); }}><line className="wall-hit" x1={item.from[0]} y1={item.from[1]} x2={item.to[0]} y2={item.to[1]} />{wallSegments(item).map(([from, to]) => { const start = pointAlong(item.from, item.to, from); const end = pointAlong(item.from, item.to, to); return <line key={`${from}-${to}`} className="scope-wall demolition" x1={start[0]} y1={start[1]} x2={end[0]} y2={end[1]} />; })}</g>)}</g>}
