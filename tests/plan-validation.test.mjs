@@ -813,6 +813,49 @@ test("reports malformed or unanchored wall-cavity returns", () => {
   assert.ok(issues.some((issue) => issue.code === "invalid-hvac-wall-cavity-return"));
 });
 
+test("stores two proposed Main west divider returns beside the stair doors", () => {
+  const returns = pocPlan.hvacWallCavityReturns.filter((item) => item.wallId === "main-west-divider");
+  assert.deepEqual(
+    returns.map((item) => [
+      item.id,
+      item.sourceDuctId,
+      item.cavitySpans,
+      item.preservedStudOffsets,
+      item.upperBootPolygon,
+      item.grilleCenterOffset,
+      item.grilleWidth,
+      item.grilleSide,
+      item.status,
+    ]),
+    [
+      [
+        "main-west-divider-south-of-stair-door-return",
+        "main-return-ceiling-trunk",
+        [[182, 198], [198, 214]],
+        [198],
+        [[182, 250], [214, 250], [214, 267], [182, 267]],
+        198,
+        30,
+        "left",
+        "proposed",
+      ],
+      [
+        "main-west-divider-north-of-under-stair-door-return",
+        "main-return-ceiling-trunk",
+        [[302, 318], [318, 334]],
+        [318],
+        [[302, 250], [334, 250], [334, 267], [302, 267]],
+        318,
+        30,
+        "left",
+        "proposed",
+      ],
+    ],
+  );
+  assert.match(returns[0].note, /6 inches south of main-stair-door/);
+  assert.match(returns[1].note, /6 inches north of under-stair-storage-door/);
+});
+
 test("omits the rejected conditional sealed low-wall return near joists 29 and 30", () => {
   const item = pocPlan.hvacWallDuctedReturns.find((returnItem) => returnItem.id === "main-area-east-low-wall-return-hvac-review");
   assert.equal(item, undefined);
