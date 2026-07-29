@@ -11,6 +11,8 @@
   --blue: #6d9ca5;
   --electrical: #c47a0a;
   --electrical-dark: #7b4b07;
+  --low-voltage: #357fa0;
+  --low-voltage-dark: #24566d;
   --hvac-supply: #a65a46;
   --hvac-supply-dark: #7d4032;
   --hvac-return: #557985;
@@ -126,7 +128,9 @@ button { cursor: pointer; }
 .legend-exhaust-fan { color: var(--electrical-dark); border: 1px solid var(--electrical); border-radius: 3px; background: rgb(196 122 10 / 10%); font: 800 7px/1 ui-monospace, monospace; }
 .legend-receptacle { color: var(--electrical-dark); border: 1px solid var(--electrical); border-radius: 50%; background: rgb(196 122 10 / 10%); font: 800 7px/1 ui-monospace, monospace; }
 .legend-ceiling-receptacle { color: var(--electrical-dark); border: 2px double var(--electrical); border-radius: 50%; background: rgb(196 122 10 / 10%); font: 800 7px/1 ui-monospace, monospace; }
-.legend-network-cabinet { color: var(--electrical-dark); border: 1px solid var(--electrical); background: rgb(196 122 10 / 13%); font: 800 5px/1 ui-monospace, monospace; }
+.legend-data-outlet { color: var(--low-voltage-dark); border: 1px solid var(--low-voltage); border-radius: 2px; background: rgb(53 127 160 / 12%); font: 800 8px/1 ui-monospace, monospace; }
+.legend-ceiling-data-outlet { color: var(--low-voltage-dark); border: 2px double var(--low-voltage); border-radius: 50%; background: rgb(53 127 160 / 12%); font: 800 8px/1 ui-monospace, monospace; }
+.legend-network-cabinet { color: var(--low-voltage-dark); border: 1px solid var(--low-voltage); background: rgb(53 127 160 / 14%); font: 800 5px/1 ui-monospace, monospace; }
 .legend-joist::before { content: ""; height: 19px; border-left: 3px solid #8fa49d; }
 
 .framing-summary { color: #aeb9b5; }
@@ -315,11 +319,11 @@ button { cursor: pointer; }
 .wall-cabinet-symbol { cursor: pointer; }
 .wall-cabinet-hit { fill: transparent; stroke: transparent; stroke-width: 8; }
 .wall-cabinet-footprint { fill: rgb(196 122 10 / 15%); stroke: var(--electrical); stroke-width: 1; }
-.wall-cabinet-symbol.networking .wall-cabinet-footprint { fill: rgb(196 122 10 / 12%); stroke: var(--electrical); }
+.wall-cabinet-symbol.networking .wall-cabinet-footprint { fill: rgb(53 127 160 / 14%); stroke: var(--low-voltage); }
 .wall-cabinet-face { fill: none; stroke: var(--electrical-dark); stroke-width: 1.5; }
-.wall-cabinet-symbol.networking .wall-cabinet-face { stroke: var(--electrical-dark); }
+.wall-cabinet-symbol.networking .wall-cabinet-face { stroke: var(--low-voltage-dark); }
 .wall-cabinet-label { fill: var(--electrical-dark); font: 800 4px/1 ui-monospace, monospace; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
-.wall-cabinet-symbol.networking .wall-cabinet-label { fill: var(--electrical-dark); font-size: 3.2px; }
+.wall-cabinet-symbol.networking .wall-cabinet-label { fill: var(--low-voltage-dark); font-size: 3.2px; }
 .wall-cabinet-symbol.selected .wall-cabinet-footprint, .wall-cabinet-symbol.selected .wall-cabinet-face { stroke: #c66e12; stroke-width: 1.7; }
 .wall-cabinet-symbol.selected .wall-cabinet-label { fill: #a75b0a; }
 .lighting-group-symbol { cursor: pointer; }
@@ -360,6 +364,18 @@ button { cursor: pointer; }
 .ceiling-receptacle-slot { fill: none; stroke: var(--electrical); stroke-width: 1.1; }
 .ceiling-receptacle-symbol.proposed .ceiling-receptacle-ring { stroke-dasharray: 2 1.5; }
 .ceiling-receptacle-symbol.selected .ceiling-receptacle-ring, .ceiling-receptacle-symbol.selected .ceiling-receptacle-slot { stroke: #c54e18; stroke-width: 2; }
+.data-outlet-symbol { cursor: pointer; }
+.data-outlet-hit { fill: transparent; stroke: transparent; }
+.data-outlet-leader, .data-outlet-jack { fill: none; stroke: var(--low-voltage); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
+.data-outlet-face { fill: var(--paper); stroke: var(--low-voltage); stroke-width: 1.3; }
+.data-outlet-symbol.proposed .data-outlet-face { stroke-dasharray: 2 1.5; }
+.data-outlet-symbol.selected .data-outlet-leader, .data-outlet-symbol.selected .data-outlet-face, .data-outlet-symbol.selected .data-outlet-jack { stroke: #c54e18; stroke-width: 2; }
+.ceiling-data-outlet-symbol { cursor: pointer; }
+.ceiling-data-outlet-hit { fill: transparent; stroke: transparent; }
+.ceiling-data-outlet-ring { fill: var(--paper); stroke: var(--low-voltage); stroke-width: 1.4; }
+.ceiling-data-outlet-jack { fill: none; stroke: var(--low-voltage); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
+.ceiling-data-outlet-symbol.proposed .ceiling-data-outlet-ring { stroke-dasharray: 2 1.5; }
+.ceiling-data-outlet-symbol.selected .ceiling-data-outlet-ring, .ceiling-data-outlet-symbol.selected .ceiling-data-outlet-jack { stroke: #c54e18; stroke-width: 2; }
 .cabinet-run-symbol { cursor: pointer; }
 .cabinet-run-hit { fill: transparent; stroke: transparent; stroke-width: 10; }
 .cabinet-countertop-footprint { fill: rgb(118 98 135 / 9%); stroke: #766287; stroke-width: 1.2; stroke-dasharray: 5 2.5; }
@@ -466,7 +482,7 @@ button { cursor: pointer; }
   .wall-line { stroke: #000; }
   .joist-board { stroke: #777; opacity: .7; }
   .joist-symbol.selected .joist-board { stroke: #111; }
-  .window-symbol, .door-symbol, .sliding-door-symbol, .soffit-outline, .cabinet-countertop-footprint, .cabinet-base-footprint, .cabinet-upper-footprint, .bathroom-fixture-footprint, .bathroom-fixture-detail, .bathroom-fixture-drain, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .plumbing-drain-footprint, .plumbing-drain-cap, .plumbing-drain-leader, .plumbing-equipment-footprint, .plumbing-equipment-tank, .wall-cabinet-footprint, .wall-cabinet-face, .lighting-control-line, .light-ring, .light-surface, .light-under-cabinet, .light-cross, .wall-light-leader, .wall-light-sconce, .wall-light-rays, .exhaust-fan-housing, .exhaust-fan-ring, .exhaust-fan-blades, .switch-ring, .receptacle-stem, .receptacle-ring, .receptacle-slot, .ceiling-receptacle-ring, .ceiling-receptacle-slot, .gas-line-casing, .gas-line-centerline, .gas-endpoint circle, .radon-pipe-outline, .radon-pipe-body, .radon-pipe-centerline, .radon-pipe-floor, .radon-pipe-rise, .radon-pipe-exit, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-return-grille-face, .hvac-return-grille-slat, .hvac-wall-return-route, .hvac-wall-return-boot, .hvac-wall-return-preserved-stud, .hvac-wall-return-grille-outline, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
+  .window-symbol, .door-symbol, .sliding-door-symbol, .soffit-outline, .cabinet-countertop-footprint, .cabinet-base-footprint, .cabinet-upper-footprint, .bathroom-fixture-footprint, .bathroom-fixture-detail, .bathroom-fixture-drain, .water-valve-symbol .valve-enclosure, .water-valve-symbol .valve-body, .water-valve-symbol .valve-handle, .water-valve-symbol .valve-leader, .plumbing-drain-footprint, .plumbing-drain-cap, .plumbing-drain-leader, .plumbing-equipment-footprint, .plumbing-equipment-tank, .wall-cabinet-footprint, .wall-cabinet-face, .lighting-control-line, .light-ring, .light-surface, .light-under-cabinet, .light-cross, .wall-light-leader, .wall-light-sconce, .wall-light-rays, .exhaust-fan-housing, .exhaust-fan-ring, .exhaust-fan-blades, .switch-ring, .receptacle-stem, .receptacle-ring, .receptacle-slot, .ceiling-receptacle-ring, .ceiling-receptacle-slot, .data-outlet-leader, .data-outlet-face, .data-outlet-jack, .ceiling-data-outlet-ring, .ceiling-data-outlet-jack, .gas-line-casing, .gas-line-centerline, .gas-endpoint circle, .radon-pipe-outline, .radon-pipe-body, .radon-pipe-centerline, .radon-pipe-floor, .radon-pipe-rise, .radon-pipe-exit, .hvac-equipment-footprint, .hvac-equipment-centerline, .hvac-duct-footprint, .hvac-duct-band-outline, .hvac-duct-band, .hvac-duct-centerline, .hvac-transition-footprint, .hvac-joist-return-footprint, .hvac-return-grille-face, .hvac-return-grille-slat, .hvac-wall-return-route, .hvac-wall-return-boot, .hvac-wall-return-preserved-stud, .hvac-wall-return-grille-outline, .hvac-refrigerant-casing, .hvac-refrigerant-centerline, .hvac-refrigerant-rise, .dimension-mark { stroke: #111; }
   .scope-wall.addition { stroke: #111; stroke-width: 2; }
   .scope-wall.demolition, .door-symbol.scope-demolition { stroke: #111; stroke-dasharray: 10 5; }
   .soffit-outline { fill: #f3f3f3; }

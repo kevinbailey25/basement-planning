@@ -300,6 +300,8 @@ receptacle({
 
 Use `standard` for an ordinary duplex receptacle and `gfci` only when the GFCI device and its reset controls are located at that receptacle. Store `heightAboveFloor` when a vertical relationship is intentional, such as a counter-height device; omit it when the mounting height remains undecided. Ceiling receptacles use `ceilingReceptacle(...)` with an absolute plan coordinate in `at` and a required `soffitId` identifying the soffit whose bottom face contains the device. The Receptacles sublayer records device locations, not branch-circuit grouping, cable routing, load calculations, or code approval.
 
+Data outlets belong to the Electrical → Low voltage sublayer and use a distinct cool-blue visual treatment from amber power devices. Use `dataOutlet(...)` with `wallId`, `offset`, and optional `wallSide`, following the same wall-relative convention as receptacles. Ceiling data outlets use `ceilingDataOutlet(...)` with an absolute plan coordinate in `at` and a required `soffitId`, parallel to ceiling receptacles. Omit `heightAboveFloor` when “typical receptacle height” is sufficient. Offsets may remain approximate placement markers; symbols near power receptacles may be spread along the wall for legibility rather than implying exact box-to-box spacing. Data outlets record endpoint locations only; when all runs share one networking cabinet, document that common destination in notes rather than drawing unmeasured cable routes.
+
 ## Cabinet runs
 
 Use `cabinetRun` for a conceptual wall-relative bank of lower cabinets, a countertop, and upper cabinets. It intentionally records the architectural footprint and useful elevations without implying individual modules, door styles, finishes, hardware, appliances, plumbing, or electrical work:

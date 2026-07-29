@@ -121,6 +121,20 @@ export interface CeilingReceptacle extends PlanItemBase {
   receptacleType: "standard";
 }
 
+export interface DataOutlet extends PlanItemBase {
+  kind: "data-outlet";
+  wallId: string;
+  offset: number;
+  wallSide?: WallSide;
+  heightAboveFloor?: number;
+}
+
+export interface CeilingDataOutlet extends PlanItemBase {
+  kind: "ceiling-data-outlet";
+  at: Point;
+  soffitId: string;
+}
+
 export interface WallCabinet extends PlanItemBase {
   kind: "wall-cabinet";
   cabinetType: "breaker-panel" | "networking";
@@ -395,6 +409,8 @@ export type SelectablePlanItem =
   | Switch
   | Receptacle
   | CeilingReceptacle
+  | DataOutlet
+  | CeilingDataOutlet
   | WallCabinet
   | CabinetRun
   | BathroomFixture
@@ -437,6 +453,8 @@ export interface FloorPlan {
   switches: readonly Switch[];
   receptacles: readonly Receptacle[];
   ceilingReceptacles: readonly CeilingReceptacle[];
+  dataOutlets: readonly DataOutlet[];
+  ceilingDataOutlets: readonly CeilingDataOutlet[];
   wallCabinets: readonly WallCabinet[];
   cabinetRuns: readonly CabinetRun[];
   bathroomFixtures: readonly BathroomFixture[];

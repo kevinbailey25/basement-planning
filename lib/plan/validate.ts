@@ -2,7 +2,7 @@ import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "missing-soffit" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-light" | "invalid-wall-light" | "invalid-switch" | "invalid-receptacle" | "invalid-ceiling-receptacle" | "invalid-exhaust-fan" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-bathroom-fixture" | "missing-plumbing-drain" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "missing-soffit" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-light" | "invalid-wall-light" | "invalid-switch" | "invalid-receptacle" | "invalid-ceiling-receptacle" | "invalid-data-outlet" | "invalid-ceiling-data-outlet" | "invalid-exhaust-fan" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-bathroom-fixture" | "missing-plumbing-drain" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -21,6 +21,8 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.switches,
     ...plan.receptacles,
     ...plan.ceilingReceptacles,
+    ...plan.dataOutlets,
+    ...plan.ceilingDataOutlets,
     ...plan.wallCabinets,
     ...plan.cabinetRuns,
     ...plan.bathroomFixtures,
@@ -358,6 +360,29 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
     }
     if (!Number.isFinite(item.at[0]) || !Number.isFinite(item.at[1])) {
       issues.push({ code: "invalid-ceiling-receptacle", itemId: item.id, message: `Ceiling receptacle “${item.id}” requires a finite plan position.` });
+    }
+  }
+  for (const item of plan.dataOutlets) {
+    const parent = walls.get(item.wallId);
+    if (!parent) {
+      issues.push({ code: "missing-wall", itemId: item.id, message: `Data outlet “${item.id}” references missing wall “${item.wallId}”.` });
+      continue;
+    }
+    if (
+      item.offset < 0
+      || item.offset > distance(parent.from, parent.to)
+      || (item.heightAboveFloor != null && item.heightAboveFloor < 0)
+    ) {
+      issues.push({ code: "invalid-data-outlet", itemId: item.id, message: `Data outlet “${item.id}” requires an offset within wall “${item.wallId}” and a non-negative mounting height when specified.` });
+    }
+  }
+  for (const item of plan.ceilingDataOutlets) {
+    if (!soffits.has(item.soffitId)) {
+      issues.push({ code: "missing-soffit", itemId: item.id, message: `Ceiling data outlet “${item.id}” references missing soffit “${item.soffitId}”.` });
+      continue;
+    }
+    if (!Number.isFinite(item.at[0]) || !Number.isFinite(item.at[1])) {
+      issues.push({ code: "invalid-ceiling-data-outlet", itemId: item.id, message: `Ceiling data outlet “${item.id}” requires a finite plan position.` });
     }
   }
   for (const item of plan.cabinetRuns) {

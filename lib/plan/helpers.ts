@@ -1,8 +1,10 @@
 import type {
   BathroomFixture,
   CabinetRun,
+  CeilingDataOutlet,
   CeilingReceptacle,
   Circuit,
+  DataOutlet,
   Dimension,
   Door,
   ExhaustFan,
@@ -60,6 +62,12 @@ export const receptacle = (
 export const ceilingReceptacle = (
   value: Omit<CeilingReceptacle, "kind">,
 ): CeilingReceptacle => ({ kind: "ceiling-receptacle", ...value });
+export const dataOutlet = (
+  value: Omit<DataOutlet, "kind">,
+): DataOutlet => ({ kind: "data-outlet", ...value });
+export const ceilingDataOutlet = (
+  value: Omit<CeilingDataOutlet, "kind">,
+): CeilingDataOutlet => ({ kind: "ceiling-data-outlet", ...value });
 export const wallCabinet = (
   value: Omit<WallCabinet, "kind">,
 ): WallCabinet => ({ kind: "wall-cabinet", ...value });
