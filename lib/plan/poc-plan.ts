@@ -1,6 +1,7 @@
 import {
   bathroomFixture,
   cabinetRun,
+  ceilingReceptacle,
   circuit,
   dimension,
   door,
@@ -26,6 +27,7 @@ import {
   verticalHvacDuct,
   wall,
   wallCabinet,
+  wallLight,
   wallSwitch,
   waterValve,
   windowOpening,
@@ -309,6 +311,19 @@ export const pocPlan = {
       ...proposed,
     }),
   ],
+  wallLights: [
+    wallLight({
+      id: "under-stair-storage-wall-light",
+      label: "Stair Storage wall light",
+      wallId: "main-west-divider",
+      offset: 321,
+      wallSide: "right",
+      heightAboveFloor: 72,
+      fixture: "sconce",
+      note: "Conceptual wall-mounted light on the Stair Storage side of main-west-divider, approximately 19 inches north of under-stair-storage-door and nominally 72 inches above the floor. Final fixture size, mounting height, door and trim clearance, stair geometry, framing, wiring, and all code requirements must be verified on site.",
+      ...proposed,
+    }),
+  ],
   exhaustFans: [
     exhaustFan({
       id: "bathroom-ceiling-exhaust-fan",
@@ -464,6 +479,17 @@ export const pocPlan = {
       wallId: "utility-room-east-wall",
       offset: 48,
       note: "Proposed manual switch on the Utility Room side of the wall, approximately 6 inches south of the entry door's latch-side jamb. Verify the final box position, door-trim clearance, and all equipment-room requirements on site.",
+      ...proposed,
+    }),
+    wallSwitch({
+      id: "under-stair-storage-light-switch",
+      label: "Stair Storage light switch",
+      wallId: "main-west-divider",
+      offset: 337,
+      wallSide: "right",
+      heightAboveFloor: 44,
+      controlType: "standard",
+      note: "Conceptual single-pole switch on the Stair Storage side of main-west-divider, approximately 3 inches north of under-stair-storage-door. Verify the finished door casing, framing, box placement, mounting height, stair clearance, wiring, and all code requirements on site.",
       ...proposed,
     }),
   ],
@@ -776,6 +802,17 @@ export const pocPlan = {
       wallSide: "left",
       receptacleType: "standard",
       note: "Conceptual general-purpose duplex centered on the Main open area face of the 36-inch Utility Room wall extension. Verify final placement, mounting height, framing, and nearby HVAC clearances on site.",
+      ...proposed,
+    }),
+  ],
+  ceilingReceptacles: [
+    ceilingReceptacle({
+      id: "main-soffit-stair-span-ceiling-receptacle",
+      label: "Main soffit stair-span ceiling receptacle",
+      at: [258, 207],
+      soffitId: "main-supply-return-soffit",
+      receptacleType: "standard",
+      note: "Conceptual ceiling-mounted duplex receptacle in the bottom of main-supply-return-soffit, approximately 60 inches from main-west-divider and centered along the clear wall span between main-stair-door and under-stair-storage-door. Verify the final device type and orientation, soffit framing, box support and accessibility, nearby duct and wiring clearances, intended load, required protection, and all code requirements on site.",
       ...proposed,
     }),
   ],
@@ -1635,6 +1672,16 @@ export const pocPlan = {
     }),
   ],
   circuits: [
+    circuit({
+      id: "under-stair-storage-lighting-group",
+      label: "Stair Storage wall-light group",
+      layer: "lighting",
+      connections: [
+        { fromId: "under-stair-storage-light-switch", toId: "under-stair-storage-wall-light" },
+      ],
+      note: "Dashed connection shows the control relationship only; it does not represent cable routing, branch-circuit design, or fixture wiring order.",
+      ...proposed,
+    }),
     circuit({
       id: "main-area-cabinet-lighting-group",
       label: "Main area cabinet underlighting group",

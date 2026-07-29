@@ -219,7 +219,7 @@ Pipe diameter is intentionally absent from this proof-of-concept schema. The ren
 
 ## Electrical control groups
 
-Ceiling fixtures use absolute plan coordinates. Use `fixture: "recessed"` for an in-ceiling fixture and `fixture: "surface"` for a surface-mounted fixture below the ceiling plane. Use `fixture: "under-cabinet"` with `at` and `to` endpoints for a conceptual linear run beneath upper cabinets; point fixtures must omit `to`. Lighting connections reference stable fixture and switch IDs. They show which lights form a control group and which switch operates that group; they never represent cable routing or fixture wiring order.
+Ceiling fixtures use absolute plan coordinates. Use `fixture: "recessed"` for an in-ceiling fixture and `fixture: "surface"` for a surface-mounted fixture below the ceiling plane. Use `fixture: "under-cabinet"` with `at` and `to` endpoints for a conceptual linear run beneath upper cabinets; point fixtures must omit `to`. Wall lights use `wallLight(...)` with `wallId`, `offset`, and optional `wallSide`, following the same wall-relative convention as switches and receptacles. Use `heightAboveFloor` when the mounting elevation is intentionally planned, and `fixture: "sconce"` for the simplified wall-light symbol. Lighting connections reference stable fixture and switch IDs. They show which lights form a control group and which switch operates that group; they never represent cable routing or fixture wiring order.
 
 ```ts
 light({
@@ -298,7 +298,7 @@ receptacle({
 })
 ```
 
-Use `standard` for an ordinary duplex receptacle and `gfci` only when the GFCI device and its reset controls are located at that receptacle. Store `heightAboveFloor` when a vertical relationship is intentional, such as a counter-height device; omit it when the mounting height remains undecided. The Receptacles sublayer records device locations, not branch-circuit grouping, cable routing, load calculations, or code approval.
+Use `standard` for an ordinary duplex receptacle and `gfci` only when the GFCI device and its reset controls are located at that receptacle. Store `heightAboveFloor` when a vertical relationship is intentional, such as a counter-height device; omit it when the mounting height remains undecided. Ceiling receptacles use `ceilingReceptacle(...)` with an absolute plan coordinate in `at` and a required `soffitId` identifying the soffit whose bottom face contains the device. The Receptacles sublayer records device locations, not branch-circuit grouping, cable routing, load calculations, or code approval.
 
 ## Cabinet runs
 

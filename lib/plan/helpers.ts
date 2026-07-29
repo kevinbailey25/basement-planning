@@ -1,6 +1,7 @@
 import type {
   BathroomFixture,
   CabinetRun,
+  CeilingReceptacle,
   Circuit,
   Dimension,
   Door,
@@ -28,6 +29,7 @@ import type {
   Switch,
   Wall,
   WallCabinet,
+  WallLight,
   WaterValve,
   VerticalHvacDuct,
   WindowOpening,
@@ -44,6 +46,7 @@ export const windowOpening = (
   value: Omit<WindowOpening, "kind">,
 ): WindowOpening => ({ kind: "window", ...value });
 export const light = (value: Omit<Light, "kind">): Light => ({ kind: "light", ...value });
+export const wallLight = (value: Omit<WallLight, "kind">): WallLight => ({ kind: "wall-light", ...value });
 export const exhaustFan = (
   value: Omit<ExhaustFan, "kind">,
 ): ExhaustFan => ({ kind: "exhaust-fan", ...value });
@@ -54,6 +57,9 @@ export const wallSwitch = (value: Omit<Switch, "kind">): Switch => ({
 export const receptacle = (
   value: Omit<Receptacle, "kind">,
 ): Receptacle => ({ kind: "receptacle", ...value });
+export const ceilingReceptacle = (
+  value: Omit<CeilingReceptacle, "kind">,
+): CeilingReceptacle => ({ kind: "ceiling-receptacle", ...value });
 export const wallCabinet = (
   value: Omit<WallCabinet, "kind">,
 ): WallCabinet => ({ kind: "wall-cabinet", ...value });

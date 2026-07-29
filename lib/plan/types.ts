@@ -76,6 +76,15 @@ export interface Light extends PlanItemBase {
   fixture: "recessed" | "surface" | "under-cabinet";
 }
 
+export interface WallLight extends PlanItemBase {
+  kind: "wall-light";
+  wallId: string;
+  offset: number;
+  wallSide?: WallSide;
+  heightAboveFloor?: number;
+  fixture: "sconce";
+}
+
 export interface ExhaustFan extends PlanItemBase {
   kind: "exhaust-fan";
   at: Point;
@@ -103,6 +112,13 @@ export interface Receptacle extends PlanItemBase {
   wallSide?: WallSide;
   heightAboveFloor?: number;
   receptacleType: "standard" | "gfci";
+}
+
+export interface CeilingReceptacle extends PlanItemBase {
+  kind: "ceiling-receptacle";
+  at: Point;
+  soffitId: string;
+  receptacleType: "standard";
 }
 
 export interface WallCabinet extends PlanItemBase {
@@ -374,9 +390,11 @@ export type SelectablePlanItem =
   | SlidingDoor
   | WindowOpening
   | Light
+  | WallLight
   | ExhaustFan
   | Switch
   | Receptacle
+  | CeilingReceptacle
   | WallCabinet
   | CabinetRun
   | BathroomFixture
@@ -414,9 +432,11 @@ export interface FloorPlan {
   slidingDoors: readonly SlidingDoor[];
   windows: readonly WindowOpening[];
   lights: readonly Light[];
+  wallLights: readonly WallLight[];
   exhaustFans: readonly ExhaustFan[];
   switches: readonly Switch[];
   receptacles: readonly Receptacle[];
+  ceilingReceptacles: readonly CeilingReceptacle[];
   wallCabinets: readonly WallCabinet[];
   cabinetRuns: readonly CabinetRun[];
   bathroomFixtures: readonly BathroomFixture[];
