@@ -187,6 +187,20 @@ export interface WaterValve extends PlanItemBase {
   dimensionDistance: number;
 }
 
+export type WaterLineEndpoint = "none" | "source" | "junction" | "valve" | "equipment" | "hose-bib" | "rise" | "continuation";
+
+export interface WaterLine extends PlanItemBase {
+  kind: "water-line";
+  supply: "cold" | "hot";
+  from: Point;
+  to: Point;
+  waypoints?: readonly Point[];
+  fromEndpoint?: WaterLineEndpoint;
+  toEndpoint?: WaterLineEndpoint;
+  fromLabel?: string;
+  toLabel?: string;
+}
+
 export interface PlumbingDrain extends PlanItemBase {
   kind: "plumbing-drain";
   fixture: "tub-shower" | "toilet" | "sink" | "unknown";
@@ -415,6 +429,7 @@ export type SelectablePlanItem =
   | CabinetRun
   | BathroomFixture
   | WaterValve
+  | WaterLine
   | PlumbingDrain
   | PlumbingEquipment
   | RadonPipe
@@ -459,6 +474,7 @@ export interface FloorPlan {
   cabinetRuns: readonly CabinetRun[];
   bathroomFixtures: readonly BathroomFixture[];
   waterValves: readonly WaterValve[];
+  waterLines: readonly WaterLine[];
   plumbingDrains: readonly PlumbingDrain[];
   plumbingEquipment: readonly PlumbingEquipment[];
   radonPipes: readonly RadonPipe[];

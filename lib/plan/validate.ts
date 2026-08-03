@@ -2,7 +2,7 @@ import { distance, wallCabinetSpan } from "./helpers.ts";
 import type { FloorPlan, SelectablePlanItem } from "./types.ts";
 
 export interface PlanIssue {
-  code: "duplicate-id" | "missing-wall" | "missing-soffit" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-light" | "invalid-wall-light" | "invalid-switch" | "invalid-receptacle" | "invalid-ceiling-receptacle" | "invalid-data-outlet" | "invalid-ceiling-data-outlet" | "invalid-exhaust-fan" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-bathroom-fixture" | "missing-plumbing-drain" | "invalid-water-valve" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
+  code: "duplicate-id" | "missing-wall" | "missing-soffit" | "opening-out-of-bounds" | "missing-circuit-endpoint" | "zero-length-wall" | "invalid-stairs" | "invalid-joist" | "invalid-framing-plan" | "invalid-soffit" | "invalid-light" | "invalid-wall-light" | "invalid-switch" | "invalid-receptacle" | "invalid-ceiling-receptacle" | "invalid-data-outlet" | "invalid-ceiling-data-outlet" | "invalid-exhaust-fan" | "invalid-wall-cabinet" | "invalid-cabinet-run" | "invalid-bathroom-fixture" | "missing-plumbing-drain" | "invalid-water-valve" | "invalid-water-line" | "invalid-plumbing-drain" | "invalid-plumbing-equipment" | "invalid-radon-pipe" | "invalid-gas-line" | "invalid-hvac-equipment" | "invalid-hvac-duct" | "invalid-hvac-joist-return" | "invalid-hvac-return-grille" | "invalid-hvac-wall-cavity-return" | "invalid-hvac-wall-ducted-return" | "missing-hvac-source" | "missing-joist" | "invalid-hvac-transition" | "invalid-hvac-refrigerant-line";
   itemId: string;
   message: string;
 }
@@ -27,6 +27,7 @@ export function allPlanItems(plan: FloorPlan): SelectablePlanItem[] {
     ...plan.cabinetRuns,
     ...plan.bathroomFixtures,
     ...plan.waterValves,
+    ...plan.waterLines,
     ...plan.plumbingDrains,
     ...plan.plumbingEquipment,
     ...plan.radonPipes,
@@ -453,6 +454,14 @@ export function validatePlan(plan: FloorPlan): PlanIssue[] {
       || !referenceTouchesStart
     ) {
       issues.push({ code: "invalid-water-valve", itemId: item.id, message: `Water valve “${item.id}” requires valid enclosure dimensions and a reference wall at the start of “${item.wallId}”.` });
+    }
+  }
+  for (const item of plan.waterLines) {
+    const points = [item.from, ...(item.waypoints ?? []), item.to];
+    const hasInvalidPoint = points.some((point) => !Number.isFinite(point[0]) || !Number.isFinite(point[1]));
+    const hasZeroSegment = points.slice(1).some((point, index) => distance(points[index], point) === 0);
+    if (hasInvalidPoint || hasZeroSegment) {
+      issues.push({ code: "invalid-water-line", itemId: item.id, message: `Water line “${item.id}” requires usable plan geometry without zero-length segments.` });
     }
   }
   for (const item of plan.plumbingDrains) {

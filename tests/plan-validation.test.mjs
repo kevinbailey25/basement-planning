@@ -519,6 +519,65 @@ test("reports water-valve enclosures outside their parent wall", () => {
   assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-water-valve"));
 });
 
+test("stores the surveyed existing cold-water routes", () => {
+  const sprinkler = pocPlan.waterLines.find((item) => item.id === "main-cold-to-sprinkler-valve");
+  const trunk = pocPlan.waterLines.find((item) => item.id === "main-cold-office-west-tee-to-east-tee");
+  const hoseBib = pocPlan.waterLines.find((item) => item.id === "office-west-tee-cold-to-west-hose-bib");
+  const refrigerator = pocPlan.waterLines.find((item) => item.id === "office-east-tee-cold-north-continuation");
+  const upstairsBathroom = pocPlan.waterLines.find((item) => item.id === "office-refrigerator-tee-cold-to-upstairs-bathroom-rise");
+  const kitchenSink = pocPlan.waterLines.find((item) => item.id === "supply-trunk-tee-cold-north-to-kitchen-sink-rise");
+  const southContinuation = pocPlan.waterLines.find((item) => item.id === "supply-trunk-tee-cold-south-continuation");
+  const mainFloorSink = pocPlan.waterLines.find((item) => item.id === "main-floor-bathroom-sink-cold-rise");
+  const mainFloorToilet = pocPlan.waterLines.find((item) => item.id === "main-floor-bathroom-toilet-cold-rise");
+  const mainFloorTub = pocPlan.waterLines.find((item) => item.id === "main-floor-bathroom-cold-to-tub-shower-rise");
+  const waterHeater = pocPlan.waterLines.find((item) => item.id === "utility-room-water-heater-cold-branch");
+  const southWallHoseBib = pocPlan.waterLines.find((item) => item.id === "south-wall-tee-cold-east-to-exterior-hose-bib");
+  const masterBathLaundry = pocPlan.waterLines.find((item) => item.id === "south-wall-tee-cold-west-to-master-bath-laundry-rise");
+  assert.ok(sprinkler && trunk && hoseBib && refrigerator && upstairsBathroom && kitchenSink && southContinuation && mainFloorSink && mainFloorToilet && mainFloorTub && waterHeater && southWallHoseBib && masterBathLaundry);
+  const coldLines = pocPlan.waterLines.filter((item) => item.supply === "cold");
+  assert.equal(coldLines.length, 19);
+  assert.ok(coldLines.every((item) => item.status === "existing" && item.confidence === "approximate"));
+  assert.deepEqual([trunk.from, trunk.to], [[138, 517], [138, 339]]);
+  assert.deepEqual([hoseBib.fromEndpoint, hoseBib.toEndpoint, hoseBib.to], ["junction", "hose-bib", [8.5, 571]]);
+  assert.deepEqual(hoseBib.waypoints[0], [138, 511]);
+  assert.deepEqual([refrigerator.toEndpoint, refrigerator.to, refrigerator.toLabel], ["junction", [115, 339], "Kitchen refrigerator ↑"]);
+  assert.deepEqual([upstairsBathroom.toEndpoint, upstairsBathroom.to], ["rise", [8.5, 339]]);
+  assert.deepEqual([kitchenSink.toEndpoint, kitchenSink.to], ["rise", [79.5, 207.5]]);
+  assert.deepEqual([southContinuation.toEndpoint, southContinuation.to], ["junction", [353, 207.5]]);
+  assert.deepEqual([mainFloorSink.from, mainFloorSink.to, mainFloorSink.toEndpoint], [[353, 126.5], [363, 126.5], "rise"]);
+  assert.deepEqual([mainFloorToilet.from, mainFloorToilet.to, mainFloorToilet.toEndpoint], [[353, 75], [363, 75], "rise"]);
+  assert.deepEqual([mainFloorTub.to, mainFloorTub.toEndpoint], [[353, 42], "rise"]);
+  assert.deepEqual([waterHeater.from, waterHeater.to, waterHeater.toEndpoint], [[464, 207.5], [464, 244], "equipment"]);
+  assert.deepEqual([southWallHoseBib.to, southWallHoseBib.toEndpoint], [[556, 42], "hose-bib"]);
+  assert.deepEqual([masterBathLaundry.to, masterBathLaundry.toEndpoint], [[548, 255], "rise"]);
+  assert.deepEqual([sprinkler.fromEndpoint, sprinkler.toEndpoint], ["source", "valve"]);
+});
+
+test("stores the surveyed existing hot-water routes", () => {
+  const hotLines = pocPlan.waterLines.filter((item) => item.supply === "hot");
+  const waterHeater = hotLines.find((item) => item.id === "utility-room-water-heater-hot-to-south-north-tee");
+  const upperFloor = hotLines.find((item) => item.id === "water-heater-hot-tee-south-to-master-bath-laundry-rise");
+  const bathroomSink = hotLines.find((item) => item.id === "main-floor-bathroom-sink-hot-rise");
+  const bathroomTub = hotLines.find((item) => item.id === "main-floor-bathroom-hot-sink-tee-to-tub-shower-rise");
+  const kitchenSink = hotLines.find((item) => item.id === "kitchen-sink-hot-rise");
+  const upstairsBathroom = hotLines.find((item) => item.id === "kitchen-sink-hot-tee-to-upstairs-bathroom-rise");
+  assert.equal(hotLines.length, 9);
+  assert.ok(waterHeater && upperFloor && bathroomSink && bathroomTub && kitchenSink && upstairsBathroom);
+  assert.ok(hotLines.every((item) => item.status === "existing" && item.confidence === "approximate"));
+  assert.deepEqual([waterHeater.from, waterHeater.to, waterHeater.fromEndpoint], [[456, 244], [456, 213.5], "equipment"]);
+  assert.deepEqual([upperFloor.to, upperFloor.toEndpoint], [[542, 255], "rise"]);
+  assert.deepEqual([bathroomSink.from, bathroomSink.to, bathroomSink.toEndpoint], [[345, 126.5], [355, 126.5], "rise"]);
+  assert.deepEqual([bathroomTub.to, bathroomTub.toEndpoint], [[345, 42], "rise"]);
+  assert.deepEqual([kitchenSink.to, kitchenSink.toEndpoint], [[79.5, 203.5], "rise"]);
+  assert.deepEqual([upstairsBathroom.waypoints[0], upstairsBathroom.to, upstairsBathroom.toEndpoint], [[4.5, 213.5], [4.5, 339], "rise"]);
+});
+
+test("reports malformed water-line routes", () => {
+  const line = pocPlan.waterLines[0];
+  const malformed = { ...pocPlan, waterLines: [{ ...line, to: line.waypoints.at(-1) }] };
+  assert.ok(validatePlan(malformed).some((issue) => issue.code === "invalid-water-line"));
+});
+
 test("stores the south-wall electrical and networking cabinets from west-wall measurements", () => {
   const westPanel = pocPlan.wallCabinets.find((item) => item.id === "south-wall-west-electrical-panel");
   const eastPanel = pocPlan.wallCabinets.find((item) => item.id === "south-wall-east-electrical-panel");

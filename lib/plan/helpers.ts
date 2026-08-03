@@ -32,6 +32,7 @@ import type {
   Wall,
   WallCabinet,
   WallLight,
+  WaterLine,
   WaterValve,
   VerticalHvacDuct,
   WindowOpening,
@@ -80,6 +81,9 @@ export const bathroomFixture = (
 export const waterValve = (
   value: Omit<WaterValve, "kind">,
 ): WaterValve => ({ kind: "water-valve", ...value });
+export const waterLine = (
+  value: Omit<WaterLine, "kind">,
+): WaterLine => ({ kind: "water-line", ...value });
 export const plumbingDrain = (
   value: Omit<PlumbingDrain, "kind">,
 ): PlumbingDrain => ({ kind: "plumbing-drain", ...value });

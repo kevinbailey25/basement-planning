@@ -20,6 +20,8 @@
   --hvac-vent: #74788f;
   --plumbing: #3b87a3;
   --plumbing-dark: #276980;
+  --cold-water: #1769e0;
+  --hot-water: #d43d3d;
   --gas: #80552f;
   --gas-dark: #5e3d21;
   --radon: #5d806d;
@@ -106,6 +108,9 @@ button { cursor: pointer; }
 .legend-sliding-door::before { transform: translate(-2px, -2px); }
 .legend-sliding-door::after { transform: translate(2px, 2px); }
 .legend-water-valve { color: var(--plumbing); border: 1px dashed var(--plumbing-dark); font: 800 12px/1 ui-monospace, monospace; }
+.legend-water-line::before { content: ""; width: 19px; border-top: 3px solid currentColor; }
+.legend-water-line.cold { color: var(--cold-water); }
+.legend-water-line.hot { color: var(--hot-water); }
 .legend-plumbing-drain { border: 2px solid var(--plumbing); border-radius: 50%; }
 .legend-plumbing-drain::before { content: "×"; color: var(--plumbing); font: 800 10px/1 ui-monospace, monospace; }
 .legend-hvac-equipment { color: var(--hvac-return); border: 1px solid var(--hvac-return-dark); font: 800 10px/1 ui-monospace, monospace; }
@@ -299,6 +304,18 @@ button { cursor: pointer; }
 .valve-body { fill: var(--paper); stroke: var(--plumbing-dark); stroke-width: 1.3; }
 .valve-handle, .valve-leader { fill: none; stroke: var(--plumbing-dark); stroke-width: .8; }
 .valve-label { fill: var(--plumbing-dark); stroke: var(--paper); stroke-width: 2.5; paint-order: stroke; font: 700 5.2px/1 ui-monospace, monospace; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.water-line-symbol { cursor: pointer; }
+.water-line-symbol.cold { color: var(--cold-water); }
+.water-line-symbol.hot { color: var(--hot-water); }
+.water-line-hit, .water-line-casing, .water-line-route { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.water-line-hit { stroke: transparent; stroke-width: 12; }
+.water-line-casing { stroke: none; }
+.water-line-route { stroke: currentColor; stroke-width: 2; }
+.water-line-endpoint circle { fill: var(--paper); stroke: currentColor; stroke-width: 1.3; }
+.water-line-endpoint.junction circle { fill: currentColor; }
+.water-line-endpoint.continuation circle { stroke-dasharray: 1.5 1; }
+.water-line-endpoint text { fill: currentColor; stroke: var(--paper); stroke-width: 2.5; paint-order: stroke; font: 700 4.5px/1 ui-monospace, monospace; pointer-events: none; }
+.water-line-symbol.selected .water-line-casing { stroke: #c66e12; stroke-width: 5.2; }
 .plumbing-drain-symbol { cursor: pointer; }
 .plumbing-drain-hit { fill: transparent; stroke: transparent; }
 .plumbing-drain-footprint { fill: var(--paper); stroke: var(--plumbing); stroke-width: .9; }
@@ -497,6 +514,11 @@ button { cursor: pointer; }
   .hvac-wall-return-grille { stroke: #fff; }
   .hvac-equipment-label, .hvac-duct-label, .hvac-refrigerant-label, .gas-line-label, .gas-endpoint text, .radon-pipe-label { fill: #111; stroke: #fff; }
   .water-valve-symbol .valve-label, .plumbing-drain-label, .plumbing-equipment-label, .wall-cabinet-label, .cabinet-run-label, .switch-label, .receptacle-label { fill: #111; stroke: #fff; }
+  .water-line-casing { stroke: #fff; }
+  .water-line-route, .water-line-endpoint circle { stroke: #111; }
+  .water-line-symbol.hot .water-line-route { stroke-dasharray: 5 2; }
+  .water-line-endpoint.junction circle { fill: #111; }
+  .water-line-endpoint text { fill: #111; stroke: #fff; }
   .north-arrow { stroke: #111; }
   .north-arrow text { fill: #111; }
   .dimension-mark text, .space-label, .space-area { fill: #111; }

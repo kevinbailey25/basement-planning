@@ -129,6 +129,28 @@ When the opening's wall ends at a connected collinear wall segment, measurement 
 
 ## Plumbing
 
+### Water lines
+
+Existing domestic and sprinkler supply routes use independent `waterLine` segments split at tees and meaningful endpoints. The geometry is a rough plan projection only; it does not record pipe elevation, diameter, material, or construction suitability:
+
+```ts
+waterLine({
+  id: "office-west-tee-cold-to-west-hose-bib",
+  label: "Western Office tee cold-water branch to exterior hose bib",
+  supply: "cold",
+  from: [138, 517],
+  to: [8.5, 571],
+  waypoints: [[138, 511], [16.5, 511], [12.4, 512.1], [9.4, 515.1], [8.5, 519]],
+  fromEndpoint: "junction",
+  toEndpoint: "hose-bib",
+  toLabel: "Exterior hose bib",
+  status: "existing",
+  confidence: "approximate",
+});
+```
+
+`from`, optional `waypoints`, and `to` define the route centerline. Use enough waypoints to communicate a broad observed bend without implying measured precision. `supply` controls the blue cold-water or red hot-water treatment. Endpoint conditions may be `source`, `junction`, `valve`, `equipment`, `hose-bib`, `rise`, `continuation`, or `none`; labels are optional and should be short. Use `equipment` where a route reaches mapped plumbing equipment and `rise` when it leaves the basement plan vertically for an upper-floor destination. The **Plumbing → Water Lines** sublayer shows both hot and cold routes together. A continuation endpoint means only that the survey is unfinished, not that the physical pipe terminates there.
+
 ### Water shutoffs
 
 Water valves are wall-mounted devices with an offset to the valve center. `referenceWallId` identifies the wall at the parent wall's `from` point used for the field measurement. The valve and its enclosure retain separate construction statuses.
@@ -706,4 +728,4 @@ Openings and wall junctions are counted but their extra king studs, trimmers, he
 
 ## Validation
 
-`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, soffit footprints and known elevations, bathroom-fixture footprints and drain references, water-valve enclosure bounds and reference junctions, plumbing equipment footprints, usable gas-line geometry and placement measurements, missing circuit endpoints, zero-length walls, invalid stairs, and invalid framing assumptions. Run `npm test` before handing off a change.
+`validatePlan` checks duplicate IDs, missing wall references, openings beyond wall bounds, soffit footprints and known elevations, bathroom-fixture footprints and drain references, water-valve enclosure bounds and reference junctions, usable water-line geometry, plumbing equipment footprints, usable gas-line geometry and placement measurements, missing circuit endpoints, zero-length walls, invalid stairs, and invalid framing assumptions. Run `npm test` before handing off a change.
